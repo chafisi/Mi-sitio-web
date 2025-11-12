@@ -1,5 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
 <head>
-    <script src="Javascript.html"></script>
-    <link rel="stylesheet" type="text/css" href="Stylesheet.html">
-    <title>Probando HTML</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNIDAD 7: 8 Técnicas de Navegación</title>
+    <!-- Carga de Tailwind CSS para estilos y diseño responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos personalizados para el mega dropdown y transiciones */
+        .mega-dropdown-content {
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .group:hover .mega-dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        /* Estilo para simular enlaces contextuales (Técnica 8) */
+        .contextual-link {
+            color: #1d4ed8; /* blue-700 */
+            font-weight: 600;
+            text-decoration: underline;
+        }
+    </style>
 </head>
+<body class="font-sans bg-gray-50">
+
+    <!-- TÉCNICA 1: MENÚ PRINCIPAL (HORIZONTAL FIJO) & TÉCNICA 6: MENÚ HAMBURGUESA -->
+    <header id="main-header" class="fixed top-0 left-0 w-full bg-blue-700 text-white shadow-lg z-30">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="#" class="text-2xl font-bold">Proyecto H</a>
+
+            <!-- Botón Hamburguesa (Visible en Móvil) - TÉCNICA 6 -->
+            <button id="hamburger-btn" class="lg:hidden p-2 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+
+            <!-- Menú de Navegación Principal (Oculto en Móvil por defecto) -->
+            <nav id="main-nav" class="hidden lg:flex lg:items-center">
+                <ul class="flex space-x-6">
+                    <li><a href="#" class="hover:text-blue-200 transition">Inicio</a></li>
+
+                    <!-- TÉCNICA 2: MEGA DROPDOWN -->
+                    <li class="group relative">
+                        <a href="#" class="hover:text-blue-200 transition flex items-center">
+                            Secciones
+                            <svg class="w-4 h-4 ml-1 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </a>
+                        <div class="mega-dropdown-content absolute left-0 mt-0 w-96 bg-white text-gray-800 p-4 shadow-xl rounded-lg">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <h4 class="font-bold text-blue-700 mb-2 border-b pb-1">Análisis</h4>
+                                    <ul class="space-y-1 text-sm">
+                                        <li><a href="#" class="hover:text-blue-500">Casos Prácticos</a></li>
+                                        <li><a href="#" class="hover:text-blue-500">Metodologías</a></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-blue-700 mb-2 border-b pb-1">Recursos</h4>
+                                    <ul class="space-y-1 text-sm">
+                                        <li><a href="#" class="hover:text-blue-500">Herramientas</a></li>
+                                        <li><a href="#" class="hover:text-blue-500">Documentación</a></li>
+                                        <li><a href="#" class="hover:text-blue-500">FAQs</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li><a href="#" class="hover:text-blue-200 transition">Contacto</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Overlay para el menú móvil -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden"></div>
+
+    <!-- Contenido Principal -->
+    <main class="pt-20 flex">
+        
+        <!-- TÉCNICA 4: NAVEGACIÓN LATERAL (SIDEBAR) -->
+        <aside id="sidebar" class="fixed lg:sticky top-0 lg:top-20 left-0 h-full w-64 bg-white p-6 shadow-xl lg:shadow-md z-20 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+            <h3 class="text-lg font-bold text-blue-700 mb-4 border-b pb-2">Filtros Avanzados (T4)</h3>
+            <ul class="space-y-3">
+                <li>
+                    <a href="#" class="block p-2 rounded hover:bg-blue-100 transition">Diseño UI</a>
+                    <div class="ml-4 mt-1 space-y-1 text-sm text-gray-600">
+                        <a href="#" class="block hover:text-blue-500">Prototipado</a>
+                        <a href="#" class="block hover:text-blue-500">Tipografía</a>
+                    </div>
+                </li>
+                <li><a href="#" class="block p-2 rounded hover:bg-blue-100 transition">Investigación UX</a></li>
+                <li><a href="#" class="block p-2 rounded hover:bg-blue-100 transition">Accesibilidad</a></li>
+            </ul>
+            <button id="toggle-sidebar-btn" class="mt-4 p-2 w-full text-sm text-white bg-red-500 rounded lg:hidden">Cerrar Menú Lateral</button>
+        </aside>
+
+        <!-- Área de Contenido Principal -->
+        <section class="flex-1 min-h-screen p-6 lg:ml-0">
+            <div class="max-w-4xl mx-auto">
+                
+                <!-- TÉCNICA 3: MIGAS DE PAN (BREADCRUMBS) -->
+                <nav class="text-sm text-gray-600 mb-6" aria-label="Breadcrumb">
+                    <ol class="list-none p-0 inline-flex items-center">
+                        <li class="flex items-center">
+                            <a href="#" class="text-blue-600 hover:text-blue-800">Inicio</a>
+                            <span class="mx-2">/</span>
+                        </li>
+                        <li class="flex items-center">
+                            <a href="#" class="text-blue-600 hover:text-blue-800">Análisis</a>
+                            <span class="mx-2">/</span>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-gray-800 font-medium">Diseño UI</span>
+                        </li>
+                    </ol>
+                </nav>
+
+                <h1 class="text-4xl font-extrabold text-gray-900 mb-6">Exploración de Principios HCI</h1>
+                
+                <!-- TÉCNICA 7: BÚSQUEDA INTERNA (CON AUTOCOMPLETADO SIMULADO) -->
+                <div class="relative mb-8">
+                    <input type="text" id="search-input" placeholder="Buscar por término clave (Ej: Usabilidad, Sidebar)" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    <div id="search-suggestions" class="absolute w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg hidden">
+                        <!-- Las sugerencias de autocompletado aparecerán aquí -->
+                        <div class="p-2 hover:bg-gray-100 cursor-pointer text-sm" onclick="document.getElementById('search-input').value = 'Usabilidad'; document.getElementById('search-suggestions').classList.add('hidden');">Usabilidad</div>
+                        <div class="p-2 hover:bg-gray-100 cursor-pointer text-sm" onclick="document.getElementById('search-input').value = 'Mega Dropdown'; document.getElementById('search-suggestions').classList.add('hidden');">Mega Dropdown</div>
+                        <div class="p-2 hover:bg-gray-100 cursor-pointer text-sm" onclick="document.getElementById('search-input').value = 'Scroll Infinito'; document.getElementById('search-suggestions').classList.add('hidden');">Scroll Infinito</div>
+                    </div>
+                </div>
+
+                <!-- Contenido con TÉCNICA 8: ENLACES CONTEXTUALES -->
+                <div id="content-items" class="space-y-8">
+                    <article class="bg-white p-6 rounded-xl shadow-md">
+                        <h2 class="text-2xl font-semibold mb-3">Principios Clave de Interacción</h2>
+                        <p class="text-gray-700 leading-relaxed">
+                            La <span class="contextual-link">claridad</span> y la <span class="contextual-link">accesibilidad</span> son fundamentales para cualquier diseño. Si la navegación es deficiente, la frustración aumenta, lo que resulta en una alta tasa de abandono. Analizar ejemplos como el diseño de <span class="contextual-link">Netflix</span> nos muestra el impacto de una buena estructura en la retención del usuario. Recuerda que no es lo mismo mostrar el contenido en una tablet que en un portátil.
+                        </p>
+                    </article>
+
+                    <article class="bg-white p-6 rounded-xl shadow-md">
+                        <h2 class="text-2xl font-semibold mb-3">Diseño para Contenido Extenso</h2>
+                        <p class="text-gray-700 leading-relaxed">
+                            Cuando el sitio tiene muchos elementos, debemos ayudar al usuario a no perderse. Las <span class="contextual-link">Migas de Pan</span> son esenciales para recordar el nivel de navegación. Además, para organizar subcategorías sin sobrecargar, utilizamos el <span class="contextual-link">Mega Dropdown</span>. El objetivo es optimizar el número de clics.
+                        </p>
+                    </article>
+                    
+                    <!-- Elementos generados por JS al hacer click en "Cargar Más" -->
+                </div>
+
+                <!-- TÉCNICA 5: PAGINACIÓN Y SCROLL INFINITO (Simulado con "Load More") -->
+                <div class="mt-10 text-center">
+                    <button id="load-more-btn" class="px-8 py-3 bg-green-600 text-white font-semibold rounded-full shadow-lg hover:bg-green-700 transition transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-500/50">
+                        Cargar Más Contenido (Simulación de Load More / Scroll Infinito)
+                    </button>
+                    <p id="load-status" class="mt-4 text-sm text-gray-500"></p>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Variables globales para la gestión de estado
+        let contentPage = 1;
+        const totalPages = 3; 
+
+        // Referencias a los elementos del DOM
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mainNav = document.getElementById('main-nav');
+        const mobileOverlay = document.getElementById('mobile-menu-overlay');
+        const sidebar = document.getElementById('sidebar');
+        const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        const contentItems = document.getElementById('content-items');
+        const loadStatus = document.getElementById('load-status');
+        const searchInput = document.getElementById('search-input');
+        const searchSuggestions = document.getElementById('search-suggestions');
+
+
+        // --- TÉCNICA 6: Menú Hamburguesa & TÉCNICA 4: Navegación Lateral Colapsable (Móvil) ---
+
+        /**
+         * Alterna la visibilidad de los menús en móvil.
+         * En móvil, el botón hamburguesa oculta/muestra el menú principal y la sidebar.
+         */
+        function toggleMobileMenu() {
+            const isSidebarVisible = sidebar.classList.contains('-translate-x-full');
+            
+            // Si el menú lateral NO está visible, lo mostramos
+            if (isSidebarVisible) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+                mobileOverlay.classList.remove('hidden');
+            } else { // Si está visible, lo ocultamos
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0');
+                mobileOverlay.classList.add('hidden');
+            }
+        }
+
+        // Event Listeners para el toggle
+        hamburgerBtn.addEventListener('click', toggleMobileMenu);
+        toggleSidebarBtn.addEventListener('click', toggleMobileMenu);
+        mobileOverlay.addEventListener('click', toggleMobileMenu);
+
+
+        // --- TÉCNICA 5: Paginación / Scroll Infinito (Load More) ---
+
+        /**
+         * Simula la carga de más contenido al hacer clic en el botón.
+         */
+        loadMoreBtn.addEventListener('click', () => {
+            if (contentPage >= totalPages) {
+                loadStatus.textContent = "Has llegado al final del contenido (Paginación Completa).";
+                loadMoreBtn.disabled = true;
+                loadMoreBtn.classList.replace('bg-green-600', 'bg-gray-400');
+                return;
+            }
+
+            // Simulación de nuevos datos
+            contentPage++;
+            const newContent = document.createElement('article');
+            newContent.className = 'bg-yellow-50 p-6 rounded-xl shadow-md border-l-4 border-yellow-500';
+            newContent.innerHTML = `
+                <h2 class="text-2xl font-semibold mb-3">Nuevo Contenido Cargado (Página ${contentPage})</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Esta sección se cargó dinámicamente, simulando la técnica 'Load More' (carga continua) de la navegación. Este patrón se utiliza a menudo junto a un <span class="contextual-link">Menú Fijo</span> para mantener la orientación.
+                </p>
+            `;
+            contentItems.appendChild(newContent);
+            
+            loadStatus.textContent = `Página ${contentPage} cargada.`;
+
+            if (contentPage >= totalPages) {
+                loadStatus.textContent = "Has llegado al final del contenido (Paginación Completa).";
+                loadMoreBtn.disabled = true;
+                loadMoreBtn.classList.replace('bg-green-600', 'bg-gray-400');
+                loadMoreBtn.textContent = "No hay más contenido";
+            }
+        });
+
+
+        // --- TÉCNICA 7: BÚSQUEDA INTERNA (Autocompletado simulado) ---
+
+        /**
+         * Muestra las sugerencias de búsqueda al teclear.
+         */
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            
+            if (query.length > 0 && query !== 'usabilidad') { // Simulación simple
+                searchSuggestions.classList.remove('hidden');
+            } else {
+                searchSuggestions.classList.add('hidden');
+            }
+        });
+
+        // Oculta las sugerencias al perder el foco
+        document.addEventListener('click', (event) => {
+            if (!searchInput.contains(event.target) && !searchSuggestions.contains(event.target)) {
+                searchSuggestions.classList.add('hidden');
+            }
+        });
+
+    </script>
+</body>
+</html>
