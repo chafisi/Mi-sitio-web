@@ -4,29 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNIDAD 7: 8 Técnicas de Navegación</title>
-    <!-- Carga de Tailwind CSS para estilos y diseño responsivo -->
+    <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Estilos personalizados para el mega dropdown y transiciones */
-        .mega-dropdown-content {
-            z-index: 10;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        .group:hover .mega-dropdown-content {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        /* Estilo para simular enlaces contextuales (Técnica 8) */
-        .contextual-link {
-            color: #1d4ed8; /* blue-700 */
-            font-weight: 600;
-            text-decoration: underline;
-        }
-    </style>
+    
+    <!-- ENLACE AL ARCHIVO DE ESTILOS EXTERNO (styles.css) -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body class="font-sans bg-gray-50">
 
@@ -128,9 +110,9 @@
                     <input type="text" id="search-input" placeholder="Buscar por término clave (Ej: Usabilidad, Sidebar)" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                     <div id="search-suggestions" class="absolute w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg hidden">
                         <!-- Las sugerencias de autocompletado aparecerán aquí -->
-                        <div class="p-2 hover:bg-gray-100 cursor-pointer text-sm" onclick="document.getElementById('search-input').value = 'Usabilidad'; document.getElementById('search-suggestions').classList.add('hidden');">Usabilidad</div>
-                        <div class="p-2 hover:bg-gray-100 cursor-pointer text-sm" onclick="document.getElementById('search-input').value = 'Mega Dropdown'; document.getElementById('search-suggestions').classList.add('hidden');">Mega Dropdown</div>
-                        <div class="p-2 hover:bg-gray-100 cursor-pointer text-sm" onclick="document.getElementById('search-input').value = 'Scroll Infinito'; document.getElementById('search-suggestions').classList.add('hidden');">Scroll Infinito</div>
+                        <div class="p-2 hover:bg-gray-100 cursor-pointer text-sm" data-value="Usabilidad">Usabilidad</div>
+                        <div class="p-2 hover:bg-gray-100 cursor-pointer text-sm" data-value="Mega Dropdown">Mega Dropdown</div>
+                        <div class="p-2 hover:bg-gray-100 cursor-pointer text-sm" data-value="Scroll Infinito">Scroll Infinito</div>
                     </div>
                 </div>
 
@@ -165,109 +147,7 @@
         </section>
     </main>
 
-    <script>
-        // Variables globales para la gestión de estado
-        let contentPage = 1;
-        const totalPages = 3; 
-
-        // Referencias a los elementos del DOM
-        const hamburgerBtn = document.getElementById('hamburger-btn');
-        const mainNav = document.getElementById('main-nav');
-        const mobileOverlay = document.getElementById('mobile-menu-overlay');
-        const sidebar = document.getElementById('sidebar');
-        const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
-        const loadMoreBtn = document.getElementById('load-more-btn');
-        const contentItems = document.getElementById('content-items');
-        const loadStatus = document.getElementById('load-status');
-        const searchInput = document.getElementById('search-input');
-        const searchSuggestions = document.getElementById('search-suggestions');
-
-
-        // --- TÉCNICA 6: Menú Hamburguesa & TÉCNICA 4: Navegación Lateral Colapsable (Móvil) ---
-
-        /**
-         * Alterna la visibilidad de los menús en móvil.
-         * En móvil, el botón hamburguesa oculta/muestra el menú principal y la sidebar.
-         */
-        function toggleMobileMenu() {
-            const isSidebarVisible = sidebar.classList.contains('-translate-x-full');
-            
-            // Si el menú lateral NO está visible, lo mostramos
-            if (isSidebarVisible) {
-                sidebar.classList.remove('-translate-x-full');
-                sidebar.classList.add('translate-x-0');
-                mobileOverlay.classList.remove('hidden');
-            } else { // Si está visible, lo ocultamos
-                sidebar.classList.add('-translate-x-full');
-                sidebar.classList.remove('translate-x-0');
-                mobileOverlay.classList.add('hidden');
-            }
-        }
-
-        // Event Listeners para el toggle
-        hamburgerBtn.addEventListener('click', toggleMobileMenu);
-        toggleSidebarBtn.addEventListener('click', toggleMobileMenu);
-        mobileOverlay.addEventListener('click', toggleMobileMenu);
-
-
-        // --- TÉCNICA 5: Paginación / Scroll Infinito (Load More) ---
-
-        /**
-         * Simula la carga de más contenido al hacer clic en el botón.
-         */
-        loadMoreBtn.addEventListener('click', () => {
-            if (contentPage >= totalPages) {
-                loadStatus.textContent = "Has llegado al final del contenido (Paginación Completa).";
-                loadMoreBtn.disabled = true;
-                loadMoreBtn.classList.replace('bg-green-600', 'bg-gray-400');
-                return;
-            }
-
-            // Simulación de nuevos datos
-            contentPage++;
-            const newContent = document.createElement('article');
-            newContent.className = 'bg-yellow-50 p-6 rounded-xl shadow-md border-l-4 border-yellow-500';
-            newContent.innerHTML = `
-                <h2 class="text-2xl font-semibold mb-3">Nuevo Contenido Cargado (Página ${contentPage})</h2>
-                <p class="text-gray-700 leading-relaxed">
-                    Esta sección se cargó dinámicamente, simulando la técnica 'Load More' (carga continua) de la navegación. Este patrón se utiliza a menudo junto a un <span class="contextual-link">Menú Fijo</span> para mantener la orientación.
-                </p>
-            `;
-            contentItems.appendChild(newContent);
-            
-            loadStatus.textContent = `Página ${contentPage} cargada.`;
-
-            if (contentPage >= totalPages) {
-                loadStatus.textContent = "Has llegado al final del contenido (Paginación Completa).";
-                loadMoreBtn.disabled = true;
-                loadMoreBtn.classList.replace('bg-green-600', 'bg-gray-400');
-                loadMoreBtn.textContent = "No hay más contenido";
-            }
-        });
-
-
-        // --- TÉCNICA 7: BÚSQUEDA INTERNA (Autocompletado simulado) ---
-
-        /**
-         * Muestra las sugerencias de búsqueda al teclear.
-         */
-        searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase();
-            
-            if (query.length > 0 && query !== 'usabilidad') { // Simulación simple
-                searchSuggestions.classList.remove('hidden');
-            } else {
-                searchSuggestions.classList.add('hidden');
-            }
-        });
-
-        // Oculta las sugerencias al perder el foco
-        document.addEventListener('click', (event) => {
-            if (!searchInput.contains(event.target) && !searchSuggestions.contains(event.target)) {
-                searchSuggestions.classList.add('hidden');
-            }
-        });
-
-    </script>
+    <!-- ENLACE AL ARCHIVO JAVASCRIPT EXTERNO (script.js) -->
+    <script src="script.js"></script>
 </body>
 </html>
