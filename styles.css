@@ -1,0 +1,28 @@
+/*
+ * Archivo: styles.css
+ * Contiene estilos personalizados que no están cubiertos por las clases de Tailwind.
+ */
+
+/* TÉCNICA 2: Estilos para el Mega Dropdown (Controla la aparición y transición) */
+.mega-dropdown-content {
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Muestra el dropdown al pasar el cursor sobre el elemento padre (.group) */
+.group:hover .mega-dropdown-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* TÉCNICA 8: Estilo para enlaces contextuales */
+.contextual-link {
+    color: #1d4ed8; /* blue-700 */
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+}
