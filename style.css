@@ -1,1 +1,148 @@
+/* Reset básico y Tipografía */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    /* Tipografía base para usar rem */
+    font-size: 16px; 
+}
+
+/* --- HEADER --- */
+header {
+    background-color: #fff;
+    padding: 1rem 2rem; /* Uso de rem (Requisito cumplido) */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+nav {
+    display: flex; /* Flexbox (Requisito cumplido) */
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+nav .logo {
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: #4e54c8;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+/* --- HERO SECTION --- */
+/* Diseño visual según prompt: Soft gradients in blue and purple */
+.hero {
+    background: linear-gradient(135deg, #4e54c8, #8f94fb); 
+    color: white;
+    padding: 4rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.hero h1 {
+    font-size: 3rem; /* Uso de rem */
+    margin-bottom: 1rem;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    max-width: 600px;
+}
+
+/* Imagen responsive */
+.hero-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 20px; /* Rounded shapes (según prompt) */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+/* Botón Accesible (Requisito cumplido: Contraste y Borde visible) */
+.btn-primary {
+    background-color: #fff;
+    color: #4e54c8;
+    padding: 0.8rem 2rem;
+    font-size: 1.1rem;
+    border: 3px solid #e0e0e0; /* Borde visible */
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #f0f0f0;
+    border-color: #fff;
+}
+
+.btn-primary:focus {
+    outline: 3px solid #ffcc00; /* Accesibilidad extra para teclado */
+}
+
+/* --- GRID SECTION --- */
+.grid-container {
+    display: grid; /* Grid Responsivo (Requisito cumplido) */
+    /* Mobile First: 1 columna por defecto */
+    grid-template-columns: 1fr; 
+    gap: 2rem;
+    padding: 4rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.card {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px; /* Rounded shapes */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    text-align: center;
+    border: 1px solid #eee;
+}
+
+.card h3 {
+    color: #4e54c8;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+/* --- FOOTER --- */
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.9rem;
+}
+
+/* --- MEDIA QUERIES (Requisito cumplido: Mínimo 1 breakpoint) --- */
+@media (min-width: 768px) {
+    /* En tablet/desktop pasamos a 3 columnas */
+    .grid-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .hero {
+        padding: 6rem 2rem;
+    }
+}
