@@ -1,21 +1,20 @@
-// 1. Cargar la API de IFrame de YouTube de forma asíncrona
+// --- Lógica de la API de YouTube ---
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-// 2. Esta función crea el reproductor <iframe> (y el video)
-//    cuando la API está lista para usarse.
 var player;
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
         height: '100%',
         width: '100%',
-        videoId: 'ELSm-G201Ls', // ID del video de Soy Dalto
+        videoId: 'ELSm-G201Ls', // ID del curso de Soy Dalto
         playerVars: {
             'playsinline': 1,
-            'controls': 0, // Ocultamos los controles nativos de YouTube para usar los nuestros
-            'rel': 0       // Evitamos videos relacionados al final
+            'controls': 0, 
+            'rel': 0,
+            'modestbranding': 1
         },
         events: {
             'onReady': onPlayerReady
@@ -23,36 +22,38 @@ function onYouTubeIframeAPIReady() {
     });
 }
 
-// 3. La API llamará a esta función cuando el reproductor esté listo.
 function onPlayerReady(event) {
-    // Aquí conectamos nuestros botones personalizados a la API
-    
-    // Botón Play
-    document.getElementById('btnPlay').addEventListener('click', function() {
-        player.playVideo();
-    });
+    // Conexión de los botones
+    document.getElementById('btnPlay').addEventListener('click', () => player.playVideo());
+    document.getElementById('btnPause').addEventListener('click', () => player.pauseVideo());
+    document.getElementById('btnStop').addEventListener('click', () => player.stopVideo());
 
-    // Botón Pausa
-    document.getElementById('btnPause').addEventListener('click', function() {
-        player.pauseVideo();
-    });
-
-    // Botón Stop (Detener)
-    document.getElementById('btnStop').addEventListener('click', function() {
-        player.stopVideo();
-    });
-
-    // Botón Mute / Unmute
+    // Botón Mute con cambio visual
     var btnMute = document.getElementById('btnMute');
     btnMute.addEventListener('click', function() {
         if (player.isMuted()) {
             player.unMute();
-            btnMute.innerText = "🔊 Mute"; // Cambiamos texto/icono
-            btnMute.style.backgroundColor = "#f1c40f"; // Color original
+            btnMute.innerHTML = '<span class="icon">🔊</span>';
+            btnMute.style.color = ""; 
         } else {
             player.mute();
-            btnMute.innerText = "🔇 Unmute";
-            btnMute.style.backgroundColor = "#95a5a6"; // Color gris indicando silencio
+            btnMute.innerHTML = '<span class="icon">🔇</span>';
+            btnMute.style.color = "#ff4757"; // Rojo para indicar muteado
         }
     });
 }
+
+// --- Lógica para el tamaño de pantalla (Nuevo) ---
+const badge = document.getElementById('res-badge');
+
+function updateScreenSize() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    // Muestra el ancho y el alto del viewport
+    badge.innerText = `VIEWPORT: ${width}px x ${height}px`;
+}
+
+// Ejecutar al cargar y al redimensionar
+updateScreenSize();
+window.addEventListener('resize', updateScreenSize);
