@@ -3,37 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi TV YouTube</title>
-    <link rel="stylesheet" href="style4.css">
+    <title>Modern TV Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="tv-container">
-        <div class="antenna antenna-left"></div>
-        <div class="antenna antenna-right"></div>
+    <div id="res-badge" class="resolution-badge">Cargando...</div>
 
-        <div class="tv-frame">
-            <div class="tv-screen">
+    <div class="main-container">
+        
+        <div class="smart-tv">
+            <div class="screen-wrapper">
                 <div id="player"></div>
             </div>
 
-            <div class="tv-controls">
-                <div class="logo">TV DALTO</div>
-                <div class="buttons">
-                    <button id="btnPlay" title="Reproducir">▶ Play</button>
-                    <button id="btnPause" title="Pausar">⏸ Pausa</button>
-                    <button id="btnStop" title="Detener">⏹ Stop</button>
-                    <button id="btnMute" title="Silenciar/Activar sonido">🔊 Mute</button>
+            <div class="control-bar">
+                <div class="app-logo">DALTO<span class="highlight">TV</span></div>
+                
+                <div class="controls-group">
+                    <button id="btnPlay" class="control-btn" title="Reproducir">
+                        <span class="icon">▶</span>
+                    </button>
+                    <button id="btnPause" class="control-btn" title="Pausar">
+                        <span class="icon">⏸</span>
+                    </button>
+                    <button id="btnStop" class="control-btn" title="Detener">
+                        <span class="icon">⏹</span>
+                    </button>
+                    <div class="divider"></div>
+                    <button id="btnMute" class="control-btn secondary" title="Silenciar">
+                        <span class="icon">🔊</span>
+                    </button>
                 </div>
             </div>
         </div>
         
-        <div class="tv-legs">
-            <div class="leg left"></div>
-            <div class="leg right"></div>
-        </div>
+        <div class="ambient-glow"></div>
     </div>
 
-    <script src="script4.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
