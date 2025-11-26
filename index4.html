@@ -1,1 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi TV YouTube</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+    <div class="tv-container">
+        <div class="antenna antenna-left"></div>
+        <div class="antenna antenna-right"></div>
+
+        <div class="tv-frame">
+            <div class="tv-screen">
+                <div id="player"></div>
+            </div>
+
+            <div class="tv-controls">
+                <div class="logo">TV DALTO</div>
+                <div class="buttons">
+                    <button id="btnPlay" title="Reproducir">▶ Play</button>
+                    <button id="btnPause" title="Pausar">⏸ Pausa</button>
+                    <button id="btnStop" title="Detener">⏹ Stop</button>
+                    <button id="btnMute" title="Silenciar/Activar sonido">🔊 Mute</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tv-legs">
+            <div class="leg left"></div>
+            <div class="leg right"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
