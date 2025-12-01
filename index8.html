@@ -6,68 +6,103 @@
     <title>Layout Responsivo con CSS Grid</title>
     <!-- Usamos Tailwind para clases utilitarias y estilos base -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Incluimos Font Awesome para el icono Sol/Luna -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Definición de la fuente Inter */
+        /* ---------------------------------------------------- */
+        /* --- 1. DEFINICIÓN DE VARIABLES CSS Y TEMA CLARO --- */
+        /* ---------------------------------------------------- */
+        :root {
+            /* Colores de Fondo */
+            --bg-body: #f0f4f8;       /* Fondo general muy claro */
+            --bg-surface: #ffffff;    /* Fondo de contenedores */
+            --color-text: #1f2937;    /* Texto principal oscuro */
+
+            /* Colores de Grid (Originales) */
+            --color-header: #4c51bf;  /* Indigo */
+            --color-sidebar: #10b981; /* Emerald */
+            --color-main: #f59e0b;    /* Amber */
+            --color-pill: #2c3e50;    /* Píldora de ancho */
+        }
+
+        /* ---------------------------------------------------- */
+        /* --- 2. TEMA OSCURO (Sobreescribe variables) --- */
+        /* ---------------------------------------------------- */
+        body.dark-mode {
+            /* Inversión de Fondos y Textos */
+            --bg-body: #111827;       /* Fondo oscuro profundo */
+            --bg-surface: #1f2937;    /* Fondo de contenedores (Gris oscuro) */
+            --color-text: #e5e7eb;    /* Texto claro */
+            
+            /* Los colores del Grid se mantienen visibles pero sus textos cambian */
+            --color-pill: #10b981;    /* Píldora de ancho brillante */
+        }
+        
+        /* Aplicar las variables al body y a elementos comunes */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; 
+            background-color: var(--bg-body);
+            color: var(--color-text); /* Aplicamos el color de texto de la variable */
             margin: 0;
             padding: 0;
             min-height: 100vh;
-        }
-
-        /* Colores para las áreas del Grid (para consistencia visual) */
-        :root {
-            --color-header: #4c51bf; /* Indigo */
-            --color-sidebar: #10b981; /* Emerald */
-            --color-main: #f59e0b;    /* Amber */
+            transition: background-color 0.3s, color 0.3s; /* Transición suave del modo */
         }
         
-        /* Estilo base del Contenedor Principal (GRID) */
+        /* Aplicamos el fondo de superficie a la caja de explicación */
+        .explanation-box {
+            background-color: var(--bg-surface);
+            border-color: var(--color-header); /* Mantenemos el color de borde */
+        }
+        
+        /* Aplicamos el color de texto del header */
+        .main-header h1, .main-header p {
+            color: var(--color-text);
+        }
+
+        /* ---------------------------------------------------- */
+        /* --- LAYOUT DEL GRID (Usa variables del root) --- */
+        /* ---------------------------------------------------- */
         .grid-container {
             display: grid;
-            gap: 1rem; /* Espacio entre las celdas del grid */
+            gap: 1rem; 
             width: 90%;
             max-width: 1200px;
             margin: 0 auto 2rem auto;
-            min-height: 600px; /* Altura mínima para visualizar */
+            min-height: 600px; 
         }
 
-        /* Estilo base de los elementos del Grid */
         .grid-item {
             padding: 1.5rem;
-            color: white;
+            /* El color del texto es fijo (blanco) dentro de las áreas de colores fuertes */
+            color: white; 
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave de elevación */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
         }
-
-        /* --- LAYOUT RESPONSIVO (MOBILE FIRST) --- */
 
         /* Mobile/Tablet (Menos de 768px): Todo apilado en una columna */
         .grid-container {
-            /* Define las áreas por nombre para facilitar el layout */
             grid-template-areas: 
                 "header"
                 "sidebar"
                 "main";
-            /* La altura de las filas es flexible, Header y Sidebar pequeñas, Main toma el resto */
             grid-template-rows: auto auto 1fr;
         }
         
-        /* Asignación de áreas y colores */
+        /* Asignación de áreas y colores usando variables */
         #header { 
             grid-area: header; 
             background-color: var(--color-header);
-            height: 100px; /* Altura fija para visualización */
+            height: 100px; 
         }
         #sidebar { 
             grid-area: sidebar; 
             background-color: var(--color-sidebar);
-            height: 250px; /* Altura fija para visualización */
+            height: 250px; 
         }
         #main-content { 
             grid-area: main; 
@@ -77,57 +112,83 @@
         /* --- DESKTOP LAYOUT (a partir de 768px) --- */
         @media (min-width: 768px) {
             .grid-container {
-                /* Define 3 columnas: Sidebar (1fr) | Main (3fr) */
                 grid-template-columns: 1fr 3fr; 
-                /* Re-define las áreas para el layout de escritorio */
                 grid-template-areas: 
                     "header header"
                     "sidebar main";
-                /* Header pequeña, y el resto se divide entre Sidebar y Main */
                 grid-template-rows: 80px 1fr;
             }
             #sidebar {
-                height: auto; /* Permite que Sidebar se ajuste a la altura de Main */
+                height: auto; 
             }
         }
 
-        /* Estilo para el indicador de ancho de pantalla */
+        /* Estilo para el indicador de ancho de pantalla (Usa variable) */
         #screen-width-display {
             position: absolute;
             top: 20px;
             right: 20px;
-            background-color: #2c3e50;
+            background-color: var(--color-pill); /* Usa variable */
             color: white;
             padding: 0.5rem 1rem;
-            border-radius: 9999px; /* Píldora */
+            border-radius: 9999px; 
             font-size: 0.9rem;
             font-weight: 500;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             z-index: 10;
         }
 
+        /* --- 3. BOTÓN DE MODO OSCURO --- */
+        #dark-mode-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: var(--color-header);
+            color: white;
+            padding: 0.6rem 0.8rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+            transition: background-color 0.3s, transform 0.1s;
+            border: none;
+            outline: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        #dark-mode-toggle:hover {
+            opacity: 0.9;
+        }
+        #dark-mode-toggle:active {
+            transform: scale(0.95);
+        }
+
+
     </style>
 </head>
 <body>
-
+    <!-- 3. BOTÓN DE MODO OSCURO -->
+    <button id="dark-mode-toggle" aria-label="Toggle Dark Mode">
+        <i class="fas fa-sun"></i> <!-- Icono inicial de sol (modo claro) -->
+    </button>
+    
     <!-- CAJA DE ANCHO DE PANTALLA -->
     <div id="screen-width-display">
         Ancho: 0px
     </div>
 
-    <header class="mb-8 p-10">
-        <h1 class="text-4xl font-extrabold text-gray-800 text-center">
+    <header class="mb-8 p-10 main-header">
+        <h1 class="text-4xl font-extrabold text-center">
             Ejemplo de Layout con CSS Grid
         </h1>
-        <p class="text-center text-gray-500 mt-2 font-semibold">
+        <p class="text-center mt-2 font-semibold text-gray-500">
             El diseño cambia automáticamente al reducir el ancho del navegador.
         </p>
     </header>
 
     <!-- EXPLICACIÓN DEL EJEMPLO -->
-    <div class="max-w-4xl mx-auto mb-8 bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
-        <h2 class="text-xl font-bold text-gray-700 mb-2">Layout CSS Grid</h2>
-        <ul class="list-disc ml-5 text-gray-600 text-sm">
+    <div class="max-w-4xl mx-auto mb-8 explanation-box p-6 rounded-lg shadow-md border-l-4">
+        <h2 class="text-xl font-bold mb-2">Layout CSS Grid</h2>
+        <ul class="list-disc ml-5 text-sm">
             <li>**Desktop:** Header 100% arriba. Sidebar y Main Content se dividen el espacio de abajo (1/4 y 3/4).</li>
             <li>**Móvil (Medida `md`):** Todos los elementos (`Header`, `Sidebar`, `Main`) se apilan uno debajo del otro y ocupan el 100% del ancho.</li>
             <li>Se usan tres colores distintos para diferenciar las áreas: Indigo, Esmeralda y Ámbar.</li>
@@ -166,9 +227,11 @@
 
             // Opcional: Cambiar color si pasamos el breakpoint de tablet/desktop (768px)
             if (width >= 768) {
-                widthDisplay.style.backgroundColor = '#1f8349'; // Verde oscuro
+                // Usamos la variable CSS para el color, pero la ajustamos si es necesario
+                // En este caso, dejamos que el CSS maneje el color mediante la variable --color-pill
+                widthDisplay.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--color-pill');
             } else {
-                widthDisplay.style.backgroundColor = '#2c3e50'; // Gris oscuro
+                widthDisplay.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--color-pill');
             }
         }
 
@@ -177,6 +240,36 @@
 
         // 2. Ejecutar cada vez que se redimensiona la ventana
         window.addEventListener('resize', updateScreenWidth);
+
+        // --- JAVASCRIPT: MODO OSCURO ---
+        const toggleButton = document.getElementById('dark-mode-toggle');
+        const body = document.body;
+        const icon = toggleButton.querySelector('i');
+
+        // Función para aplicar o quitar el modo oscuro
+        function toggleDarkMode() {
+            const isDarkMode = body.classList.toggle('dark-mode');
+            
+            // Cambiar el icono
+            if (isDarkMode) {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                toggleButton.style.backgroundColor = 'var(--color-sidebar)';
+            } else {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                toggleButton.style.backgroundColor = 'var(--color-header)';
+            }
+            
+            // Asegurarse de que el indicador de ancho de pantalla actualice su color
+            updateScreenWidth(); 
+        }
+
+        // Evento click para el botón
+        toggleButton.addEventListener('click', toggleDarkMode);
+
+        // Inicializar el estado de la píldora al cargar para que use la variable correcta
+        updateScreenWidth(); 
     </script>
 
 </body>
