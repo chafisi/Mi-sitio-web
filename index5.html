@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego Drag & Drop de Coincidencias</title>
+    <title>Juego Drag & Drop con Temporizador</title>
     
     <style>
         /* --- ESTILOS CSS --- */
@@ -19,7 +19,29 @@
 
         h1 {
             color: #2c3e50;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+
+        /* --- Estilo del Temporizador (NUEVO) --- */
+        .timer {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #e74c3c;
+            padding: 10px 20px;
+            border: 4px solid #e74c3c;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .timer.low {
+            color: #f39c12; /* Color de advertencia cuando queda poco */
+            border-color: #f39c12;
+        }
+        .timer.finished {
+            color: #c0392b;
+            border-color: #c0392b;
+            background-color: #fbecec;
         }
 
         .container {
@@ -72,7 +94,6 @@
             opacity: 0.7;
         }
 
-        /* Estilo de la Zona de Destino al arrastrar encima */
         .target-box.hovered {
             background-color: #d6eaf8;
             border-color: #2980b9;
@@ -87,12 +108,10 @@
             position: relative;
         }
 
-        /* Estilo de los elementos al arrastrar */
         .draggable-box:active {
             cursor: grabbing;
         }
         
-        /* Estilo del elemento que se está arrastrando */
         .dragging {
             opacity: 0.4;
             box-shadow: none;
@@ -109,14 +128,13 @@
         }
         
         .matched .draggable-box {
-            /* Estilo cuando el elemento draggable está dentro del target */
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: transparent;
-            color: white; /* Para que el texto sea visible */
+            color: white; 
             box-shadow: none;
             cursor: default;
         }
@@ -126,6 +144,9 @@
 <body>
 
     <h1>🎮 Juego de Coincidencias Drag & Drop 🎯</h1>
+    
+    <div id="timer" class="timer">60s</div>
+
     <p>Arrastra las cajas rojas sobre su letra correspondiente en la izquierda.</p>
 
     <div class="container">
@@ -154,9 +175,60 @@
         const draggableItems = document.querySelectorAll('.draggable-box');
         const dropTargets = document.querySelectorAll('.target-box');
         const messageDisplay = document.getElementById('message');
-
+        const timerElement = document.getElementById('timer');
+        const allDraggableElements = document.querySelectorAll('[draggable="true"]');
+        
         let draggedId = null;
+        let timeLeft = 60; // Tiempo en segundos (1 minuto)
+        let timerInterval;
 
+        // --- FUNCIONES DEL JUEGO ---
+
+        function initializeGame() {
+            // Reinicia el estado de los elementos arrastrables
+            allDraggableElements.forEach(item => {
+                item.draggable = true;
+            });
+            startTimer();
+        }
+
+        function startTimer() {
+            timerElement.classList.remove('finished');
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.innerText = `${timeLeft}s`;
+
+                if (timeLeft <= 10) {
+                    timerElement.classList.add('low'); // Advertencia de poco tiempo
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerElement.innerText = '0s';
+                    timerElement.classList.remove('low');
+                    timerElement.classList.add('finished');
+                    endGame(false); // Game Over
+                }
+            }, 1000);
+        }
+
+        function endGame(isWin) {
+            clearInterval(timerInterval);
+            
+            // Deshabilitar completamente el arrastre de todos los elementos
+            allDraggableElements.forEach(item => {
+                item.draggable = false;
+            });
+            
+            if (isWin) {
+                messageDisplay.innerText = "🎉 ¡Felicidades! ¡Has completado todas las coincidencias correctamente! 🎉";
+                messageDisplay.style.color = '#27ae60';
+            } else {
+                messageDisplay.innerText = "⏰ ¡TIEMPO AGOTADO! ¡Inténtalo de nuevo!";
+                messageDisplay.style.color = '#e74c3c';
+            }
+        }
+        
         // 1. Manejadores para Elementos Arrastrables
         draggableItems.forEach(item => {
             item.addEventListener('dragstart', dragStart);
@@ -164,13 +236,11 @@
         });
 
         function dragStart(e) {
-            // Guardamos el ID del elemento arrastrado
+            // Solo permitir arrastrar si el tiempo no ha terminado
+            if (timeLeft <= 0 || !e.target.draggable) return;
+            
             draggedId = e.target.id;
-            
-            // Usamos dataTransfer para almacenar el ID
             e.dataTransfer.setData('text/plain', draggedId);
-            
-            // Añadimos clase para efecto visual
             setTimeout(() => e.target.classList.add('dragging'), 0);
         }
 
@@ -187,14 +257,12 @@
         });
 
         function dragOver(e) {
-            // Impedir el comportamiento por defecto para permitir el drop
             e.preventDefault(); 
         }
 
         function dragEnter(e) {
             e.preventDefault();
-            // Evitar cambiar el estilo si ya está llena la caja
-            if (!e.target.classList.contains('matched')) {
+            if (timeLeft > 0 && !e.target.classList.contains('matched')) {
                 e.target.classList.add('hovered');
             }
         }
@@ -205,11 +273,11 @@
 
         function drop(e) {
             e.preventDefault();
-            const targetElement = e.currentTarget; // El div fijo donde se suelta
+            if (timeLeft <= 0) return; // No permitir drop si el tiempo se agotó
             
+            const targetElement = e.currentTarget; 
             targetElement.classList.remove('hovered');
 
-            // Obtenemos el ID del elemento arrastrado
             const data = e.dataTransfer.getData('text/plain');
             const draggedElement = document.getElementById(data);
 
@@ -220,35 +288,27 @@
             const targetLetter = targetElement.dataset.letter;
 
             if (draggedLetter === targetLetter) {
-                // ÉXITO: Coinciden
                 
-                // 1. Mover y estilizar el elemento arrastrado (para que se centre)
                 draggedElement.style.position = 'absolute';
                 draggedElement.style.margin = '0';
                 
-                // 2. Deshabilitar drag y drop
+                // Deshabilitar drag
                 draggedElement.draggable = false;
+                
                 targetElement.removeEventListener('drop', drop);
 
-                // 3. Estilizar la caja de destino como "matched"
                 targetElement.classList.add('matched');
-                targetElement.innerText = draggedLetter; // Mostramos la letra en el destino
-                
-                // 4. Quitar el elemento del área de arrastre original
-                draggedElement.parentNode.removeChild(draggedElement);
-
-                // 5. Feedback visual: Ocultar el texto del destino y añadir el elemento arrastrado
                 targetElement.innerText = '';
                 targetElement.appendChild(draggedElement);
                 draggedElement.classList.add('matched');
+                
+                messageDisplay.innerText = ""; // Limpiar mensaje de error
 
                 checkWinCondition();
                 
             } else {
-                // ERROR: No coinciden
                 messageDisplay.innerText = `❌ Error: '${draggedLetter}' no va en el destino de '${targetLetter}'!`;
                 
-                // Opcional: Añadir un efecto de error temporal (shake/flash)
                 targetElement.style.animation = 'shake 0.5s';
                 setTimeout(() => targetElement.style.animation = '', 500);
             }
@@ -258,10 +318,13 @@
         function checkWinCondition() {
             const matchedCount = document.querySelectorAll('.fixed-targets .matched').length;
             if (matchedCount === dropTargets.length) {
-                messageDisplay.innerText = "🎉 ¡Felicidades! ¡Has completado todas las coincidencias correctamente! 🎉";
-                messageDisplay.style.color = '#27ae60';
+                endGame(true); // Ganador
             }
         }
+
+        // --- INICIALIZACIÓN ---
+        window.onload = initializeGame;
+
     </script>
 
 </body>
