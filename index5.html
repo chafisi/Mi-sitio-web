@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego Drag & Drop con Temporizador</title>
+    <title>Juego Drag & Drop con Inicio por Interacción</title>
     
     <style>
         /* --- ESTILOS CSS --- */
@@ -21,8 +21,15 @@
             color: #2c3e50;
             margin-bottom: 20px;
         }
+        
+        .instruction {
+            color: #34495e;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
 
-        /* --- Estilo del Temporizador (NUEVO) --- */
+        /* --- Estilo del Temporizador --- */
         .timer {
             font-size: 3rem;
             font-weight: bold;
@@ -34,15 +41,8 @@
             background-color: white;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        .timer.low {
-            color: #f39c12; /* Color de advertencia cuando queda poco */
-            border-color: #f39c12;
-        }
-        .timer.finished {
-            color: #c0392b;
-            border-color: #c0392b;
-            background-color: #fbecec;
-        }
+        .timer.low { color: #f39c12; border-color: #f39c12; }
+        .timer.finished { color: #c0392b; border-color: #c0392b; background-color: #fbecec; }
 
         .container {
             display: flex;
@@ -94,28 +94,21 @@
             opacity: 0.7;
         }
 
-        .target-box.hovered {
-            background-color: #d6eaf8;
-            border-color: #2980b9;
-        }
-
-        /* --- Estilo de los Elementos Arrastrables --- */
+        /* --- Estilo de los Elementos Arrastrables BASE --- */
         .draggable-box {
             cursor: grab;
-            background-color: #e74c3c;
             color: white;
-            box-shadow: 0 5px #c0392b;
             position: relative;
         }
-
-        .draggable-box:active {
-            cursor: grabbing;
-        }
         
-        .dragging {
-            opacity: 0.4;
-            box-shadow: none;
-        }
+        /* --- 3 COLORES DISTINTOS (NUEVO) --- */
+        #drag-A { background-color: #3498db; box-shadow: 0 5px #2980b9; } /* Azul */
+        #drag-B { background-color: #e67e22; box-shadow: 0 5px #d35400; } /* Naranja */
+        #drag-C { background-color: #9b59b6; box-shadow: 0 5px #8e44ad; } /* Púrpura */
+
+
+        .draggable-box:active { cursor: grabbing; }
+        .dragging { opacity: 0.4; box-shadow: none; }
 
         /* --- Estilo de Coincidencia Exitosa --- */
         .matched {
@@ -128,17 +121,10 @@
         }
         
         .matched .draggable-box {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             background-color: transparent;
-            color: white; 
             box-shadow: none;
-            cursor: default;
         }
-
+        
     </style>
 </head>
 <body>
@@ -147,7 +133,9 @@
     
     <div id="timer" class="timer">60s</div>
 
-    <p>Arrastra las cajas rojas sobre su letra correspondiente en la izquierda.</p>
+    <p class="instruction" id="instruction-message">
+        Arrastra una pieza para iniciar el juego. Tienes 60 segundos.
+    </p>
 
     <div class="container">
         
@@ -175,30 +163,28 @@
         const draggableItems = document.querySelectorAll('.draggable-box');
         const dropTargets = document.querySelectorAll('.target-box');
         const messageDisplay = document.getElementById('message');
+        const instructionMessage = document.getElementById('instruction-message');
         const timerElement = document.getElementById('timer');
-        const allDraggableElements = document.querySelectorAll('[draggable="true"]');
+        const allDraggableElements = document.querySelectorAll('.draggable-box'); // Selector de clase para consistencia
         
         let draggedId = null;
-        let timeLeft = 60; // Tiempo en segundos (1 minuto)
+        let timeLeft = 60; 
         let timerInterval;
+        let gameStarted = false; // Bandera para controlar el inicio
 
         // --- FUNCIONES DEL JUEGO ---
 
-        function initializeGame() {
-            // Reinicia el estado de los elementos arrastrables
-            allDraggableElements.forEach(item => {
-                item.draggable = true;
-            });
-            startTimer();
-        }
-
         function startTimer() {
             timerElement.classList.remove('finished');
+            timerElement.classList.remove('low');
+            instructionMessage.innerText = "¡El tiempo corre! ¡A coincidir!";
+            messageDisplay.innerText = "";
+            
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerElement.innerText = `${timeLeft}s`;
 
-                if (timeLeft <= 10) {
+                if (timeLeft <= 10 && timeLeft > 0) {
                     timerElement.classList.add('low'); // Advertencia de poco tiempo
                 }
                 
@@ -218,13 +204,15 @@
             // Deshabilitar completamente el arrastre de todos los elementos
             allDraggableElements.forEach(item => {
                 item.draggable = false;
+                item.classList.remove('dragging');
+                item.style.cursor = 'default';
             });
             
             if (isWin) {
                 messageDisplay.innerText = "🎉 ¡Felicidades! ¡Has completado todas las coincidencias correctamente! 🎉";
                 messageDisplay.style.color = '#27ae60';
             } else {
-                messageDisplay.innerText = "⏰ ¡TIEMPO AGOTADO! ¡Inténtalo de nuevo!";
+                messageDisplay.innerText = "⏰ ¡TIEMPO AGOTADO! Recarga la página para volver a intentarlo.";
                 messageDisplay.style.color = '#e74c3c';
             }
         }
@@ -236,8 +224,14 @@
         });
 
         function dragStart(e) {
-            // Solo permitir arrastrar si el tiempo no ha terminado
             if (timeLeft <= 0 || !e.target.draggable) return;
+
+            // --- INICIO DE JUEGO AL PINCHAR (LÓGICA CLAVE) ---
+            if (!gameStarted) {
+                startTimer();
+                gameStarted = true;
+            }
+            // --- FIN LÓGICA CLAVE ---
             
             draggedId = e.target.id;
             e.dataTransfer.setData('text/plain', draggedId);
@@ -256,9 +250,7 @@
             target.addEventListener('drop', drop);
         });
 
-        function dragOver(e) {
-            e.preventDefault(); 
-        }
+        function dragOver(e) { e.preventDefault(); }
 
         function dragEnter(e) {
             e.preventDefault();
@@ -273,7 +265,7 @@
 
         function drop(e) {
             e.preventDefault();
-            if (timeLeft <= 0) return; // No permitir drop si el tiempo se agotó
+            if (timeLeft <= 0) return; 
             
             const targetElement = e.currentTarget; 
             targetElement.classList.remove('hovered');
@@ -289,32 +281,32 @@
 
             if (draggedLetter === targetLetter) {
                 
+                // 1. Posicionamiento final y deshabilitar arrastre
                 draggedElement.style.position = 'absolute';
                 draggedElement.style.margin = '0';
-                
-                // Deshabilitar drag
                 draggedElement.draggable = false;
                 
                 targetElement.removeEventListener('drop', drop);
 
+                // 2. Estilizar la caja de destino como "matched"
                 targetElement.classList.add('matched');
                 targetElement.innerText = '';
                 targetElement.appendChild(draggedElement);
                 draggedElement.classList.add('matched');
                 
-                messageDisplay.innerText = ""; // Limpiar mensaje de error
+                messageDisplay.innerText = "";
 
                 checkWinCondition();
                 
             } else {
                 messageDisplay.innerText = `❌ Error: '${draggedLetter}' no va en el destino de '${targetLetter}'!`;
                 
+                // Feedback visual de error
                 targetElement.style.animation = 'shake 0.5s';
                 setTimeout(() => targetElement.style.animation = '', 500);
             }
         }
         
-        // Función para revisar si el juego ha terminado
         function checkWinCondition() {
             const matchedCount = document.querySelectorAll('.fixed-targets .matched').length;
             if (matchedCount === dropTargets.length) {
@@ -323,8 +315,7 @@
         }
 
         // --- INICIALIZACIÓN ---
-        window.onload = initializeGame;
-
+        // Al cargar, el juego espera a que el usuario interactúe
     </script>
 
 </body>
