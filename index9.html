@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Efecto Cartas Apiladas (Solitario)</title>
+    <!-- Usamos Tailwind para clases utilitarias y estilos base -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Incluimos Font Awesome para el icono Sol/Luna -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ---------------------------------------------------- */
+        /* --- 1. DEFINICIÓN DE VARIABLES CSS Y TEMA CLARO --- */
+        /* ---------------------------------------------------- */
+        :root {
+            /* Colores de Fondo */
+            --bg-body: #f0f4f8;       /* Fondo general muy claro */
+            --bg-surface: #ffffff;    /* Fondo de contenedores */
+            --color-text: #1f2937;    /* Texto principal oscuro */
+
+            /* Colores de Tarjetas y UI (Reutilizados) */
+            --color-header: #4c51bf;  /* Indigo (Botón) */
+            --color-sidebar: #10b981; /* Emerald (Botón Dark Mode) */
+            --color-pill: #2c3e50;    /* Píldora de ancho */
+            
+            /* Colores de las 3 tarjetas */
+            --card-color-1: linear-gradient(135deg, #ffffff, #f7f7f7);
+            --card-color-2: linear-gradient(45deg, #6b46c1, #4c51bf);
+            --card-color-3: radial-gradient(circle at center, #fef08a 0%, #fcd34d 100%);
+        }
+
+        /* ---------------------------------------------------- */
+        /* --- 2. TEMA OSCURO (Sobreescribe variables) --- */
+        /* ---------------------------------------------------- */
+        body.dark-mode {
+            /* Inversión de Fondos y Textos */
+            --bg-body: #111827;       /* Fondo oscuro profundo */
+            --bg-surface: #1f2937;    /* Fondo de contenedores (Gris oscuro) */
+            --color-text: #e5e7eb;    /* Texto claro */
+            
+            /* Ajuste del color de la tarjeta 1 en modo oscuro */
+            --card-color-1: linear-gradient(135deg, var(--bg-surface), #2a3447); 
+            --color-pill: #10b981;    /* Píldora de ancho brillante */
+        }
+        
+        /* Aplicar las variables al body y a elementos comunes */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--color-text); 
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .explanation-box {
+            background-color: var(--bg-surface);
+            border-color: var(--color-header); 
+        }
+        
+        .main-header h1, .main-header p {
+            color: var(--color-text);
+        }
+
+        /* ---------------------------------------------------- */
+        /* --- ESTILOS DE PILA DE CARTAS (STACKING) --- */
+        /* ---------------------------------------------------- */
+        .stack-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alineación superior para dejar espacio al header */
+            padding-top: 5rem;
+            min-height: 700px; 
+            perspective: 1000px; /* Perspectiva sutil para efecto 3D */
+            overflow: hidden; /* Evita barras de desplazamiento al mover las cartas */
+        }
+
+        .card-stack {
+            position: relative;
+            width: 350px;
+            height: 450px;
+            transition: transform 0.5s ease;
+        }
+
+        .card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            transform-origin: bottom center;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.5s, opacity 0.3s;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 1. Definición de las 3 tarjetas */
+        #card-1 {
+            z-index: 3;
+            background: var(--card-color-1);
+            color: var(--color-text);
+            /* Posición inicial: visible, sin rotación */
+            transform: translate(0px, 0px) rotate(0deg); 
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        #card-2 {
+            z-index: 2;
+            background: var(--card-color-2);
+            color: white;
+            /* Posición inicial: ligeramente desplazada y rotada */
+            transform: translate(15px, 0px) rotate(3deg); 
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        #card-3 {
+            z-index: 1;
+            background: var(--card-color-3);
+            color: #713f12; /* Texto marrón */
+            /* Posición inicial: más desplazada y rotada */
+            transform: translate(30px, 0px) rotate(6deg); 
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 2. Efecto al pasar el ratón por el contenedor (Hover en la pila) */
+        .card-stack:hover #card-1 {
+            transform: translate(-300px, 0px) rotate(-10deg); /* Se desliza fuera a la izquierda */
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+        .card-stack:hover #card-2 {
+            transform: translate(-150px, 0px) rotate(-5deg); /* Se desliza a la mitad */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        .card-stack:hover #card-3 {
+            transform: translate(0px, 0px) rotate(0deg); /* Se queda centrada y completamente visible */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-content h3 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* ---------------------------------------------------- */
+        /* --- ESTILOS DE UI (Modo Oscuro, Píldora) --- */
+        /* ---------------------------------------------------- */
+        #screen-width-display {
+            position: fixed; /* Fijo para que no se mueva con el scroll */
+            top: 20px;
+            right: 20px;
+            background-color: var(--color-pill); 
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px; 
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+
+        #dark-mode-toggle {
+            position: fixed; /* Fijo para que no se mueva con el scroll */
+            top: 20px;
+            left: 20px;
+            background-color: var(--color-header);
+            color: white;
+            padding: 0.6rem 0.8rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+            transition: background-color 0.3s, transform 0.1s;
+            border: none;
+            outline: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+        #dark-mode-toggle:hover { opacity: 0.9; }
+        #dark-mode-toggle:active { transform: scale(0.95); }
+
+    </style>
+</head>
+<body>
+    <!-- BOTÓN DE MODO OSCURO -->
+    <button id="dark-mode-toggle" aria-label="Toggle Dark Mode">
+        <i class="fas fa-sun"></i> <!-- Icono inicial de sol (modo claro) -->
+    </button>
+    
+    <!-- CAJA DE ANCHO DE PANTALLA -->
+    <div id="screen-width-display">
+        Ancho: 0px
+    </div>
+
+    <header class="p-10 main-header">
+        <h1 class="text-4xl font-extrabold text-center">
+            Efecto Solitario con CSS Transform y Hover
+        </h1>
+        <p class="text-center mt-2 font-semibold text-gray-500">
+            Pasa el ratón por encima de la pila para ver cómo las cartas se deslizan y revelan.
+        </p>
+    </header>
+
+    <!-- EXPLICACIÓN DEL EJEMPLO -->
+    <div class="max-w-4xl mx-auto mb-8 explanation-box p-6 rounded-lg shadow-md border-l-4">
+        <h2 class="text-xl font-bold mb-2">CSS `transform` en Acción</h2>
+        <ul class="list-disc ml-5 text-sm">
+            <li>Las tarjetas se posicionan con `position: absolute;` y tienen diferentes `z-index` (3, 2, 1) para el apilamiento.</li>
+            <li>El apilamiento inicial se logra con `transform: translate()` y `rotate()`.</li>
+            <li>El efecto de deslizamiento se aplica a **todas las tarjetas** cuando se hace `hover` en el contenedor padre (`.card-stack:hover`), lo que permite que se muevan de forma coordinada.</li>
+        </ul>
+    </div>
+
+    <!-- ESTRUCTURA PRINCIPAL DE CARTAS -->
+    <div class="stack-wrapper">
+        <div class="card-stack">
+            
+            <!-- TARJETA 1 (Frontal) -->
+            <div id="card-1" class="card">
+                <div class="card-content">
+                    <h3>Tarjeta 1: Elevación Suave</h3>
+                    <p class="text-sm mt-3">Esta es la tarjeta superior. Al hacer hover en la pila, se desliza completamente a la izquierda para revelar las otras dos.</p>
+                    <p class="text-xs mt-4 font-mono">z-index: 3</p>
+                    <p class="text-xs font-mono">box-shadow: 0 15px 30px...</p>
+                </div>
+            </div>
+            
+            <!-- TARJETA 2 (Media) -->
+            <div id="card-2" class="card">
+                <div class="card-content">
+                    <h3 class="text-white">Tarjeta 2: Profundidad Vibrante</h3>
+                    <p class="text-sm mt-3 opacity-80">La tarjeta del medio. Al hacer hover, se desliza a la mitad, quedando entre la primera y la tercera.</p>
+                    <p class="text-xs mt-4 font-mono opacity-80">z-index: 2</p>
+                    <p class="text-xs font-mono opacity-80">background: linear-gradient(45deg...)</p>
+                </div>
+            </div>
+            
+            <!-- TARJETA 3 (Trasera) -->
+            <div id="card-3" class="card">
+                <div class="card-content">
+                    <h3>Tarjeta 3: Efecto Foco Radial</h3>
+                    <p class="text-sm mt-3">La tarjeta trasera. Al hacer hover, se reposiciona al centro, quedando totalmente visible para su lectura.</p>
+                    <p class="text-xs mt-4 font-mono">z-index: 1</p>
+                    <p class="text-xs font-mono">background: radial-gradient(circle...)</p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // --- JAVASCRIPT: INDICADOR DE ANCHO DE PANTALLA ---
+
+        const widthDisplay = document.getElementById('screen-width-display');
+
+        function updateScreenWidth() {
+            const width = window.innerWidth;
+            widthDisplay.innerText = `Ancho: ${width}px`;
+
+            // Usamos la variable CSS para el color, independientemente del breakpoint
+            widthDisplay.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--color-pill');
+        }
+
+        window.onload = updateScreenWidth;
+        window.addEventListener('resize', updateScreenWidth);
+
+        // --- JAVASCRIPT: MODO OSCURO ---
+        const toggleButton = document.getElementById('dark-mode-toggle');
+        const body = document.body;
+        const icon = toggleButton.querySelector('i');
+
+        // Función para aplicar o quitar el modo oscuro
+        function toggleDarkMode() {
+            const isDarkMode = body.classList.toggle('dark-mode');
+            
+            // Cambiar el icono y el color del botón
+            if (isDarkMode) {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                toggleButton.style.backgroundColor = 'var(--color-sidebar)';
+            } else {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                toggleButton.style.backgroundColor = 'var(--color-header)';
+            }
+            
+            // Asegurarse de que el indicador de ancho de pantalla actualice su color
+            updateScreenWidth(); 
+        }
+
+        toggleButton.addEventListener('click', toggleDarkMode);
+
+        // Inicializar el estado de la píldora al cargar para que use la variable correcta
+        updateScreenWidth(); 
+    </script>
+
+</body>
+</html>
