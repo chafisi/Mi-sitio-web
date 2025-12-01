@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplos de Gradientes y Sombras</title>
+    <!-- Usamos Tailwind para una estética limpia y moderna -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Definición de la fuente Inter para un look moderno */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Fondo muy suave */
+        }
+        
+        /* Estilos específicos para los ejemplos */
+        
+        /* 1. Text Shadow: Títulos y Botones */
+        .text-shadow-example h2 {
+            /* Shadow suave, ligeramente descentrada */
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4); 
+            color: #1f2937; /* Gris oscuro para el texto principal */
+        }
+
+        /* 2. Box Shadow: Capas Elevadas (Neumorfismo Suave) */
+        .box-shadow-example {
+            /* Sombra principal suave y difusa (la que da la elevación) */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1),
+                        /* Sombra secundaria para un efecto de borde o profundidad */
+                        0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+
+        .box-shadow-example:hover {
+            /* Al pasar el ratón, aumentamos la sombra para simular que "flota" más */
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15),
+                        0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 3. Linear Gradient: Fondos y Banners */
+        .linear-gradient-example {
+            /* Gradiente de izquierda a derecha con colores modernos y brillantes */
+            background: linear-gradient(to right, #4c51bf, #6b46c1); /* Índigo a Púrpura */
+            color: white;
+        }
+        
+        /* 4. Radial Gradient: Botón Central o Elemento Destacado */
+        .radial-gradient-btn {
+            /* Gradiente desde el centro hacia afuera (tipo luz o halo) */
+            background: radial-gradient(circle at center, #38bdf8, #0ea5e9); /* Azul claro a azul oscuro */
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.7); /* Sombra que emite luz */
+            transition: all 0.3s;
+        }
+
+        .radial-gradient-btn:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+    </style>
+</head>
+<body class="p-10">
+
+    <header class="mb-12">
+        <h1 class="text-4xl font-extrabold text-gray-800 text-center">
+            Técnicas Modernas de Diseño Visual (Sombras y Gradientes)
+        </h1>
+        <p class="text-center text-gray-500 mt-2">
+            Ejemplos prácticos para crear profundidad, elevación y fondos ligeros.
+        </p>
+    </header>
+
+    <div class="space-y-10 max-w-4xl mx-auto">
+        
+        <!-- EJEMPLO 1: TEXT-SHADOW -->
+        <div class="p-6 bg-white rounded-xl shadow-lg border border-gray-100">
+            <div class="text-shadow-example">
+                <h2 class="text-3xl font-bold mb-4">
+                    1. Text-Shadow (Sombra de Texto)
+                </h2>
+            </div>
+            
+            <p class="text-lg text-gray-700 mb-4">
+                La sombra de texto se usa para dar énfasis y "elevar" títulos, haciéndolos más legibles sobre fondos complejos o dándoles un efecto de profundidad suave.
+            </p>
+            
+            <div class="bg-gray-100 p-6 rounded-lg">
+                <h3 class="text-2xl font-extrabold text-blue-600 text-center" style="text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);">
+                    TÍTULO CON SOMBRA FUERTE Y DEFINIDA
+                </h3>
+                <p class="text-center mt-2 text-sm text-gray-500">
+                    <span class="font-mono">CSS: text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- EJEMPLO 2: BOX-SHADOW (CAPAS ELEVADAS) -->
+        <div class="p-6 bg-white rounded-xl shadow-lg border border-gray-100">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">
+                2. Box-Shadow (Sombras Suaves / Elevación)
+            </h2>
+            
+            <p class="text-lg text-gray-700 mb-6">
+                Las sombras de caja suaves elevan la percepción de un elemento, simulando que es una **capa** o una **tarjeta flotante** (efecto Neumorfismo o Skeumorfismo Suave).
+            </p>
+
+            <div class="flex justify-around items-center">
+                
+                <!-- Tarjeta de ejemplo (Box Shadow) -->
+                <div class="box-shadow-example bg-white p-8 rounded-xl w-64 text-center">
+                    <h3 class="font-bold text-xl text-gray-800 mb-2">Tarjeta Flotante</h3>
+                    <p class="text-sm text-gray-600">
+                        Esta caja tiene dos sombras combinadas para darle profundidad.
+                    </p>
+                    <p class="text-xs mt-3 text-gray-400 font-mono">
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.1), 0 2px 5px rgba(0,0,0,0.05);
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- EJEMPLO 3: GRADIENTES (LINEAR Y RADIAL) -->
+        <div class="p-6 bg-white rounded-xl shadow-lg border border-gray-100">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">
+                3. Background Gradients
+            </h2>
+            
+            <p class="text-lg text-gray-700 mb-6">
+                Los gradientes reemplazan las imágenes de fondo, siendo ligeros, adaptables a cualquier pantalla y modificables en tiempo real.
+            </p>
+            
+            <div class="space-y-6">
+                
+                <!-- Ejemplo Linear Gradient (Banner) -->
+                <div class="linear-gradient-example p-8 rounded-xl">
+                    <h3 class="text-2xl font-bold mb-1">LINEAR GRADIENT (Banner)</h3>
+                    <p class="text-sm opacity-90">
+                        El color cambia de izquierda (índigo) a derecha (púrpura). Ideal para banners largos o barras de navegación.
+                    </p>
+                    <p class="text-xs mt-2 font-mono opacity-70">
+                        background: linear-gradient(to right, #4c51bf, #6b46c1);
+                    </p>
+                </div>
+
+                <!-- Ejemplo Radial Gradient (Botón/Icono) -->
+                <div class="flex justify-center">
+                    <button class="radial-gradient-btn px-6 py-3 rounded-full text-white font-semibold text-lg hover:shadow-xl">
+                        RADIAL GRADIENT (Botón Central)
+                    </button>
+                </div>
+                <p class="text-center text-sm text-gray-500">
+                    El color irradia desde el centro hacia afuera, creando un efecto de "luz" o "foco".
+                    <br>
+                    <span class="font-mono text-xs">background: radial-gradient(circle at center, #38bdf8, #0ea5e9);</span>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
