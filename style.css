@@ -1,131 +1,64 @@
-/* ---------------------------------------------------- */
-/* --- 1. DEFINICIÓN DE VARIABLES CSS Y TEMA CLARO --- */
-/* ---------------------------------------------------- */
-:root {
-    /* Colores Base */
-    --bg-body: #f0f4f8;       /* Fondo general muy claro */
-    --bg-surface: #ffffff;    /* Fondo de contenedores (Tarjetas) */
-    --color-text: #1f2937;    /* Texto principal oscuro */
-    --color-primary: #4c51bf; /* Indigo (Botones, Iconos) */
-    --color-secondary: #10b981; /* Emerald (Éxito, Valoración) */
-    --color-pill: #2c3e50;    /* Píldora de ancho */
-}
+/* -------------------------------------------------------------------------- */
+/* BASE STYLES & TAILWIND COMPONENT STYLES */
+/* -------------------------------------------------------------------------- */
 
-/* ---------------------------------------------------- */
-/* --- 2. TEMA OSCURO (Sobreescribe variables) --- */
-/* ---------------------------------------------------- */
-body.dark-mode {
-    --bg-body: #111827;       /* Fondo oscuro profundo */
-    --bg-surface: #1f2937;    /* Fondo de contenedores (Gris oscuro) */
-    --color-text: #e5e7eb;    /* Texto claro */
-    --color-primary: #8096ff; /* Indigo más claro para contraste */
-    --color-secondary: #34d399; /* Emerald más claro */
-    --color-pill: #10b981;    
-}
-
-/* Aplicación de variables */
+/* Fuente base para la aplicación */
 body {
     font-family: 'Inter', sans-serif;
-    background-color: var(--bg-body);
-    color: var(--color-text); 
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    transition: background-color 0.3s, color 0.3s;
+    @apply bg-gray-50 text-gray-900 transition-colors duration-300;
 }
 
-/* Estilo para los botones principales y enlaces */
+/* Modo oscuro */
+.dark body {
+    @apply bg-gray-900 text-gray-100;
+}
+
+/* Estilo principal de botón */
 .btn-primary {
-    background-color: var(--color-primary);
-    color: white;
-    border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
-    transition: opacity 0.2s;
-}
-.btn-primary:hover {
-    opacity: 0.9;
+    @apply px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 ease-in-out flex items-center justify-center;
 }
 
-/* ---------------------------------------------------- */
-/* --- ESTILOS ESPECÍFICOS DE TARJETAS --- */
-/* ---------------------------------------------------- */
+.btn-secondary {
+    @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-lg shadow-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition duration-150 ease-in-out flex items-center justify-center;
+}
+
+/* Estilo para las tarjetas de evento */
 .card-container {
-    /* Layout del cuerpo de la tarjeta */
-    background-color: var(--bg-surface);
-    border-radius: 0.75rem;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.3s;
-}
-
-.card-container:hover {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden transition transform hover:shadow-xl hover:-translate-y-1 cursor-pointer border border-gray-100 dark:border-gray-700;
 }
 
 .card-image {
-    width: 100%;
-    height: 150px; /* Altura fija para la imagen */
-    object-fit: cover;
+    @apply w-full h-40 object-cover;
 }
 
-/* Ajuste para el texto en modo oscuro */
-body.dark-mode .card-content {
-    color: var(--color-text); /* Asegura que el texto en la tarjeta oscura sea claro */
-}
+/* -------------------------------------------------------------------------- */
+/* ESTILOS DE UTILIDAD Y MÓVIL */
+/* -------------------------------------------------------------------------- */
 
-/* ---------------------------------------------------- */
-/* --- UTILIDADES DE UI (Modo Oscuro, Píldora) --- */
-/* ---------------------------------------------------- */
-#screen-width-display, #dark-mode-toggle {
-    position: fixed; 
-    z-index: 1000;
-}
-
-#screen-width-display {
-    top: 20px;
-    right: 20px;
-    background-color: var(--color-pill); 
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 9999px; 
-    font-size: 0.9rem;
-    font-weight: 500;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-#dark-mode-toggle {
-    top: 20px;
-    left: 20px;
-    background-color: var(--color-primary);
-    color: white;
-    padding: 0.6rem 0.8rem;
-    border-radius: 9999px;
-    cursor: pointer;
-    font-size: 1.2rem;
-    line-height: 1;
-    transition: background-color 0.3s, transform 0.1s;
-    border: none;
-    outline: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-#dark-mode-toggle:hover { opacity: 0.9; }
-#dark-mode-toggle:active { transform: scale(0.95); }
-
-/* FOOTER de Navegación (Fijo en móvil) */
+/* Navegación fija en móvil */
 .mobile-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: var(--bg-surface);
-    border-top: 1px solid var(--bg-body);
-    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.05);
-    z-index: 999;
+    @apply fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-xl sm:hidden z-20;
 }
 
-/* Ocultar el footer móvil en pantallas grandes */
-@media (min-width: 640px) { /* Tailwind sm: breakpoint */
-    .mobile-footer {
-        display: none;
-    }
+/* Botón de toggle de modo oscuro */
+#dark-mode-toggle {
+    @apply fixed top-4 right-4 z-50 p-3 rounded-full shadow-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600;
+}
+#dark-mode-toggle i {
+    @apply text-xl text-gray-800 dark:text-white;
+}
+
+/* Estilo para el campo de selección (dropdown) */
+select {
+    /* Oculta la flecha nativa para un diseño más limpio */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* Añade padding a la derecha para el espacio de la flecha personalizada */
+    @apply pr-8;
+}
+
+/* Flecha personalizada para el select */
+select::-ms-expand {
+    display: none;
 }
