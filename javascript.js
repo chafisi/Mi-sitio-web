@@ -1,424 +1,511 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { 
-    getAuth, 
-    signInAnonymously, 
-    signInWithCustomToken, 
-    onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { 
-    getFirestore, 
-    collection, 
-    doc, 
-    onSnapshot, 
-    query, 
-    where, 
-    writeBatch
-} from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, writeBatch, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// --- 1. CONFIGURACIÓN E INICIALIZACIÓN DE FIREBASE ---
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+// -----------------------------------------------------------------------------
+// VARIABLES GLOBALES (Configuración del entorno Canvas)
+// -----------------------------------------------------------------------------
+// El ID de la aplicación para aislar los datos en Firestore
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-ocioplus-app-id';
+// Configuración de Firebase
+const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+// Token de autenticación inicial
 const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-let app;
-let db;
-let auth;
-let userId = null;
-let isAuthReady = false;
+let app, db, auth;
+let currentUserId = 'N/A';
+let isAuthenticated = false;
+let currentView = 'all'; // 'all' o 'agenda'
+let allEventsCache = [];
+let userAgendaCache = {}; // { eventId: true/false }
 
-// Elementos del DOM
-const eventsGrid = document.getElementById('events-grid');
-const loadingMessage = document.getElementById('loading-message');
-const authStatusBtn = document.getElementById('auth-status-btn');
-const userIdDisplay = document.getElementById('user-id-display');
-const firestoreStatusDisplay = document.getElementById('firestore-status');
-const seedDataBtn = document.getElementById('seed-data-btn');
-const cityFilter = document.getElementById('city-filter');
+// -----------------------------------------------------------------------------
+// DATOS DE EJEMPLO PARA INICIALIZAR LA BBDD
+// -----------------------------------------------------------------------------
+const MOCK_EVENTS = [
+    {
+        name: "Concierto Rock 'La Última Ronda'",
+        date: "2025-05-18",
+        time: "21:00",
+        city: "Madrid",
+        description: "Un tributo épico a las leyendas del rock español de los 80 y 90.",
+        image: "https://placehold.co/400x200/4f46e5/ffffff?text=CONCIERTO+ROCK",
+        price: 25.00
+    },
+    {
+        name: "Festival de Tapas y Cerveza Artesana",
+        date: "2025-06-01",
+        time: "12:00",
+        city: "Alicante",
+        description: "Prueba las mejores tapas gourmet maridadas con cervezas locales.",
+        image: "https://placehold.co/400x200/10b981/ffffff?text=FESTIVAL+TAPAS",
+        price: 10.00
+    },
+    {
+        name: "Taller de Robótica para Niños",
+        date: "2025-05-25",
+        time: "17:30",
+        city: "Ibi",
+        description: "Aprende a construir y programar tu propio robot en un ambiente divertido.",
+        image: "https://placehold.co/400x200/f59e0b/ffffff?text=ROBOTICA",
+        price: 45.00
+    },
+    {
+        name: "Exposición de Arte Moderno 'Contrastes'",
+        date: "2025-07-10",
+        time: "10:00",
+        city: "Elche",
+        description: "Una colección que explora la dualidad de la vida contemporánea a través del color.",
+        image: "https://placehold.co/400x200/ef4444/ffffff?text=ARTE+MODERNO",
+        price: 8.50
+    },
+    {
+        name: "Clase Abierta de Yoga al Amanecer",
+        date: "2025-05-19",
+        time: "07:00",
+        city: "Madrid",
+        description: "Comienza el día con energía y paz en este retiro urbano de yoga.",
+        image: "https://placehold.co/400x200/6366f1/ffffff?text=YOGA+MADRID",
+        price: 15.00
+    }
+];
+
+// -----------------------------------------------------------------------------
+// REFERENCIAS Y UTILIDADES DEL DOM
+// -----------------------------------------------------------------------------
+const dom = {
+    authStatusBtn: document.getElementById('auth-status-btn'),
+    userIdDisplay: document.getElementById('user-id-display'),
+    firestoreStatus: document.getElementById('firestore-status'),
+    eventsGrid: document.getElementById('events-grid'),
+    loadingMessage: document.getElementById('loading-message'),
+    seedDataBtn: document.getElementById('seed-data-btn'),
+    viewAllBtn: document.getElementById('view-all-btn'),
+    viewAgendaBtn: document.getElementById('view-agenda-btn'),
+    cityFilter: document.getElementById('city-filter'),
+    darkModeToggle: document.getElementById('dark-mode-toggle'),
+    screenWidthDisplay: document.getElementById('screen-width-display'),
+    modalContainer: document.getElementById('modal-container'),
+    modalTitle: document.getElementById('modal-title'),
+    modalBody: document.getElementById('modal-body'),
+    modalCloseBtn: document.getElementById('modal-close-btn')
+};
 
 /**
- * Renderiza la estrella de rating basada en la puntuación.
- * @param {number} rating - Puntuación de 0 a 5.
- * @returns {string} HTML del icono.
+ * Muestra un modal de mensaje al usuario (sustituto de alert()).
+ * @param {string} title Título del mensaje.
+ * @param {string} body Contenido del mensaje.
+ * @param {boolean} isError Si es true, el modal se muestra con un estilo de error.
  */
-function renderRatingIcon(rating) {
-    const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 >= 0.5;
-    let starsHtml = '';
-
-    for (let i = 0; i < fullStars; i++) {
-        starsHtml += '<i class="fas fa-star mr-0.5"></i>';
-    }
-    if (halfStar) {
-        starsHtml += '<i class="fas fa-star-half-alt mr-0.5"></i>';
-    }
-    // Rellena con estrellas vacías hasta 5 para consistencia visual
-    for (let i = 0; i < 5 - Math.ceil(rating); i++) {
-        starsHtml += '<i class="far fa-star mr-0.5"></i>';
-    }
-
-    return starsHtml;
-}
-
-/**
- * Genera el HTML de una tarjeta de evento.
- * @param {Object} event - Objeto del evento de Firestore.
- * @returns {string} HTML de la tarjeta.
- */
-function createEventCard(event) {
-    // Aseguramos que la fecha sea un objeto Date para formatear
-    let date;
-    try {
-        // Intenta parsear la fecha de tu formato YYYY-MM-DD
-        date = new Date(event.date);
-    } catch (e) {
-        // Fallback si la fecha no es válida
-        date = new Date();
-    }
+function showModal(title, body, isError = false) {
+    dom.modalTitle.textContent = title;
+    dom.modalBody.textContent = body;
     
-    const formattedDate = date.toLocaleDateString('es-ES', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-    });
-
-    // Usa una imagen de placeholder si la URL es null o no válida
-    const safeImageUrl = event.imageUrl && event.imageUrl.startsWith('http') 
-        ? event.imageUrl 
-        : `https://placehold.co/600x400/4c51bf/ffffff?text=${encodeURIComponent(event.title)}`;
-
-    const priceText = event.minPrice > 0 ? `${event.minPrice}€` : 'Gratis';
-    const ratingHtml = renderRatingIcon(event.rating);
-
-    return `
-        <div class="card-container" data-id="${event.id}">
-            <!-- Usamos onerror para manejar las imágenes de Google Drive que a veces fallan al cargar directamente -->
-            <img src="${safeImageUrl}" alt="Imagen del evento: ${event.title}" class="card-image" onerror="this.onerror=null; this.src='https://placehold.co/600x400/4c51bf/ffffff?text=Imagen+No+Disponible'">
-            <div class="card-content p-4">
-                <!-- Título y Categoría -->
-                <h4 class="text-lg font-bold mb-1">${event.title}</h4>
-                <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-2">${event.category}</p>
-                <!-- Descripción -->
-                <p class="text-gray-500 dark:text-gray-400 text-sm mb-3 line-clamp-2" title="${event.description}">
-                    ${event.description}
-                </p>
-                <!-- Valoración | Precio | Ciudad -->
-                <div class="flex justify-between items-center text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
-                    <!-- Rating -->
-                    <span class="flex items-center text-green-600 dark:text-green-400 font-bold" title="${event.reviews} reseñas">
-                        ${ratingHtml} ${event.rating.toFixed(1)}
-                    </span>
-                    <!-- Precio -->
-                    <span class="font-bold text-indigo-600 dark:text-indigo-400">
-                        ${priceText}
-                    </span>
-                    <!-- Ciudad -->
-                    <span class="text-gray-500 dark:text-gray-400">
-                        <i class="fas fa-city mr-1"></i> ${event.city}
-                    </span>
-                </div>
-                <!-- Fecha -->
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    <i class="fas fa-calendar-alt mr-1"></i> ${formattedDate}
-                </p>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Renderiza la lista de eventos en el grid.
- * @param {Array<Object>} events - Array de documentos de eventos.
- */
-function renderEvents(events) {
-    if (loadingMessage) loadingMessage.style.display = 'none';
-
-    if (events.length === 0) {
-        eventsGrid.innerHTML = `
-            <p class="col-span-full text-center text-gray-500 dark:text-gray-400 p-8 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                <i class="fas fa-box-open mr-2"></i> No se encontraron eventos en esta ciudad.
-            </p>`;
-        
-        // Muestra el botón de inicializar si no hay datos *y* no se está filtrando
-        if (seedDataBtn && cityFilter.value === "") seedDataBtn.style.display = 'block';
-        else if (seedDataBtn) seedDataBtn.style.display = 'none';
-
-        return;
+    // Aplicar estilos de error si es necesario
+    if (isError) {
+        dom.modalTitle.classList.remove('text-indigo-600');
+        dom.modalTitle.classList.add('text-red-600');
+        dom.modalCloseBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+        dom.modalCloseBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+    } else {
+        dom.modalTitle.classList.remove('text-red-600');
+        dom.modalTitle.classList.add('text-indigo-600');
+        dom.modalCloseBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+        dom.modalCloseBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
     }
 
-    // Oculta el botón de inicializar si hay datos
-    if (seedDataBtn) seedDataBtn.style.display = 'none';
-
-    // Ordenar los eventos por fecha (más cercanos primero) antes de renderizar (en memoria)
-    const sortedEvents = events.sort((a, b) => new Date(a.date) - new Date(b.date));
-    
-    eventsGrid.innerHTML = sortedEvents.map(createEventCard).join('');
+    dom.modalContainer.classList.remove('hidden');
+    dom.modalContainer.classList.add('flex');
 }
 
+// Oculta el modal al hacer clic en el botón de cerrar
+dom.modalCloseBtn.addEventListener('click', () => {
+    dom.modalContainer.classList.remove('flex');
+    dom.modalContainer.classList.add('hidden');
+});
 
-// --- 2. LÓGICA DE FIREBASE Y DATA FETCHING ---
+// -----------------------------------------------------------------------------
+// FUNCIONES DE FIREBASE Y AUTHENTICATION
+// -----------------------------------------------------------------------------
 
 /**
- * Inicializa Firebase y configura la autenticación.
+ * Inicializa Firebase y configura la autenticación del usuario.
  */
-async function initializeFirebaseAndAuth() {
+async function initializeFirebase() {
     try {
+        // Establecer el nivel de log a Debug (útil para el desarrollo en canvas)
+        setLogLevel('Debug');
+
         app = initializeApp(firebaseConfig);
         db = getFirestore(app);
         auth = getAuth(app);
+        
+        // Usar persistencia de sesión para mantener el estado de autenticación
+        await setPersistence(auth, browserSessionPersistence);
 
-        // Intenta iniciar sesión con el token personalizado o de forma anónima
-        if (initialAuthToken) {
-            await signInWithCustomToken(auth, initialAuthToken);
-        } else {
-            await signInAnonymously(auth);
-        }
+        // Actualizar el estado de la conexión a Firestore en la UI
+        dom.firestoreStatus.innerHTML = '<i class="fas fa-database mr-1"></i> Estado: Conectado';
 
-        // Listener de estado de autenticación
+        // Intentar iniciar sesión con el token personalizado o anónimamente
+        await authenticateUser();
+
+        // Configurar el listener de autenticación
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                userId = user.uid;
-                isAuthReady = true;
-                if (authStatusBtn) {
-                    authStatusBtn.innerHTML = `<i class="fas fa-user-check mr-2"></i> Sesión Activa`;
-                    authStatusBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-                    authStatusBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-                }
-                if (userIdDisplay) userIdDisplay.textContent = userId;
+                currentUserId = user.uid;
+                isAuthenticated = true;
+                updateAuthUI();
                 
                 // Una vez autenticado, comenzamos a escuchar los datos
-                setupFirestoreListener();
+                startFirestoreListeners();
+
             } else {
-                userId = 'ANONYMOUS';
-                isAuthReady = true;
-                if (authStatusBtn) {
-                    authStatusBtn.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Iniciar Sesión`;
-                    authStatusBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                    authStatusBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
-                }
-                if (userIdDisplay) userIdDisplay.textContent = 'Anonimo';
-                
-                // Si la autenticación falla, mostramos mensaje
-                if (loadingMessage) loadingMessage.textContent = 'Error de autenticación. Intentando recargar datos...';
+                currentUserId = 'N/A';
+                isAuthenticated = false;
+                updateAuthUI();
+                // Limpiar la interfaz si no hay usuario
+                dom.eventsGrid.innerHTML = '';
+                dom.loadingMessage.textContent = 'Inicia sesión para ver tu agenda.';
+                dom.loadingMessage.classList.remove('hidden');
             }
+            dom.loadingMessage.classList.add('hidden');
         });
 
     } catch (error) {
-        console.error("Error al inicializar Firebase o autenticar:", error);
-        if (loadingMessage) loadingMessage.textContent = `Error crítico al cargar: ${error.message}`;
+        console.error("Error al inicializar Firebase:", error);
+        dom.firestoreStatus.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> Error de Conexión';
+        showModal("Error de Inicialización", "No se pudo conectar a Firebase. Revisa la consola para más detalles.", true);
     }
 }
 
 /**
- * Configura el listener de Firestore para la colección de eventos.
+ * Maneja el proceso de autenticación.
  */
-function setupFirestoreListener() {
-    if (!db || !isAuthReady) return;
-
-    // Ruta de la colección: /artifacts/{appId}/public/data/events
-    const eventsCollectionPath = `artifacts/${appId}/public/data/events`;
-    const eventsColRef = collection(db, eventsCollectionPath);
-
-    // Configuración de la consulta: sin orderBy para evitar errores de índice
-    let eventsQuery = eventsColRef;
-    
-    // Si se selecciona un filtro de ciudad, añadimos la condición
-    const selectedCity = cityFilter.value;
-    if (selectedCity && selectedCity !== "") {
-        eventsQuery = query(eventsQuery, where("city", "==", selectedCity));
-        if (firestoreStatusDisplay) firestoreStatusDisplay.textContent = `Filtrando por ${selectedCity}`;
-    } else {
-        if (firestoreStatusDisplay) firestoreStatusDisplay.textContent = `Cargando todos los eventos`;
+async function authenticateUser() {
+    try {
+        if (initialAuthToken) {
+            await signInWithCustomToken(auth, initialAuthToken);
+            console.log("Autenticación exitosa con token personalizado.");
+        } else {
+            // Si no hay token personalizado, usa el inicio de sesión anónimo
+            await signInAnonymously(auth);
+            console.log("Autenticación exitosa anónima.");
+        }
+    } catch (error) {
+        console.error("Error en la autenticación:", error);
+        showModal("Error de Autenticación", `No se pudo iniciar sesión: ${error.message}`, true);
     }
+}
 
-    // Inicia la escucha en tiempo real (onSnapshot)
-    onSnapshot(eventsQuery, (snapshot) => {
-        const events = [];
-        snapshot.forEach((doc) => {
-            // Mapeo de datos: todos tus campos de la hoja de cálculo
-            const data = doc.data();
-            events.push({ 
-                id: doc.id,
-                title: data.title,
-                category: data.category,
-                rating: data.rating,
-                reviews: data.reviews,
-                city: data.city,
-                minPrice: data.minPrice,
-                date: data.date,
-                imageUrl: data.imageUrl,
-                description: data.description
-                // No usamos 'visto', 'contacto' o 'enlace_de_reserva' en la tarjeta, pero están disponibles en el objeto 'data' si se necesitan.
-            });
-        });
+/**
+ * Actualiza la información de autenticación en la interfaz de usuario.
+ */
+function updateAuthUI() {
+    dom.userIdDisplay.textContent = currentUserId;
+    if (isAuthenticated) {
+        dom.authStatusBtn.textContent = 'Sesión Activa';
+        dom.authStatusBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+        dom.authStatusBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+    } else {
+        dom.authStatusBtn.textContent = 'Sin Sesión';
+        dom.authStatusBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+        dom.authStatusBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+    }
+}
+
+// -----------------------------------------------------------------------------
+// FIREBASE FIRESTORE LISTENERS
+// -----------------------------------------------------------------------------
+
+/**
+ * Inicia los listeners de Firestore para Eventos Públicos y la Agenda Privada del Usuario.
+ */
+function startFirestoreListeners() {
+    if (!isAuthenticated) return;
+
+    // 1. Listener para todos los eventos públicos
+    const eventsCollectionRef = collection(db, `artifacts/${appId}/public/data/events`);
+    onSnapshot(eventsCollectionRef, (snapshot) => {
+        allEventsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        renderEvents(events);
+        // Si no hay eventos, mostrar el botón de seed data
+        if (allEventsCache.length === 0) {
+            dom.seedDataBtn.classList.remove('hidden');
+            dom.loadingMessage.textContent = 'No hay eventos disponibles. Por favor, inicializa los datos.';
+        } else {
+            dom.seedDataBtn.classList.add('hidden');
+            dom.loadingMessage.classList.add('hidden');
+        }
+
+        renderEvents();
     }, (error) => {
-        console.error("Error al escuchar los eventos de Firestore:", error);
-        if (loadingMessage) loadingMessage.textContent = `Error al cargar eventos: ${error.message}`;
+        console.error("Error al escuchar eventos públicos:", error);
+        showModal("Error de Datos", "No se pudieron cargar los eventos públicos. Revisa los permisos.", true);
+    });
+
+    // 2. Listener para la agenda privada del usuario
+    // La agenda se almacena en una colección privada bajo el ID del usuario:
+    // /artifacts/{appId}/users/{userId}/agenda
+    const agendaCollectionRef = collection(db, `artifacts/${appId}/users/${currentUserId}/agenda`);
+    onSnapshot(agendaCollectionRef, (snapshot) => {
+        userAgendaCache = {};
+        snapshot.docs.forEach(doc => {
+            // Solo necesitamos el ID del documento (que es el ID del evento)
+            userAgendaCache[doc.id] = true; 
+        });
+
+        console.log("Agenda actualizada:", Object.keys(userAgendaCache).length, "eventos.");
+        renderEvents(); // Re-renderizar para actualizar el estado de los botones
+    }, (error) => {
+        console.error("Error al escuchar la agenda del usuario:", error);
+        // Si el usuario no tiene permisos para su propia agenda, esto fallará.
+        showModal("Error de Agenda", "No se pudo cargar tu agenda privada. Revisa los permisos de Firestore.", true);
     });
 }
 
-
-// --- 3. LÓGICA DE INICIALIZACIÓN DE DATOS (SEED) ---
-
-// Los datos de tu Google Sheet mapeados a formato de documento de Firestore
-const initialEventsData = [
-    {
-        id: 101, title: "El Rey León, El Musical", category: "Musicales", rating: 5.0, reviews: 542, city: "Madrid", minPrice: 35, date: "2024-11-14",
-        imageUrl: "https://drive.google.com/thumbnail?id=1wL1MID8BLWZL0PvzkLqNh61jb4i4S1ey&sz=w500",
-        description: "Una experiencia teatral inolvidable que transporta al espectador a la sabana africana. Con impresionantes vestuarios y música icónica.",
-        isFeatured: true, contactEmail: "reyleon@gmail.com", bookingUrl: "https://www.google.com"
-    },
-    {
-        id: 102, title: "Monólogo de Raúl Anton", category: "Monólogos", rating: 3.0, reviews: 187, city: "Ibi", minPrice: 28, date: "2024-02-25",
-        imageUrl: "https://drive.google.com/thumbnail?id=1w43qfC5BSEQvxPLpwZ24nXDBmX_sd0BW&sz=w500",
-        description: "Noche de risas garantizadas con el humor irreverente y cercano de Raúl Antón. ¡No pararás de reír!",
-        isFeatured: true, contactEmail: "Raulanton12@gmail.com", bookingUrl: "https://www.google.com"
-    },
-    {
-        id: 103, title: "Concierto de Nathy Peluso", category: "Musicales", rating: 5.0, reviews: 310, city: "Alicante", minPrice: 45, date: "2024-02-26",
-        imageUrl: "https://drive.google.com/thumbnail?id=1NsV7R-anmsnsL8Q7TfNmUZOm60ATtowt&sz=w500",
-        description: "La artista argentina Nathy Peluso en vivo, presentando sus éxitos y nuevos temas con su inconfundible estilo.",
-        isFeatured: false, contactEmail: "eventime23@gmail.com", bookingUrl: "https://www.google.com"
-    },
-    {
-        id: 104, title: "Festival de Jazz de Madrid", category: "Festivales", rating: 5.0, reviews: 250, city: "Elche", minPrice: 25, date: "2024-03-10",
-        imageUrl: "https://drive.google.com/thumbnail?id=1yQVGoj7W18fnilejiJH0oaUMXhpVbcM_&sz=w500",
-        description: "Una selección de los mejores talentos del jazz nacional e internacional en diferentes escenarios de la ciudad.",
-        isFeatured: false, contactEmail: "jazzmadrid@gmail.com", bookingUrl: "https://www.google.com"
-    },
-    {
-        id: 106, title: "Formula 1 Madrid Grand Prix", category: "Motor", rating: 5.0, reviews: 789, city: "Madrid", minPrice: 150, date: "2025-05-18",
-        imageUrl: "https://drive.google.com/thumbnail?id=1PHrEk1X9SppVzf2Jnl1EAdOcTO7BYLFN&sz=w500",
-        description: "La emoción de la Fórmula 1 llega a Madrid con una carrera urbana espectacular. Vive la velocidad y la adrenalina en primera persona.",
-        isFeatured: true, contactEmail: "f1best@gmail.com", bookingUrl: "https://www.google.com"
-    },
-    {
-        id: 107, title: "Exposición Maestros del Renacimiento", category: "Arte", rating: 4.0, reviews: 120, city: "Madrid", minPrice: 15, date: "2024-03-20",
-        imageUrl: "https://drive.google.com/thumbnail?id=1Fn1KKqiCYKu1iudHCE0W8_JEGPHDw8xN&sz=w500",
-        description: "Un viaje a través de las obras cumbre de los grandes artistas del Renacimiento europeo.",
-        isFeatured: true, contactEmail: "topeventos@gmail.com", bookingUrl: "https://www.google.com"
-    },
-    {
-        id: 108, title: "Festival de Comedia Indie", category: "Comedia", rating: 4.0, reviews: 65, city: "Madrid", minPrice: 18, date: "2024-04-05",
-        imageUrl: "https://drive.google.com/thumbnail?id=16YwfLSk9E_N9hxr2VS24bedOBiHvgbTg&sz=w500",
-        description: "Descubre nuevas voces del stand-up y monólogos emergentes en este festival innovador.",
-        isFeatured: false, contactEmail: "topeventos@gmail.com", bookingUrl: "https://www.google.com"
-    },
-    {
-        id: 109, title: "Ópera: Carmen en el Real", category: "Ópera", rating: 4.0, reviews: 50, city: "Madrid", minPrice: 70, date: "2024-05-10",
-        imageUrl: "https://drive.google.com/thumbnail?id=1Dn2qJt1KykWpFRJKwYxsNoHIhlLVY8lK&sz=w500",
-        description: "La icónica ópera de Bizet, Carmen, interpretada por un elenco de talla mundial en el Teatro Real.",
-        isFeatured: false, contactEmail: "topeventos@gmail.com", bookingUrl: "https://www.google.com"
-    },
-    {
-        id: 110, title: "Maratón de Madrid 2024", category: "Deportes", rating: 4.0, reviews: 80, city: "Madrid", minPrice: 50, date: "2024-04-28",
-        imageUrl: "https://drive.google.com/thumbnail?id=158sxGzMliFIAze4ZAsiQ8TL56Yvtp7WN&sz=w500",
-        description: "Corre por las calles de Madrid en uno de los maratones más emblemáticos de España.",
-        isFeatured: false, contactEmail: "topeventos@gmail.com", bookingUrl: "https://www.google.com"
-    },
-    {
-        id: 111, title: "Conferencia El Futuro de la IA", category: "Conferencias", rating: 4.0, reviews: 75, city: "Madrid", minPrice: 25, date: "2024-06-15",
-        imageUrl: "https://drive.google.com/thumbnail?id=1ioMt06JSFH0JPlwbGC6xStRVheWpRFr7&sz=w500",
-        description: "Expertos en inteligencia artificial debaten sobre los avances y el impacto de la IA en nuestra sociedad.",
-        isFeatured: false, contactEmail: "topeventos@gmail.com", bookingUrl: "https://www.google.com"
-    },
-];
+// -----------------------------------------------------------------------------
+// GESTIÓN DE LA AGENDA (Añadir/Eliminar Eventos)
+// -----------------------------------------------------------------------------
 
 /**
- * Inicializa la base de datos de Firestore con los datos de ejemplo.
- * Solo debe ejecutarse si la colección está vacía.
+ * Añade o elimina un evento de la agenda privada del usuario.
+ * @param {string} eventId ID del evento a modificar.
+ * @param {boolean} isAdding True para añadir, false para eliminar.
  */
-async function seedEvents() {
-    if (!db) {
-        console.error("Firestore no está inicializado.");
+async function toggleAgenda(eventId, isAdding) {
+    if (!isAuthenticated) {
+        showModal("Acceso Denegado", "Debes estar autenticado para añadir eventos a tu agenda.", false);
         return;
     }
-    
-    // Ruta de la colección: /artifacts/{appId}/public/data/events
-    const eventsCollectionPath = `artifacts/${appId}/public/data/events`;
-    const eventsColRef = collection(db, eventsCollectionPath);
-    
-    // Oculta el botón de inicialización y muestra el mensaje de carga
-    if (seedDataBtn) seedDataBtn.style.display = 'none';
-    if (loadingMessage) loadingMessage.textContent = 'Inicializando datos de ejemplo...';
+
+    const agendaDocRef = doc(db, `artifacts/${appId}/users/${currentUserId}/agenda`, eventId);
 
     try {
-        const batch = writeBatch(db);
-        
-        initialEventsData.forEach(eventData => {
-            // Usamos el ID_EVENTO como ID del documento para facilitar la búsqueda
-            const docRef = doc(eventsColRef, String(eventData.id)); 
+        if (isAdding) {
+            // Añadir el evento a la agenda. Usamos setDoc con el ID del evento para que sea fácil
+            // de buscar y eliminar. El contenido del documento puede estar vacío o replicar los datos esenciales.
+            await setDoc(agendaDocRef, { addedAt: new Date(), eventId: eventId });
+            showModal("¡Agregado!", "El evento se ha añadido a tu agenda de OcioPlus.", false);
+        } else {
+            // Eliminar el evento de la agenda
+            await deleteDoc(agendaDocRef);
+            showModal("Eliminado", "El evento se ha eliminado de tu agenda.", false);
             
-            // Usamos un objeto con las claves en minúscula y más limpias
-            const documentData = {
-                title: eventData.title,
-                category: eventData.category,
-                rating: eventData.rating,
-                reviews: eventData.reviews,
-                city: eventData.city,
-                minPrice: eventData.minPrice,
-                date: eventData.date, // Formato YYYY-MM-DD
-                imageUrl: eventData.imageUrl,
-                description: eventData.description,
-                isFeatured: eventData.isFeatured,
-                contactEmail: eventData.contactEmail,
-                bookingUrl: eventData.bookingUrl
-            };
+            // Si estábamos en la vista 'agenda', forzar un re-render
+            if (currentView === 'agenda') {
+                 renderEvents();
+            }
+        }
+    } catch (error) {
+        console.error("Error al modificar la agenda:", error);
+        showModal("Error", `No se pudo ${isAdding ? 'añadir' : 'eliminar'} el evento de la agenda: ${error.message}`, true);
+    }
+}
 
-            batch.set(docRef, documentData);
+// -----------------------------------------------------------------------------
+// RENDERIZADO Y FILTRADO DE EVENTOS
+// -----------------------------------------------------------------------------
+
+/**
+ * Renderiza todos los eventos en la cuadrícula, aplicando filtros y la vista actual.
+ */
+function renderEvents() {
+    dom.eventsGrid.innerHTML = '';
+    dom.loadingMessage.classList.add('hidden');
+
+    const selectedCity = dom.cityFilter.value;
+    
+    // Filtrar por la vista actual ('all' o 'agenda')
+    let filteredEvents = allEventsCache.filter(event => {
+        const isAgendaMatch = currentView === 'all' || userAgendaCache[event.id];
+        const isCityMatch = !selectedCity || event.city === selectedCity;
+        return isAgendaMatch && isCityMatch;
+    });
+
+    if (filteredEvents.length === 0) {
+        let message = 'No se encontraron eventos.';
+        if (currentView === 'agenda') {
+            message = 'Aún no tienes eventos en tu agenda.';
+        } else if (selectedCity) {
+            message = `No hay eventos en ${selectedCity}.`;
+        }
+        dom.eventsGrid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
+            <i class="fas fa-search-minus text-5xl mb-3"></i>
+            <p class="text-xl font-semibold">${message}</p>
+        </div>`;
+        return;
+    }
+
+    // Generar el HTML de las tarjetas
+    filteredEvents.forEach(event => {
+        const isAdded = !!userAgendaCache[event.id];
+        dom.eventsGrid.appendChild(createEventCard(event, isAdded));
+    });
+}
+
+/**
+ * Crea el elemento HTML de una tarjeta de evento.
+ * @param {object} event Objeto del evento.
+ * @param {boolean} isAdded Si el evento está en la agenda del usuario.
+ * @returns {HTMLElement} El elemento div de la tarjeta.
+ */
+function createEventCard(event, isAdded) {
+    const card = document.createElement('div');
+    card.className = 'card-container transition duration-300';
+    card.dataset.id = event.id;
+
+    const formattedDate = new Date(event.date).toLocaleDateString('es-ES', { 
+        year: 'numeric', month: 'short', day: 'numeric' 
+    });
+    
+    // Determinar estilo y texto del botón
+    const btnIcon = isAdded ? 'fas fa-check' : 'fas fa-calendar-plus';
+    const btnText = isAdded ? 'En Agenda' : 'Añadir a Agenda';
+    const btnClass = isAdded ? 'btn-agenda-added' : 'bg-indigo-600 hover:bg-indigo-700';
+
+    card.innerHTML = `
+        <!-- Imagen del Evento -->
+        <img src="${event.image}" onerror="this.onerror=null; this.src='https://placehold.co/400x200/cccccc/333333?text=NO+IMAGE';" class="card-image" alt="Imagen de ${event.name}">
+        
+        <div class="p-4 flex flex-col justify-between flex-grow">
+            <!-- Título y Descripción -->
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">${event.name}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">${event.description}</p>
+            </div>
+
+            <!-- Detalles -->
+            <div class="mt-4 space-y-2 text-sm">
+                <p class="flex items-center text-indigo-600 dark:text-indigo-400 font-semibold">
+                    <i class="fas fa-calendar-alt w-5 mr-2"></i> ${formattedDate} (${event.time})
+                </p>
+                <p class="flex items-center text-gray-600 dark:text-gray-300">
+                    <i class="fas fa-map-marker-alt w-5 mr-2"></i> ${event.city}
+                </p>
+                <p class="flex items-center text-emerald-600 dark:text-emerald-400 font-bold">
+                    <i class="fas fa-ticket-alt w-5 mr-2"></i> ${event.price === 0 ? 'Gratis' : `${event.price.toFixed(2)} €`}
+                </p>
+            </div>
+
+            <!-- Botón de Acción -->
+            <button data-event-id="${event.id}" data-is-added="${isAdded}" 
+                    class="mt-4 w-full px-4 py-2 text-white font-semibold rounded-lg shadow-md transition duration-150 ease-in-out ${btnClass}">
+                <i class="${btnIcon} mr-2"></i> ${btnText}
+            </button>
+        </div>
+    `;
+
+    // Añadir el listener al botón de acción
+    const actionButton = card.querySelector('button');
+    actionButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Evitar que el click se propague a la tarjeta si tuviera otro listener
+        const eventId = actionButton.dataset.eventId;
+        const currentlyAdded = actionButton.dataset.isAdded === 'true';
+        toggleAgenda(eventId, !currentlyAdded); // Invertir el estado
+    });
+
+    return card;
+}
+
+// -----------------------------------------------------------------------------
+// INICIALIZACIÓN DE DATOS DE EJEMPLO
+// -----------------------------------------------------------------------------
+
+/**
+ * Inserta datos de ejemplo en la colección pública de eventos.
+ */
+async function seedInitialData() {
+    if (!isAuthenticated) {
+        showModal("Error", "Debes estar autenticado para inicializar la base de datos.", true);
+        return;
+    }
+
+    dom.seedDataBtn.disabled = true;
+    dom.seedDataBtn.textContent = 'Insertando datos...';
+    
+    const batch = writeBatch(db);
+    const eventsCollectionRef = collection(db, `artifacts/${appId}/public/data/events`);
+
+    try {
+        MOCK_EVENTS.forEach(event => {
+            const newDocRef = doc(eventsCollectionRef); // Firestore genera un ID automáticamente
+            batch.set(newDocRef, event);
         });
 
         await batch.commit();
-        console.log("Datos de ejemplo inicializados exitosamente.");
-        if (loadingMessage) loadingMessage.textContent = 'Datos cargados, actualizando eventos...';
-
+        showModal("Éxito", "¡Datos de ejemplo inicializados correctamente en Firestore!", false);
+        dom.seedDataBtn.classList.add('hidden'); // Ocultar después de la inserción
     } catch (error) {
         console.error("Error al inicializar datos:", error);
-        if (loadingMessage) loadingMessage.textContent = `Error al inicializar datos: ${error.message}`;
+        showModal("Error", `Falló la inserción de datos: ${error.message}`, true);
+    } finally {
+        dom.seedDataBtn.disabled = false;
+        dom.seedDataBtn.textContent = 'Inicializar Datos de Ejemplo (Solo la primera vez)';
     }
 }
 
+// -----------------------------------------------------------------------------
+// MANEJO DE EVENTOS DEL DOM
+// -----------------------------------------------------------------------------
 
-// --- 4. LISTENERS DE UI Y STARTUP ---
-
-// Lógica de UI simple (Modo Oscuro, Ancho de pantalla)
-function setupUILogic() {
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
-    if (isDarkMode) document.documentElement.classList.add('dark');
+/**
+ * Cambia la vista de eventos entre 'all' y 'agenda'.
+ * @param {string} view 'all' o 'agenda'.
+ */
+function changeView(view) {
+    if (currentView === view) return;
+    currentView = view;
     
-    const darkModeToggle = document.getElementById('dark-mode-toggle');
-    if (darkModeToggle) {
-        darkModeToggle.addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
-            const newMode = document.documentElement.classList.contains('dark');
-            localStorage.setItem('darkMode', newMode);
-            darkModeToggle.querySelector('i').className = newMode ? 'fas fa-moon text-lg text-white' : 'fas fa-sun text-lg text-gray-800';
-        });
-        // Configuración inicial del icono
-        darkModeToggle.querySelector('i').className = isDarkMode ? 'fas fa-moon text-lg text-white' : 'fas fa-sun text-lg text-gray-800';
+    // Actualizar estilos de los botones
+    dom.viewAllBtn.classList.remove('agenda-active');
+    dom.viewAgendaBtn.classList.remove('agenda-active');
+
+    if (view === 'all') {
+        dom.viewAllBtn.classList.add('agenda-active');
+    } else {
+        dom.viewAgendaBtn.classList.add('agenda-active');
     }
 
-    const widthDisplay = document.getElementById('screen-width-display');
-    const updateWidth = () => {
-        if (widthDisplay) widthDisplay.textContent = `Ancho: ${window.innerWidth}px`;
-    };
-    window.addEventListener('resize', updateWidth);
-    updateWidth(); // Llamada inicial
+    renderEvents();
+}
 
-    // Listener para el filtro de ciudad
-    if (cityFilter) {
-        cityFilter.addEventListener('change', setupFirestoreListener);
-    }
+/**
+ * Alterna el modo oscuro.
+ */
+function toggleDarkMode() {
+    document.body.classList.toggle('dark:bg-gray-900');
+    document.body.classList.toggle('dark:text-gray-100');
+    document.documentElement.classList.toggle('dark');
     
-    // Listener para el botón de inicialización de datos
-    if (seedDataBtn) {
-        seedDataBtn.addEventListener('click', seedEvents);
+    const isDark = document.documentElement.classList.contains('dark');
+    const icon = dom.darkModeToggle.querySelector('i');
+    
+    if (isDark) {
+        icon.classList.remove('fa-sun', 'text-gray-800');
+        icon.classList.add('fa-moon', 'text-gray-200');
+    } else {
+        icon.classList.remove('fa-moon', 'text-gray-200');
+        icon.classList.add('fa-sun', 'text-gray-800');
     }
 }
 
-// Inicialización de la aplicación
+// Escuchadores de eventos
+dom.seedDataBtn.addEventListener('click', seedInitialData);
+dom.viewAllBtn.addEventListener('click', () => changeView('all'));
+dom.viewAgendaBtn.addEventListener('click', () => changeView('agenda'));
+dom.cityFilter.addEventListener('change', renderEvents);
+dom.darkModeToggle.addEventListener('click', toggleDarkMode);
+
+// Función para mostrar el ancho de la pantalla (Ayuda con el responsive)
+function updateScreenWidth() {
+    dom.screenWidthDisplay.textContent = `Ancho: ${window.innerWidth}px`;
+}
+window.addEventListener('resize', updateScreenWidth);
+
+// -----------------------------------------------------------------------------
+// INICIO DE LA APLICACIÓN
+// -----------------------------------------------------------------------------
 window.onload = () => {
-    setupUILogic();
-    initializeFirebaseAndAuth();
+    updateScreenWidth();
+    initializeFirebase();
 };
