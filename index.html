@@ -235,65 +235,8 @@
         </nav>
     </footer>
 
-
-    <script>
-        // --- JAVASCRIPT: INDICADOR DE ANCHO DE PANTALLA ---
-
-        const widthDisplay = document.getElementById('screen-width-display');
-
-        function updateScreenWidth() {
-            const width = window.innerWidth;
-            widthDisplay.innerText = `Ancho: ${width}px`;
-
-            // Para obtener el color correcto de la variable CSS usamos getComputedStyle del body
-            const computedStyle = getComputedStyle(document.body);
-            const colorPill = computedStyle.getPropertyValue('--color-pill').trim();
-
-            widthDisplay.style.backgroundColor = colorPill;
-        }
-
-        window.onload = updateScreenWidth;
-        window.addEventListener('resize', updateScreenWidth);
-
-        // --- JAVASCRIPT: MODO OSCURO ---
-        const toggleButton = document.getElementById('dark-mode-toggle');
-        const body = document.body;
-        const icon = toggleButton.querySelector('i');
-
-        // Función para aplicar o quitar el modo oscuro
-        function toggleDarkMode() {
-            const isDarkMode = body.classList.toggle('dark-mode');
-            
-            // Re-evaluamos los estilos para obtener el color correcto después del cambio
-            const computedStyle = getComputedStyle(document.body);
-
-            // Cambiar el icono
-            if (isDarkMode) {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            } else {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            }
-            
-            // Actualizar el color del botón (usa las variables CSS de nuevo)
-            const colorPrimary = computedStyle.getPropertyValue('--color-primary').trim();
-            const colorSecondary = computedStyle.getPropertyValue('--color-secondary').trim();
-
-            toggleButton.style.backgroundColor = isDarkMode ? colorSecondary : colorPrimary;
-
-            // Asegurar que el indicador de ancho también se actualice con el color de píldora correcto
-            updateScreenWidth(); 
-        }
-
-        toggleButton.addEventListener('click', toggleDarkMode);
-
-        // Inicializar el color del botón según el modo inicial (que es claro por defecto)
-        toggleButton.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--color-primary').trim();
-        
-        // Inicializar el estado de la píldora al cargar
-        updateScreenWidth(); 
-    </script>
+    <!-- ¡IMPORTANTE! Referencia al archivo JavaScript externo -->
+    <script src="javascript.js"></script>
 
 </body>
 </html>
