@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantalla Principal de Eventos</title>
+    <!-- Usamos Tailwind para clases utilitarias -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Incluimos Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- ENLACE AL ARCHIVO DE ESTILOS EXTERNO -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="pb-16 sm:pb-0"> <!-- Padding en el body para evitar que el footer cubra contenido en móvil -->
+    
+    <!-- UI DE UTILIDAD (Modo Oscuro y Ancho de Pantalla) -->
+    <button id="dark-mode-toggle" aria-label="Alternar Modo Oscuro">
+        <i class="fas fa-sun"></i>
+    </button>
+    <div id="screen-width-display">
+        Ancho: 0px
+    </div>
+
+    <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- 1. ENCABEZADO: Logotipo / Iniciar sesión -->
+        <header class="flex justify-between items-center py-4 border-b border-gray-200 dark:border-gray-700 mb-8">
+            <div class="text-2xl font-black text-gray-900 dark:text-white">
+                Eventos <span class="text-indigo-500">App</span>
+            </div>
+            <a href="#" class="btn-primary text-sm font-semibold">
+                <i class="fas fa-sign-in-alt mr-2"></i> Iniciar Sesión
+            </a>
+        </header>
+
+        <!-- CUERPO PRINCIPAL -->
+        <main>
+            <!-- 1. TEXTO PRINCIPAL -->
+            <h2 class="text-3xl sm:text-4xl font-extrabold mb-8 text-center sm:text-left">
+                Encuentra tus eventos <span class="text-indigo-500">por zona.</span>
+            </h2>
+
+            <!-- 2. SECCIÓN FILTRADO -->
+            <section class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg mb-8">
+                <h3 class="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-300">Opciones de Búsqueda</h3>
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 items-stretch">
+                    
+                    <!-- 2.1. Filtros (Icono) -->
+                    <button class="flex-shrink-0 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 p-3 rounded-lg transition">
+                        <i class="fas fa-filter text-xl"></i>
+                    </button>
+                    
+                    <!-- 2.2. Desplegable de ciudades -->
+                    <select class="flex-grow p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 dark:text-white appearance-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Selecciona Ciudad</option>
+                        <option value="madrid">Madrid</option>
+                        <option value="barcelona">Barcelona</option>
+                        <option value="valencia">Valencia</option>
+                    </select>
+                    
+                    <!-- 2.3. Botón geolocalización -->
+                    <button class="flex-shrink-0 btn-primary flex items-center justify-center p-3 text-sm font-semibold">
+                        <i class="fas fa-map-marker-alt mr-2"></i> Mi Ubicación
+                    </button>
+                </div>
+            </section>
+
+            <!-- 3. SECCIÓN TARJETAS DE EVENTOS -->
+            <section class="mb-10">
+                <h3 class="text-2xl font-bold mb-6">Próximos Eventos</h3>
+
+                <!-- Grid responsivo para las tarjetas -->
+                <!-- Móvil: 1 columna, Tablet: 2 columnas, Escritorio: 3 o más -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    
+                    <!-- Tarjeta de Evento (Ejemplo 1) -->
+                    <div class="card-container">
+                        <!-- Imagen (Placeholder) -->
+                        <img src="https://placehold.co/600x400/4c51bf/ffffff?text=Concierto+Rock" alt="Imagen del evento" class="card-image">
+                        <div class="card-content p-4">
+                            <!-- Nombre Evento -->
+                            <h4 class="text-lg font-bold mb-1">Festival 'Ritmo Total'</h4>
+                            <!-- Descripción -->
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+                                Un día completo de música rock independiente con bandas locales e internacionales. ¡Compra tu entrada ahora!
+                            </p>
+                            <!-- Valoración | Precio | Distancia -->
+                            <div class="flex justify-between items-center text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
+                                <span class="flex items-center text-green-600 dark:text-green-400 font-bold">
+                                    <i class="fas fa-star mr-1"></i> 4.8
+                                </span>
+                                <span class="font-bold text-indigo-600 dark:text-indigo-400">
+                                    15€
+                                </span>
+                                <span class="text-gray-500 dark:text-gray-400">
+                                    <i class="fas fa-location-arrow mr-1"></i> 2.5 km
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tarjeta de Evento (Ejemplo 2 - Curso) -->
+                    <div class="card-container">
+                        <img src="https://placehold.co/600x400/10b981/ffffff?text=Curso+Cocina" alt="Imagen del evento" class="card-image">
+                        <div class="card-content p-4">
+                            <h4 class="text-lg font-bold mb-1">Taller de Cocina Vegana</h4>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+                                Aprende las bases de la cocina vegetal en un taller práctico de 3 horas con chef experto.
+                            </p>
+                            <div class="flex justify-between items-center text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
+                                <span class="flex items-center text-green-600 dark:text-green-400 font-bold">
+                                    <i class="fas fa-star mr-1"></i> 4.3
+                                </span>
+                                <span class="font-bold text-indigo-600 dark:text-indigo-400">
+                                    Gratis
+                                </span>
+                                <span class="text-gray-500 dark:text-gray-400">
+                                    <i class="fas fa-location-arrow mr-1"></i> 0.8 km
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta de Evento (Ejemplo 3 - Arte) -->
+                    <div class="card-container">
+                        <img src="https://placehold.co/600x400/f59e0b/ffffff?text=Exposición+Arte" alt="Imagen del evento" class="card-image">
+                        <div class="card-content p-4">
+                            <h4 class="text-lg font-bold mb-1">Exposición de Arte Abstracto</h4>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+                                Muestra de nuevos talentos con obras en acrílico y óleo. Entrada libre toda la semana.
+                            </p>
+                            <div class="flex justify-between items-center text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
+                                <span class="flex items-center text-green-600 dark:text-green-400 font-bold">
+                                    <i class="fas fa-star mr-1"></i> 5.0
+                                </span>
+                                <span class="font-bold text-indigo-600 dark:text-indigo-400">
+                                    5€
+                                </span>
+                                <span class="text-gray-500 dark:text-gray-400">
+                                    <i class="fas fa-location-arrow mr-1"></i> 10.1 km
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tarjeta de Evento (Ejemplo 4 - Ocio) -->
+                    <div class="card-container">
+                        <img src="https://placehold.co/600x400/ef4444/ffffff?text=Noche+Juegos" alt="Imagen del evento" class="card-image">
+                        <div class="card-content p-4">
+                            <h4 class="text-lg font-bold mb-1">Noche de Juegos de Mesa</h4>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+                                Ven a conocer gente y jugar los últimos juegos de estrategia y cartas.
+                            </p>
+                            <div class="flex justify-between items-center text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
+                                <span class="flex items-center text-green-600 dark:text-green-400 font-bold">
+                                    <i class="fas fa-star mr-1"></i> 4.5
+                                </span>
+                                <span class="font-bold text-indigo-600 dark:text-indigo-400">
+                                    Gratis
+                                </span>
+                                <span class="text-gray-500 dark:text-gray-400">
+                                    <i class="fas fa-location-arrow mr-1"></i> 1.2 km
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Más tarjetas de ejemplo para ver el grid -->
+                    <div class="card-container hidden sm:block">
+                        <img src="https://placehold.co/600x400/3b82f6/ffffff?text=Deportes" alt="Imagen del evento" class="card-image">
+                        <div class="card-content p-4">
+                            <h4 class="text-lg font-bold mb-1">Maratón de Primavera</h4>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mb-3 line-clamp-2">Carrera popular de 10k por el centro histórico de la ciudad. ¡Inscríbete ya!</p>
+                            <div class="flex justify-between items-center text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
+                                <span class="flex items-center text-green-600 dark:text-green-400 font-bold"><i class="fas fa-star mr-1"></i> 4.7</span>
+                                <span class="font-bold text-indigo-600 dark:text-indigo-400">20€</span>
+                                <span class="text-gray-500 dark:text-gray-400"><i class="fas fa-location-arrow mr-1"></i> 3.4 km</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-container hidden lg:block">
+                        <img src="https://placehold.co/600x400/9333ea/ffffff?text=Tecnología" alt="Imagen del evento" class="card-image">
+                        <div class="card-content p-4">
+                            <h4 class="text-lg font-bold mb-1">Tech Meetup: IA y Futuro</h4>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mb-3 line-clamp-2">Charla sobre las últimas tendencias en Inteligencia Artificial. Networking al final.</p>
+                            <div class="flex justify-between items-center text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
+                                <span class="flex items-center text-green-600 dark:text-green-400 font-bold"><i class="fas fa-star mr-1"></i> 4.9</span>
+                                <span class="font-bold text-indigo-600 dark:text-indigo-400">Gratis</span>
+                                <span class="text-gray-500 dark:text-gray-400"><i class="fas fa-location-arrow mr-1"></i> 5.0 km</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Espacio de relleno para que el contenido no quede bajo el footer móvil -->
+            <div class="h-16 sm:h-0"></div>
+            
+        </main>
+        
+        <!-- 4. SECCIÓN PIE PÁGINA (SOLO EN ESCRITORIO/TABLET) -->
+        <footer class="hidden sm:block text-center py-6 border-t border-gray-200 dark:border-gray-700">
+            <nav class="flex justify-center space-x-8 text-gray-600 dark:text-gray-300">
+                <a href="#" class="hover:text-indigo-500 transition font-medium">
+                    <i class="fas fa-star mr-1"></i> Top Valorados
+                </a>
+                <a href="#" class="hover:text-indigo-500 transition font-medium">
+                    <i class="fas fa-search mr-1"></i> Búsqueda
+                </a>
+                <a href="#" class="hover:text-indigo-500 transition font-medium">
+                    <i class="fas fa-calendar-alt mr-1"></i> Mi Agenda
+                </a>
+            </nav>
+        </footer>
+
+    </div>
+    
+    <!-- 4. SECCIÓN PIE PÁGINA (NAVEGACIÓN FIJA EN MÓVIL) -->
+    <footer class="mobile-footer p-3">
+        <nav class="flex justify-around items-center text-sm">
+            <a href="#" class="flex flex-col items-center p-2 text-indigo-500 dark:text-indigo-400">
+                <i class="fas fa-star text-lg"></i>
+                <span class="text-xs mt-1">Top Valorados</span>
+            </a>
+            <a href="#" class="flex flex-col items-center p-2 text-gray-500 hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-400">
+                <i class="fas fa-search text-lg"></i>
+                <span class="text-xs mt-1">Búsqueda</span>
+            </a>
+            <a href="#" class="flex flex-col items-center p-2 text-gray-500 hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-400">
+                <i class="fas fa-calendar-alt text-lg"></i>
+                <span class="text-xs mt-1">Mi Agenda</span>
+            </a>
+        </nav>
+    </footer>
+
+
+    <script>
+        // --- JAVASCRIPT: INDICADOR DE ANCHO DE PANTALLA ---
+
+        const widthDisplay = document.getElementById('screen-width-display');
+
+        function updateScreenWidth() {
+            const width = window.innerWidth;
+            widthDisplay.innerText = `Ancho: ${width}px`;
+
+            // Para obtener el color correcto de la variable CSS usamos getComputedStyle del body
+            const computedStyle = getComputedStyle(document.body);
+            const colorPill = computedStyle.getPropertyValue('--color-pill').trim();
+
+            widthDisplay.style.backgroundColor = colorPill;
+        }
+
+        window.onload = updateScreenWidth;
+        window.addEventListener('resize', updateScreenWidth);
+
+        // --- JAVASCRIPT: MODO OSCURO ---
+        const toggleButton = document.getElementById('dark-mode-toggle');
+        const body = document.body;
+        const icon = toggleButton.querySelector('i');
+
+        // Función para aplicar o quitar el modo oscuro
+        function toggleDarkMode() {
+            const isDarkMode = body.classList.toggle('dark-mode');
+            
+            // Re-evaluamos los estilos para obtener el color correcto después del cambio
+            const computedStyle = getComputedStyle(document.body);
+
+            // Cambiar el icono
+            if (isDarkMode) {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            } else {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+            
+            // Actualizar el color del botón (usa las variables CSS de nuevo)
+            const colorPrimary = computedStyle.getPropertyValue('--color-primary').trim();
+            const colorSecondary = computedStyle.getPropertyValue('--color-secondary').trim();
+
+            toggleButton.style.backgroundColor = isDarkMode ? colorSecondary : colorPrimary;
+
+            // Asegurar que el indicador de ancho también se actualice con el color de píldora correcto
+            updateScreenWidth(); 
+        }
+
+        toggleButton.addEventListener('click', toggleDarkMode);
+
+        // Inicializar el color del botón según el modo inicial (que es claro por defecto)
+        toggleButton.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--color-primary').trim();
+        
+        // Inicializar el estado de la píldora al cargar
+        updateScreenWidth(); 
+    </script>
+
+</body>
+</html>
