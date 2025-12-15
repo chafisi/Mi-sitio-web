@@ -48,6 +48,12 @@
         #pantalla2 main {
             padding-bottom: 80px; /* Espacio para el CTA fijo */
         }
+
+        /* Ajuste de padding para PAN3 (Filtros) */
+        #pantalla3 main {
+             padding-top: 64px; /* Espacio para el header fijo de Filtros */
+             padding-bottom: 80px; /* Espacio para el Footer de Filtros */
+        }
     </style>
     <!-- Iconos Lucide (simulando los del mockup) -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -84,7 +90,7 @@
                     <input type="text" placeholder="Buscar eventos..." class="w-full pl-10 pr-4 py-2 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 text-gray-700 shadow-inner">
                 </div>
                 <!-- Botón de Filtros (Acceso a PAN3) -->
-                <button class="bg-cyan-500 hover:bg-cyan-600 text-white p-3 rounded-xl transition duration-300 shadow-md flex-shrink-0">
+                <button onclick="mostrarPantalla3()" class="bg-cyan-500 hover:bg-cyan-600 text-white p-3 rounded-xl transition duration-300 shadow-md flex-shrink-0">
                     <i data-lucide="sliders" class="h-6 w-6"></i>
                 </button>
             </div>
@@ -111,7 +117,7 @@
                             <span>Madrid, 15 NOV • 20:00 h</span>
                         </p>
                         <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <span class="text-xl font-extrabold text-green-600">$25.00</span>
+                            <span class="text-xl font-extrabold text-green-600">25.00 €</span>
                             <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
                                 Detalles
                             </button>
@@ -153,7 +159,7 @@
                             <span>Barcelona, 20 NOV • 08:00 am</span>
                         </p>
                         <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <span class="text-xl font-extrabold text-green-600">$10.00</span>
+                            <span class="text-xl font-extrabold text-green-600">10.00 €</span>
                             <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
                                 Detalles
                             </button>
@@ -174,7 +180,7 @@
                             <span>Valencia, 25 NOV • 19:30 h</span>
                         </p>
                         <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <span class="text-xl font-extrabold text-green-600">$50.00</span>
+                            <span class="text-xl font-extrabold text-green-600">50.00 €</span>
                             <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
                                 Detalles
                             </button>
@@ -232,7 +238,7 @@
         <!-- HEADER (Imagen de fondo y Controles) -->
         <header class="relative h-80">
             <!-- Imagen Principal -->
-            <img src="https://placehold.co/1000x500/3b82f6/ffffff?text=CONCIERTO+ROCK+DESTACADO" alt="Imagen del evento" class="w-full h-full object-cover">
+            <img src="https://placehold.co/1000x500/3b82f6/ffffff?text=CONCIERTO+ROCK+DESTACADO" alt="[Imagen del evento de rock]" class="w-full h-full object-cover">
             
             <!-- Botones de Control Flotantes -->
             <div class="absolute top-4 left-4">
@@ -283,7 +289,7 @@
                 <!-- Precio -->
                 <div class="text-center p-4 bg-green-50 rounded-xl">
                     <span class="text-sm font-medium text-gray-600 block">Precio base por persona</span>
-                    <span class="text-4xl font-extrabold text-green-600">$25.00</span>
+                    <span class="text-4xl font-extrabold text-green-600">25.00 €</span>
                 </div>
             </div>
         </main>
@@ -293,7 +299,118 @@
             <div class="max-w-4xl mx-auto">
                 <!-- Botón con mayor padding vertical (py-4) y texto más grueso (font-black) -->
                 <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/50 text-lg">
-                    Reservar ahora ($25.00)
+                    Reservar ahora (25.00 €)
+                </button>
+            </div>
+        </footer>
+    </div>
+
+
+    <!-- ---------------------------------------------------- -->
+    <!-- PANTALLA 3: FILTROS (PAN3) -->
+    <!-- ---------------------------------------------------- -->
+    <div id="pantalla3" class="screen hidden bg-white">
+        
+        <!-- 1. HEADER FIJO (NAV SUPERIOR PARA FILTROS) -->
+        <header class="fixed top-0 left-0 right-0 bg-white shadow-md z-20">
+            <div class="max-w-4xl mx-auto p-4 flex items-center justify-between">
+                <!-- Título -->
+                <h1 class="text-2xl font-bold text-gray-800">Filtros Avanzados</h1>
+                
+                <!-- Botón de Cerrar (Retroceso a PAN1) -->
+                <button onclick="mostrarPantalla1()" class="text-gray-500 hover:text-gray-800 transition duration-200">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 2. BODY PRINCIPAL (OPCIONES DE FILTRO) -->
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow overflow-y-auto">
+
+            <!-- Sección de Categoría -->
+            <section class="mb-8 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
+                    <i data-lucide="list-checks" class="h-5 w-5 text-cyan-500"></i>
+                    <span>Categoría</span>
+                </h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Opciones de Categoría -->
+                    <div class="flex items-center space-x-2 p-3 bg-cyan-50 rounded-lg border border-cyan-300">
+                        <input type="checkbox" id="cat-musica" checked class="form-checkbox h-5 w-5 text-cyan-600 rounded-lg border-gray-300 focus:ring-cyan-500">
+                        <label for="cat-musica" class="text-gray-800 font-semibold">Música</label>
+                    </div>
+                    <div class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition duration-200">
+                        <input type="checkbox" id="cat-deporte" class="form-checkbox h-5 w-5 text-cyan-600 rounded-lg border-gray-300 focus:ring-cyan-500">
+                        <label for="cat-deporte" class="text-gray-800">Deporte</label>
+                    </div>
+                    <div class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition duration-200">
+                        <input type="checkbox" id="cat-formacion" class="form-checkbox h-5 w-5 text-cyan-600 rounded-lg border-gray-300 focus:ring-cyan-500">
+                        <label for="cat-formacion" class="text-gray-800">Formación</label>
+                    </div>
+                    <div class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition duration-200">
+                        <input type="checkbox" id="cat-teatro" class="form-checkbox h-5 w-5 text-cyan-600 rounded-lg border-gray-300 focus:ring-cyan-500">
+                        <label for="cat-teatro" class="text-gray-800">Teatro</label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de Distancia (NUEVO) -->
+            <section class="mb-8 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
+                    <i data-lucide="route" class="h-5 w-5 text-orange-500"></i>
+                    <span>Distancia desde mi ubicación</span>
+                </h2>
+                <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    <option selected>Sin límite</option>
+                    <option>10 km</option>
+                    <option>20 km</option>
+                    <option>50 km</option>
+                    <option>100 km</option>
+                    <option>200 km</option>
+                    <option>500 km</option>
+                    <option>Todo</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-2">Basado en la ubicación actual (simulada).</p>
+            </section>
+            
+            <!-- Sección de Rango de Precios -->
+            <section class="mb-8 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center space-x-2">
+                    <i data-lucide="euro" class="h-5 w-5 text-indigo-500"></i>
+                    <span>Precio Máximo</span>
+                </h2>
+                <div class="flex justify-between items-center mb-4">
+                    <span id="price-min" class="text-lg font-semibold text-gray-600">0 €</span>
+                    <span id="price-max" class="text-2xl font-extrabold text-indigo-600">50+ €</span>
+                </div>
+                
+                <!-- Input de rango simulado (diseño simple) -->
+                <input type="range" min="0" max="100" value="50" class="w-full h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer range-lg">
+            </section>
+
+             <!-- Sección de Filtro por Fecha -->
+             <section class="mb-8 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
+                    <i data-lucide="calendar-check" class="h-5 w-5 text-green-500"></i>
+                    <span>Fecha</span>
+                </h2>
+                <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    <option>Cualquier fecha</option>
+                    <option selected>Esta semana</option>
+                    <option>Este fin de semana</option>
+                    <option>Este mes</option>
+                </select>
+            </section>
+        </main>
+        
+        <!-- 3. FOOTER FIJO (BARRA DE ACCIÓN DE FILTROS) -->
+        <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-20 p-4">
+            <div class="max-w-4xl mx-auto flex space-x-4">
+                <button onclick="mostrarPantalla1()" class="w-1/3 border-2 border-red-500 text-red-500 font-bold py-3 rounded-xl transition duration-300 hover:bg-red-50">
+                    Limpiar
+                </button>
+                <button onclick="mostrarPantalla1()" class="w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/50 text-lg">
+                    Aplicar Filtros
                 </button>
             </div>
         </footer>
@@ -306,19 +423,35 @@
     <script>
         // Inicializar Iconos Lucide
         lucide.createIcons();
-
-        // Función para mostrar la Pantalla 1 (Listado)
-        function mostrarPantalla1() {
-            document.getElementById('pantalla2').classList.add('hidden');
-            document.getElementById('pantalla1').classList.remove('hidden');
-            window.scrollTo(0, 0); // Ir al inicio de la página
+        
+        // Oculta todas las pantallas excepto la especificada
+        function mostrarPantalla(pantallaId) {
+            const pantallas = ['pantalla1', 'pantalla2', 'pantalla3'];
+            pantallas.forEach(id => {
+                const screen = document.getElementById(id);
+                if (screen) {
+                    if (id === pantallaId) {
+                        screen.classList.remove('hidden');
+                    } else {
+                        screen.classList.add('hidden');
+                    }
+                }
+            });
+            window.scrollTo(0, 0); // Ir al inicio de la página al cambiar de pantalla
         }
 
-        // Función para mostrar la Pantalla 2 (Detalle)
+
+        // Funciones específicas para la UX
+        function mostrarPantalla1() {
+            mostrarPantalla('pantalla1');
+        }
+
         function mostrarPantalla2() {
-            document.getElementById('pantalla1').classList.add('hidden');
-            document.getElementById('pantalla2').classList.remove('hidden');
-            window.scrollTo(0, 0); // Ir al inicio de la página
+            mostrarPantalla('pantalla2');
+        }
+        
+        function mostrarPantalla3() {
+            mostrarPantalla('pantalla3');
         }
     </script>
 </body>
