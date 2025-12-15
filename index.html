@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OcioPlus - Próximos Eventos</title>
+    <title>OcioPlus - Eventos</title>
     <!-- Incluir el CDN de Tailwind CSS y la fuente Inter -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -11,11 +11,17 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #F9FAFB; /* Gray 50 */
-            padding-top: 100px; /* Espacio para el header fijo */
-            padding-bottom: 80px; /* Incrementado para el nuevo TabBar */
+        }
+        
+        /* Estilos generales para las pantallas */
+        .screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
 
-        /* Estilo para los botones de la TabBar */
+        /* Estilos específicos para la TabBar */
         .nav-item {
             display: flex;
             flex-direction: column;
@@ -31,182 +37,283 @@
             background-color: #06B6D4; /* Cyan 500 */
             box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
         }
+
+        /* Ajuste de padding para PAN1 (Listado) */
+        #pantalla1 main {
+             padding-top: 100px; /* Espacio para el header fijo */
+             padding-bottom: 80px; /* Espacio para el TabBar fijo */
+        }
     </style>
     <!-- Iconos Lucide (simulando los del mockup) -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="min-h-screen">
 
-    <!-- 1. HEADER FIJO (NAV SUPERIOR) -->
-    <header class="fixed top-0 left-0 right-0 bg-indigo-600 shadow-lg z-20">
-        <div class="max-w-4xl mx-auto p-4 flex items-center justify-between">
-            
-            <!-- Logo y Menú (similar al mockup) -->
-            <div class="flex items-center space-x-3">
-                <i data-lucide="menu" class="text-white h-6 w-6"></i>
-                <h1 class="text-2xl font-extrabold text-white">OcioPlus</h1>
-            </div>
-            
-            <!-- Icono Carrito (similar al mockup) -->
-            <div class="relative">
-                <i data-lucide="shopping-cart" class="text-white h-6 w-6"></i>
-                <span class="absolute -top-2 -right-2 text-xs bg-cyan-500 text-white rounded-full h-4 w-4 flex items-center justify-center font-bold">2</span>
-            </div>
-        </div>
+    <!-- ---------------------------------------------------- -->
+    <!-- PANTALLA 1: INICIO / LISTADO DE EVENTOS (PAN1) -->
+    <!-- ---------------------------------------------------- -->
+    <div id="pantalla1" class="screen">
         
-        <!-- Barra de Búsqueda y Filtros -->
-        <div class="max-w-4xl mx-auto p-4 pt-0 flex space-x-2">
-             <div class="relative flex-grow">
-                <!-- Input de Búsqueda Rápida -->
-                <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5"></i>
-                <input type="text" placeholder="Buscar eventos..." class="w-full pl-10 pr-4 py-2 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 text-gray-700 shadow-inner">
+        <!-- 1. HEADER FIJO (NAV SUPERIOR) -->
+        <header class="fixed top-0 left-0 right-0 bg-indigo-600 shadow-lg z-20">
+            <div class="max-w-4xl mx-auto p-4 flex items-center justify-between">
+                
+                <!-- Logo y Menú -->
+                <div class="flex items-center space-x-3">
+                    <i data-lucide="menu" class="text-white h-6 w-6"></i>
+                    <h1 class="text-2xl font-extrabold text-white">OcioPlus</h1>
+                </div>
+                
+                <!-- Icono Carrito -->
+                <div class="relative">
+                    <i data-lucide="shopping-cart" class="text-white h-6 w-6"></i>
+                    <span class="absolute -top-2 -right-2 text-xs bg-cyan-500 text-white rounded-full h-4 w-4 flex items-center justify-center font-bold">2</span>
+                </div>
             </div>
-            <!-- Botón de Filtros (Acceso a PAN3) -->
-            <button class="bg-cyan-500 hover:bg-cyan-600 text-white p-3 rounded-xl transition duration-300 shadow-md flex-shrink-0">
-                 <i data-lucide="sliders" class="h-6 w-6"></i>
-            </button>
-        </div>
-    </header>
+            
+            <!-- Barra de Búsqueda y Filtros -->
+            <div class="max-w-4xl mx-auto p-4 pt-0 flex space-x-2">
+                <div class="relative flex-grow">
+                    <!-- Input de Búsqueda Rápida -->
+                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5"></i>
+                    <input type="text" placeholder="Buscar eventos..." class="w-full pl-10 pr-4 py-2 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 text-gray-700 shadow-inner">
+                </div>
+                <!-- Botón de Filtros (Acceso a PAN3) -->
+                <button class="bg-cyan-500 hover:bg-cyan-600 text-white p-3 rounded-xl transition duration-300 shadow-md flex-shrink-0">
+                    <i data-lucide="sliders" class="h-6 w-6"></i>
+                </button>
+            </div>
+        </header>
 
-    <!-- 2. BODY PRINCIPAL (LISTADO DE EVENTOS) -->
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl font-bold text-gray-800 mb-6">Próximos Eventos</h2>
+        <!-- 2. BODY PRINCIPAL (LISTADO DE EVENTOS) -->
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Próximos Eventos</h2>
+            
+            <!-- Contenedor Grid Responsivo (Grid de 1, 2 o 3 columnas) -->
+            <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+
+                <!-- Las tarjetas ahora tienen un manejador de clic para ir a PAN2 -->
+                <!-- EJEMPLO 1: Concierto Rock -->
+                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                    <div class="relative h-40">
+                        <img src="https://placehold.co/600x400/3b82f6/ffffff?text=CONCIERTO+ROCK" alt="Concierto Rock" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">Música</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Concierto Rock</h3>
+                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                            <i data-lucide="map-pin" class="h-4 w-4"></i>
+                            <span>Madrid, 15 NOV • 20:00 h</span>
+                        </p>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-xl font-extrabold text-green-600">$25.00</span>
+                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                                Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EJEMPLO 2: Arte Moderno -->
+                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                    <div class="relative h-40">
+                        <img src="https://placehold.co/600x400/06B6D4/ffffff?text=ARTE+MODERNO" alt="Arte Moderno" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-cyan-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Exposición</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Arte Moderno</h3>
+                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                            <i data-lucide="map-pin" class="h-4 w-4"></i>
+                            <span>Madrid, 18 NOV • Todo el día</span>
+                        </p>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-xl font-extrabold text-green-600">Gratis</span>
+                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                                Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- EJEMPLO 3: Maratón Solidaria -->
+                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                    <div class="relative h-40">
+                        <img src="https://placehold.co/600x400/10B981/ffffff?text=MARATON+SOLIDARIA" alt="Maratón Solidaria" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Deporte</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Maratón Solidaria</h3>
+                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                            <i data-lucide="map-pin" class="h-4 w-4"></i>
+                            <span>Barcelona, 20 NOV • 08:00 am</span>
+                        </p>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-xl font-extrabold text-green-600">$10.00</span>
+                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                                Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EJEMPLO 4: Taller Creativo -->
+                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                    <div class="relative h-40">
+                        <img src="https://placehold.co/600x400/F59E0B/ffffff?text=TALLER+CREATIVO" alt="Taller Creativo" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Formación</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Taller Creativo</h3>
+                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                            <i data-lucide="map-pin" class="h-4 w-4"></i>
+                            <span>Valencia, 25 NOV • 19:30 h</span>
+                        </p>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-xl font-extrabold text-green-600">$50.00</span>
+                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                                Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón Cargar Más -->
+            <div class="flex justify-center my-8">
+                <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 shadow-sm">
+                    Cargar más eventos
+                </button>
+            </div>
+            
+        </main>
+
+        <!-- 3. FOOTER FIJO (TAB BAR INFERIOR MODERNO) -->
+        <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-20 rounded-t-3xl border-t border-gray-100">
+            <nav class="max-w-4xl mx-auto flex justify-around items-end h-20 px-4">
+                
+                <!-- Item: Cercanos (Inactivo) -->
+                <a href="javascript:void(0)" class="nav-item text-gray-500 hover:text-indigo-600 group">
+                    <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
+                        <i data-lucide="map-pin" class="h-6 w-6"></i>
+                    </div>
+                    <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Cercanos</span>
+                </a>
+
+                <!-- Item: Mejor Valorados (ACTIVO) - Estilo destacado -->
+                <a href="javascript:void(0)" class="nav-item nav-item-active text-cyan-500 transform scale-110 -translate-y-2">
+                    <div class="icon-bg w-14 h-14 rounded-full transition duration-300 flex items-center justify-center">
+                        <i data-lucide="star" class="h-8 w-8 text-white fill-white"></i>
+                    </div>
+                    <span class="text-xs mt-1 font-semibold transition duration-300 opacity-100">Valorados</span>
+                </a>
+
+                <!-- Icono: Mi Perfil / Agenda (Acceso a PAN4 - Inactivo) -->
+                <a href="javascript:void(0)" class="nav-item text-gray-500 hover:text-indigo-600 group">
+                    <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
+                        <i data-lucide="user" class="h-6 w-6"></i>
+                    </div>
+                    <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Perfil</span>
+                </a>
+            </nav>
+        </footer>
+    </div>
+
+
+    <!-- ---------------------------------------------------- -->
+    <!-- PANTALLA 2: DETALLE DE EVENTO (PAN2) -->
+    <!-- ---------------------------------------------------- -->
+    <div id="pantalla2" class="screen hidden">
         
-        <!-- Contenedor Grid Responsivo (Grid de 1, 2 o 3 columnas) -->
-        <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-
-            <!-- INICIO: Tarjeta de Evento (Mockup, 4 EJEMPLOS) -->
-
-            <!-- EJEMPLO 1: Concierto Rock -->
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
-                <div class="relative h-40">
-                    <img src="https://placehold.co/600x400/3b82f6/ffffff?text=CONCIERTO+ROCK" alt="Concierto Rock" class="w-full h-full object-cover">
-                    <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">Música</span>
-                </div>
-                <div class="p-4">
-                    <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Concierto Rock</h3>
-                    <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                        <i data-lucide="map-pin" class="h-4 w-4"></i>
-                        <span>Madrid, 15 NOV • 20:00 h</span>
-                    </p>
-                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                        <span class="text-xl font-extrabold text-green-600">$25.00</span>
-                        <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                            Detalles
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- EJEMPLO 2: Arte Moderno -->
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
-                <div class="relative h-40">
-                    <img src="https://placehold.co/600x400/06B6D4/ffffff?text=ARTE+MODERNO" alt="Arte Moderno" class="w-full h-full object-cover">
-                    <span class="absolute top-2 left-2 bg-cyan-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Exposición</span>
-                </div>
-                <div class="p-4">
-                    <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Arte Moderno</h3>
-                    <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                        <i data-lucide="map-pin" class="h-4 w-4"></i>
-                        <span>Madrid, 18 NOV • Todo el día</span>
-                    </p>
-                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                        <span class="text-xl font-extrabold text-green-600">Gratis</span>
-                        <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                            Detalles
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <!-- HEADER (Imagen de fondo y Controles) -->
+        <header class="relative h-80">
+            <!-- Imagen Principal -->
+            <img src="https://placehold.co/1000x500/3b82f6/ffffff?text=CONCIERTO+ROCK+DESTACADO" alt="Imagen del evento" class="w-full h-full object-cover">
             
-            <!-- EJEMPLO 3: Maratón Solidaria -->
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
-                <div class="relative h-40">
-                    <img src="https://placehold.co/600x400/10B981/ffffff?text=MARATON+SOLIDARIA" alt="Maratón Solidaria" class="w-full h-full object-cover">
-                    <span class="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Deporte</span>
-                </div>
-                <div class="p-4">
-                    <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Maratón Solidaria</h3>
-                    <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                        <i data-lucide="map-pin" class="h-4 w-4"></i>
-                        <span>Barcelona, 20 NOV • 08:00 am</span>
+            <!-- Botones de Control Flotantes -->
+            <div class="absolute top-4 left-4">
+                <!-- Botón de Retroceso a PAN1 -->
+                <button onclick="mostrarPantalla1()" class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
+                    <i data-lucide="chevron-left" class="h-6 w-6 text-gray-800"></i>
+                </button>
+            </div>
+            <div class="absolute top-4 right-4">
+                <!-- Botón de Guardar/Favorito -->
+                <button class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
+                    <i data-lucide="bookmark" class="h-6 w-6 text-gray-800"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- BODY (Contenido principal con efecto de superposición) -->
+        <main class="flex-grow max-w-4xl mx-auto -mt-10 z-10 relative px-4 sm:px-6 lg:px-8">
+            <div class="bg-white p-6 rounded-t-3xl shadow-xl">
+                
+                <!-- Título -->
+                <h1 class="text-4xl font-extrabold text-gray-900 mb-4">Concierto Rock "The Phantoms"</h1>
+                
+                <!-- Metadatos Clave -->
+                <div class="space-y-3 mb-6 border-b pb-4">
+                    <p class="text-lg text-gray-700 flex items-center space-x-3">
+                        <i data-lucide="calendar" class="h-6 w-6 text-indigo-500"></i>
+                        <span class="font-semibold">Fecha:</span> 15 de Noviembre, 2025
                     </p>
-                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                        <span class="text-xl font-extrabold text-green-600">$10.00</span>
-                        <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                            Detalles
-                        </button>
-                    </div>
+                    <p class="text-lg text-gray-700 flex items-center space-x-3">
+                        <i data-lucide="clock" class="h-6 w-6 text-indigo-500"></i>
+                        <span class="font-semibold">Hora:</span> 20:00 h (Apertura de puertas 19:00 h)
+                    </p>
+                    <p class="text-lg text-gray-700 flex items-center space-x-3">
+                        <i data-lucide="map-pin" class="h-6 w-6 text-indigo-500"></i>
+                        <span class="font-semibold">Ubicación:</span> Sala Apollo, Calle Príncipe de Vergara, Madrid.
+                    </p>
+                </div>
+
+                <!-- Descripción Completa -->
+                <h2 class="text-2xl font-bold text-gray-800 mb-3">Sobre el Evento</h2>
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                    ¡Prepárate para una noche épica con "The Phantoms"! La banda de rock alternativo más aclamada de la escena nacional llega a Madrid para presentar su nuevo álbum, "Ecos de Medianoche". Con un sonido potente y un espectáculo de luces inmersivo, esta es una cita obligada para los amantes del buen rock. 
+                    <br><br>
+                    Las entradas incluyen acceso a la zona VIP después del concierto para un encuentro exclusivo con los miembros de la banda. ¡No te lo pierdas!
+                </p>
+
+                <!-- Precio -->
+                <div class="text-center p-4 bg-green-50 rounded-xl">
+                    <span class="text-sm font-medium text-gray-600 block">Precio base por persona</span>
+                    <span class="text-4xl font-extrabold text-green-600">$25.00</span>
                 </div>
             </div>
-
-            <!-- EJEMPLO 4: Taller Creativo -->
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
-                <div class="relative h-40">
-                    <img src="https://placehold.co/600x400/F59E0B/ffffff?text=TALLER+CREATIVO" alt="Taller Creativo" class="w-full h-full object-cover">
-                    <span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Formación</span>
-                </div>
-                <div class="p-4">
-                    <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Taller Creativo</h3>
-                    <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                        <i data-lucide="map-pin" class="h-4 w-4"></i>
-                        <span>Valencia, 25 NOV • 19:30 h</span>
-                    </p>
-                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                        <span class="text-xl font-extrabold text-green-600">$50.00</span>
-                        <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                            Detalles
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- FIN: Tarjetas de Evento -->
-
-        </div>
-
-        <!-- Botón Cargar Más -->
-        <div class="flex justify-center my-8">
-            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 shadow-sm">
-                Cargar más eventos
-            </button>
-        </div>
+        </main>
         
-    </main>
+        <!-- FOOTER (Barra de Acción Fija - No TabBar) -->
+        <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-20 p-4">
+            <div class="max-w-4xl mx-auto">
+                <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/50">
+                    Reservar ahora ($25.00)
+                </button>
+            </div>
+        </footer>
+    </div>
 
-    <!-- 3. FOOTER FIJO (TAB BAR INFERIOR MODERNO) -->
-    <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-20 rounded-t-3xl border-t border-gray-100">
-        <nav class="max-w-4xl mx-auto flex justify-around items-end h-20 px-4">
-            
-            <!-- Item: Cercanos (Inactivo) -->
-            <a href="#" class="nav-item text-gray-500 hover:text-indigo-600 group">
-                <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
-                    <i data-lucide="map-pin" class="h-6 w-6"></i>
-                </div>
-                <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Cercanos</span>
-            </a>
 
-            <!-- Item: Mejor Valorados (ACTIVO) - Estilo destacado -->
-            <a href="#" class="nav-item nav-item-active text-cyan-500 transform scale-110 -translate-y-2">
-                <div class="icon-bg w-14 h-14 rounded-full transition duration-300 flex items-center justify-center">
-                    <i data-lucide="star" class="h-8 w-8 text-white fill-white"></i>
-                </div>
-                <span class="text-xs mt-1 font-semibold transition duration-300 opacity-100">Valorados</span>
-            </a>
-
-            <!-- Icono: Mi Perfil / Agenda (Acceso a PAN4 - Inactivo) -->
-            <a href="#" class="nav-item text-gray-500 hover:text-indigo-600 group">
-                <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
-                    <i data-lucide="user" class="h-6 w-6"></i>
-                </div>
-                <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Perfil</span>
-            </a>
-        </nav>
-    </footer>
-    
-    <!-- Inicializar Iconos Lucide -->
+    <!-- ---------------------------------------------------- -->
+    <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
+    <!-- ---------------------------------------------------- -->
     <script>
+        // Inicializar Iconos Lucide
         lucide.createIcons();
+
+        // Función para mostrar la Pantalla 1 (Listado)
+        function mostrarPantalla1() {
+            document.getElementById('pantalla2').classList.add('hidden');
+            document.getElementById('pantalla1').classList.remove('hidden');
+            window.scrollTo(0, 0); // Ir al inicio de la página
+        }
+
+        // Función para mostrar la Pantalla 2 (Detalle)
+        function mostrarPantalla2() {
+            document.getElementById('pantalla1').classList.add('hidden');
+            document.getElementById('pantalla2').classList.remove('hidden');
+            window.scrollTo(0, 0); // Ir al inicio de la página
+        }
     </script>
 </body>
 </html>
