@@ -12,7 +12,24 @@
             font-family: 'Inter', sans-serif;
             background-color: #F9FAFB; /* Gray 50 */
             padding-top: 100px; /* Espacio para el header fijo */
-            padding-bottom: 64px; /* Espacio para el TabBar fijo */
+            padding-bottom: 80px; /* Incrementado para el nuevo TabBar */
+        }
+
+        /* Estilo para los botones de la TabBar */
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        /* Estilo para el icono activo (Valorados) */
+        .nav-item-active .icon-bg {
+            background-color: #06B6D4; /* Cyan 500 */
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
         }
     </style>
     <!-- Iconos Lucide (simulando los del mockup) -->
@@ -157,23 +174,32 @@
         
     </main>
 
-    <!-- 3. FOOTER FIJO (TAB BAR INFERIOR) -->
-    <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-20">
-        <nav class="max-w-4xl mx-auto flex justify-around items-center h-16 border-t border-gray-100">
-            <!-- Icono: Cercanos -->
-            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-cyan-500 transition duration-150">
-                <i data-lucide="map-pin" class="h-6 w-6"></i>
-                <span class="text-xs mt-1">Cercanos</span>
+    <!-- 3. FOOTER FIJO (TAB BAR INFERIOR MODERNO) -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-20 rounded-t-3xl border-t border-gray-100">
+        <nav class="max-w-4xl mx-auto flex justify-around items-end h-20 px-4">
+            
+            <!-- Item: Cercanos (Inactivo) -->
+            <a href="#" class="nav-item text-gray-500 hover:text-indigo-600 group">
+                <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
+                    <i data-lucide="map-pin" class="h-6 w-6"></i>
+                </div>
+                <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Cercanos</span>
             </a>
-            <!-- Icono: Mejor Valorados -->
-            <a href="#" class="flex flex-col items-center text-cyan-500 transition duration-150">
-                <i data-lucide="star" class="h-6 w-6 fill-cyan-500"></i>
-                <span class="text-xs mt-1 font-semibold">Valorados</span>
+
+            <!-- Item: Mejor Valorados (ACTIVO) - Estilo destacado -->
+            <a href="#" class="nav-item nav-item-active text-cyan-500 transform scale-110 -translate-y-2">
+                <div class="icon-bg w-14 h-14 rounded-full transition duration-300 flex items-center justify-center">
+                    <i data-lucide="star" class="h-8 w-8 text-white fill-white"></i>
+                </div>
+                <span class="text-xs mt-1 font-semibold transition duration-300 opacity-100">Valorados</span>
             </a>
-            <!-- Icono: Mi Perfil / Agenda (Acceso a PAN4) -->
-            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-cyan-500 transition duration-150">
-                <i data-lucide="user" class="h-6 w-6"></i>
-                <span class="text-xs mt-1">Perfil</span>
+
+            <!-- Icono: Mi Perfil / Agenda (Acceso a PAN4 - Inactivo) -->
+            <a href="#" class="nav-item text-gray-500 hover:text-indigo-600 group">
+                <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
+                    <i data-lucide="user" class="h-6 w-6"></i>
+                </div>
+                <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Perfil</span>
             </a>
         </nav>
     </footer>
