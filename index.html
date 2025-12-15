@@ -7,7 +7,7 @@
     <!-- Incluir el CDN de Tailwind CSS y la fuente Inter -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap'); /* Añadido weight 900 */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #F9FAFB; /* Gray 50 */
@@ -42,6 +42,11 @@
         #pantalla1 main {
              padding-top: 100px; /* Espacio para el header fijo */
              padding-bottom: 80px; /* Espacio para el TabBar fijo */
+        }
+        
+        /* Ajuste de padding para PAN2 (Detalle) para evitar que el contenido se solape con el CTA fijo) */
+        #pantalla2 main {
+            padding-bottom: 80px; /* Espacio para el CTA fijo */
         }
     </style>
     <!-- Iconos Lucide (simulando los del mockup) -->
@@ -126,13 +131,13 @@
                             <i data-lucide="map-pin" class="h-4 w-4"></i>
                             <span>Madrid, 18 NOV • Todo el día</span>
                         </p>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <span class="text-xl font-extrabold text-green-600">Gratis</span>
-                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                                Detalles
-                            </button>
-                        </div>
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                        <span class="text-xl font-extrabold text-green-600">Gratis</span>
+                        <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                            Detalles
+                        </button>
                     </div>
+                </div>
                 </div>
                 
                 <!-- EJEMPLO 3: Maratón Solidaria -->
@@ -283,10 +288,11 @@
             </div>
         </main>
         
-        <!-- FOOTER (Barra de Acción Fija - No TabBar) -->
+        <!-- FOOTER (Barra de Acción Fija - CTA más grande) -->
         <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-20 p-4">
             <div class="max-w-4xl mx-auto">
-                <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/50">
+                <!-- Botón con mayor padding vertical (py-4) y texto más grueso (font-black) -->
+                <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/50 text-lg">
                     Reservar ahora ($25.00)
                 </button>
             </div>
