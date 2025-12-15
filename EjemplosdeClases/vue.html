@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Fusión Vue.js</title>
+    
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        /* --- ESTILOS CSS --- */
+        body {
+            background-color: #1a1a2e;
+            color: #e4e4e4;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .game-container {
+            padding: 30px;
+            border-radius: 15px;
+            background-color: #2c2c44;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            /* Transiciones para la fusión */
+            width: 380px; /* Ancho inicial: 2*150px cards + 20px gap + 60px padding */
+            transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+        }
+
+        .card-wrapper {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Estilos de la Tarjeta (Componente Vue) */
+        .card {
+            width: 150px;
+            height: 200px;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            user-select: none;
+            color: white;
+            opacity: 0.9;
+        }
+
+        .card:hover {
+            opacity: 1;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+        }
+        
+        /* Contenedor del contador para evitar que el botón lo oculte */
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+            justify-content: center;
+        }
+
+        .count-display {
+            font-size: 3.5em;
+            font-weight: bold;
+            margin: 10px 0;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .card button {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        
+        .card button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* --- ESTILOS DE VICTORIA (Fusión) --- */
+        .game-container.victory-mode {
+            width: 500px; /* Nuevo ancho para la tarjeta fusionada */
+            background-color: #5cb85c; /* Color de victoria (verde) */
+            text-align: center;
+            padding: 50px 30px;
+        }
+
+        .victory-card {
+            color: white;
+            animation: fadeIn 1s ease-out;
+        }
+        
+        .victory-card h2 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px #3e8e41;
+        }
+
+        .victory-card button {
+            padding: 10px 20px;
+            background-color: #2c2c44;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 25px;
+            font-size: 1.1em;
+            transition: background-color 0.2s;
+        }
+        
+        .victory-card button:hover {
+            background-color: #444;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+      </div>
+
+    <script type="module">
+        // Extraemos las funciones de Vue necesarias
+        const { ref, computed, createApp } = Vue;
+
+        // --- Componente Tarjeta (Card Component) ---
+        const Card = {
+            props: {
+                initialCount: Number,
+                colorScale: Number // 1 para azul, 2 para naranja
+            },
+            emits: ['clickCard'], 
+
+            setup(props, { emit }) {
+                // Propiedad computada para el estilo dinámico
+                const dynamicStyle = computed(() => {
+                    // La intensidad va de 0 a 100 (basado en el conteo de 0 a 10)
+                    const intensity = Math.min(props.initialCount, 10) * 10;
+                    
+                    let hue;
+                    // Definición de colores base (HSL: Hue, Saturation, Lightness)
+                    if (props.colorScale === 1) {
+                        hue = 240; // Azul
+                    } else {
+                        hue = 30;  // Naranja/Amarillo
+                    }
+                    
+                    // Aumentamos el brillo (Lightness) a medida que sube el contador
+                    return {
+                        backgroundColor: `hsl(${hue}, 80%, ${30 + intensity * 0.4}%)`, 
+                        // Efecto de escala ligera
+                        transform: `scale(${1 + intensity * 0.005})` 
+                    };
+                });
+
+                const handleClick = () => {
+                    // Evitamos que el botón de HTML capture el click en producción
+                    if (props.initialCount < 10) {
+                        emit('clickCard');
+                    }
+                };
+
+                return {
+                    dynamicStyle,
+                    handleClick
+                };
+            },
+
+            template: `
+                <div class="card" :style="dynamicStyle" @click="handleClick">
+                    <h3>Tarjeta {{ colorScale }}</h3>
+                    <div class="card-content">
+                        <p class="count-display">{{ initialCount }}</p>
+                    </div>
+                    <button @click.stop="handleClick" :disabled="initialCount >= 10">
+                        {{ initialCount >= 10 ? '¡Listo!' : '+1' }}
+                    </button>
+                </div>
+            `
+        };
+
+        // --- Aplicación Principal (App Component) ---
+        const App = {
+            components: { Card },
+            setup() {
+                const count1 = ref(0);
+                const count2 = ref(0);
+                
+                // Propiedad computada: ¿Hemos ganado? (Ambos >= 10)
+                const isVictorious = computed(() => count1.value >= 10 && count2.value >= 10);
+                
+                // Función para incrementar el contador específico
+                const incrementCount = (cardNumber) => {
+                    // Si ya se ganó, no hacemos nada
+                    if (isVictorious.value) return; 
+                    
+                    if (cardNumber === 1 && count1.value < 10) {
+                        count1.value++;
+                    } else if (cardNumber === 2 && count2.value < 10) {
+                        count2.value++;
+                    }
+                };
+                
+                // Función para reiniciar el juego
+                const resetGame = () => {
+                    count1.value = 0;
+                    count2.value = 0;
+                };
+
+                return {
+                    count1,
+                    count2,
+                    isVictorious,
+                    incrementCount,
+                    resetGame,
+                };
+            },
+
+            template: `
+                <div class="game-container" :class="{ 'victory-mode': isVictorious }">
+                    
+                    <div v-if="!isVictorious" class="card-wrapper">
+                        <Card 
+                            :initial-count="count1"
+                            @click-card="incrementCount(1)"
+                            :color-scale="1"
+                        />
+                        
+                        <Card 
+                            :initial-count="count2"
+                            @click-card="incrementCount(2)"
+                            :color-scale="2"
+                        />
+                    </div>
+
+                    <div v-else class="victory-card">
+                        <h2>¡VICTORIA! 🏆</h2>
+                        <p>Has alcanzado 10 puntos en ambas tarjetas. ¡Fusión completada!</p>
+                        <button @click="resetGame">Jugar de Nuevo</button>
+                    </div>
+                </div>
+            `
+        };
+
+        // Montamos la aplicación Vue en el elemento con id="app"
+        createApp(App).mount('#app');
+    </script>
+</body>
+</html>
