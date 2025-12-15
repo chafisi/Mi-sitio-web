@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Fusión Vue.js (Teclado A & L)</title>
+    
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        /* --- ESTILOS CSS --- */
+        body {
+            background-color: #1a1a2e;
+            color: #e4e4e4;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .game-container {
+            padding: 30px;
+            border-radius: 15px;
+            background-color: #2c2c44;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            /* Ancho inicial y transición para la fusión */
+            width: 380px; 
+            transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+        }
+
+        .card-wrapper {
+            display: flex; /* Asegura que las tarjetas estén una al lado de la otra */
+            gap: 20px;
+        }
+
+        /* Estilos de la Tarjeta */
+        .card {
+            width: 150px;
+            height: 200px;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            user-select: none;
+            color: white;
+            opacity: 0.9;
+        }
+
+        .card:hover {
+            opacity: 1;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+        }
+        
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+            justify-content: center;
+        }
+
+        .count-display {
+            font-size: 3.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .card button {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+        
+        /* ESTILOS DE VICTORIA (Tarjeta Fusionada) */
+        .game-container.victory-mode {
+            width: 500px; 
+            background-color: #5cb85c;
+            text-align: center;
+            padding: 50px 30px;
+        }
+
+        .victory-card {
+            color: white;
+            animation: fadeIn 1s ease-out;
+        }
+        
+        .victory-card h2 {
+            font-size: 2.5em;
+        }
+
+        .victory-card button {
+            padding: 10px 20px;
+            background-color: #2c2c44;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 25px;
+            font-size: 1.1em;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        </div>
+
+    <script type="module">
+        // Extraemos las funciones de Vue necesarias
+        const { ref, computed, createApp, onMounted, onUnmounted } = Vue;
+
+        // --- Componente Tarjeta (Card Component) ---
+        const Card = {
+            props: {
+                initialCount: Number,
+                colorScale: Number, 
+                keyControl: String  // Muestra la tecla de control
+            },
+            emits: ['clickCard'], 
+
+            setup(props, { emit }) {
+                // Estilo dinámico basado en el contador para el efecto de color
+                const dynamicStyle = computed(() => {
+                    const intensity = Math.min(props.initialCount, 10) * 10;
+                    let hue = props.colorScale === 1 ? 240 : 30; // Azul o Naranja
+                    
+                    return {
+                        backgroundColor: `hsl(${hue}, 80%, ${30 + intensity * 0.4}%)`, 
+                        transform: `scale(${1 + intensity * 0.005})` 
+                    };
+                });
+
+                const handleClick = () => {
+                    if (props.initialCount < 10) {
+                        emit('clickCard');
+                    }
+                };
+
+                return {
+                    dynamicStyle,
+                    handleClick
+                };
+            },
+
+            template: `
+                <div class="card" :style="dynamicStyle" @click="handleClick">
+                    <h3>Tarjeta {{ colorScale }}</h3>
+                    <div class="card-content">
+                        <p class="count-display">{{ initialCount }}</p>
+                    </div>
+                    <button @click.stop="handleClick" :disabled="initialCount >= 10">
+                        Pulsa '{{ keyControl }}' o haz clic
+                    </button>
+                </div>
+            `
+        };
+
+        // --- Aplicación Principal (App Component) ---
+        const App = {
+            components: { Card },
+            setup() {
+                const count1 = ref(0);
+                const count2 = ref(0);
+                
+                // Determina el estado de victoria
+                const isVictorious = computed(() => count1.value >= 10 && count2.value >= 10);
+                
+                // Función para incrementar el contador específico (de 1 en 1)
+                const incrementCount = (cardNumber) => {
+                    if (isVictorious.value) return; 
+
+                    if (cardNumber === 1 && count1.value < 10) {
+                        count1.value++;
+                    } else if (cardNumber === 2 && count2.value < 10) {
+                        count2.value++;
+                    }
+                };
+                
+                const resetGame = () => {
+                    count1.value = 0;
+                    count2.value = 0;
+                };
+
+                // Lógica del Control por Teclado
+                const handleKeyPress = (event) => {
+                    if (isVictorious.value) return; 
+
+                    // Tecla 'a' (o 'A') para Tarjeta 1
+                    if (event.key === 'a' || event.key === 'A') {
+                        incrementCount(1);
+                    }
+                    // Tecla 'l' (o 'L') para Tarjeta 2
+                    else if (event.key === 'l' || event.key === 'L') {
+                        incrementCount(2);
+                    }
+                };
+
+                // Añadir y remover el Event Listener global
+                onMounted(() => {
+                    document.addEventListener('keydown', handleKeyPress);
+                });
+                
+                onUnmounted(() => {
+                    document.removeEventListener('keydown', handleKeyPress);
+                });
+
+                return {
+                    count1,
+                    count2,
+                    isVictorious,
+                    incrementCount,
+                    resetGame,
+                };
+            },
+
+            template: `
+                <div class="game-container" :class="{ 'victory-mode': isVictorious }">
+                    
+                    <div v-if="!isVictorious" class="card-wrapper">
+                        <Card 
+                            :initial-count="count1"
+                            @click-card="incrementCount(1)"
+                            :color-scale="1"
+                            key-control="A"
+                        />
+                        
+                        <Card 
+                            :initial-count="count2"
+                            @click-card="incrementCount(2)"
+                            :color-scale="2"
+                            key-control="L"
+                        />
+                    </div>
+
+                    <div v-else class="victory-card">
+                        <h2>¡VICTORIA! 🏆</h2>
+                        <p>Fusión completada. ¡Ambas tarjetas alcanzaron 10 puntos!</p>
+                        <button @click="resetGame">Jugar de Nuevo</button>
+                    </div>
+                </div>
+            `
+        };
+
+        // Montamos la aplicación Vue en el elemento con id="app"
+        createApp(App).mount('#app');
+    </script>
+</body>
+</html>
