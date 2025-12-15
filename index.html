@@ -3,716 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OcioPlus - Tu Agenda de Eventos</title>
-    <!-- Incluir Tailwind CSS desde CDN para estilos -->
+    <title>OcioPlus - Próximos Eventos</title>
+    <!-- Incluir el CDN de Tailwind CSS y la fuente Inter -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Incluir Font Awesome para iconos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuM2W4zX71/I/O+pG8N5M+q/2pBv7K+R/q7Xh6C7s8u+g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* Configuración global de la fuente y modo oscuro */
-        :root {
-            --card-bg-light: #ffffff;
-            --card-shadow-light: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --header-bg-light: #ffffff;
-            --header-shadow-light: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-        }
-        .dark {
-            --card-bg-dark: #1f2937;
-            --card-shadow-dark: 0 10px 15px -3px rgba(255, 255, 255, 0.05);
-            --header-bg-dark: #111827;
-            --header-shadow-dark: 0 1px 3px 0 rgba(255, 255, 255, 0.1);
-        }
-        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .card-container {
-            background-color: var(--card-bg-light);
-            box-shadow: var(--card-shadow-light);
-            @apply bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl flex flex-col;
-            /* Aplicar modo oscuro condicionalmente */
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-        .dark .card-container {
-            background-color: var(--card-bg-dark);
-            box-shadow: var(--card-shadow-dark);
-        }
-
-        .card-image {
-            @apply w-full h-48 object-cover transition duration-300 ease-in-out transform hover:scale-105;
-        }
-
-        .header-bar {
-            @apply sticky top-0 z-50 bg-white shadow-md;
-            box-shadow: var(--header-shadow-light);
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-        .dark .header-bar {
-            @apply bg-gray-900 shadow-xl;
-            box-shadow: var(--header-shadow-dark);
-        }
-        
-        /* Estilos específicos para el botón activo de la agenda */
-        .agenda-active {
-            @apply bg-indigo-600 text-white shadow-lg;
-        }
-
-        /* Estilo para el botón de "En Agenda" */
-        .btn-agenda-added {
-            @apply bg-emerald-500 hover:bg-emerald-600 cursor-not-allowed;
-        }
-        
-        /* Ocultar scrollbar pero permitir scroll en el modal body */
-        .modal-body-scroll {
-            max-height: 80vh;
-            overflow-y: auto;
-            scrollbar-width: none; /* Firefox */
-        }
-        .modal-body-scroll::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
-        }
-
-        /* Utilidad para limitar líneas de texto */
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            background-color: #F9FAFB; /* Gray 50 */
+            padding-top: 100px; /* Espacio para el header fijo */
+            padding-bottom: 64px; /* Espacio para el TabBar fijo */
         }
     </style>
+    <!-- Iconos Lucide (simulando los del mockup) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen transition-colors duration-300">
+<body class="min-h-screen">
 
-    <!-- BARRA DE NAVEGACIÓN Y HERRAMIENTAS (Sticky Header) -->
-    <header id="header-bar" class="header-bar">
-        <div class="container mx-auto px-4 py-4 flex flex-wrap items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <i class="fas fa-calendar-check text-3xl text-indigo-600"></i>
-                <h1 class="text-3xl font-extrabold text-gray-900 dark:text-white">OcioPlus</h1>
+    <!-- 1. HEADER FIJO (NAV SUPERIOR) -->
+    <header class="fixed top-0 left-0 right-0 bg-indigo-600 shadow-lg z-20">
+        <div class="max-w-4xl mx-auto p-4 flex items-center justify-between">
+            
+            <!-- Logo y Menú (similar al mockup) -->
+            <div class="flex items-center space-x-3">
+                <i data-lucide="menu" class="text-white h-6 w-6"></i>
+                <h1 class="text-2xl font-extrabold text-white">OcioPlus</h1>
             </div>
-
-            <div class="flex items-center space-x-3 mt-4 md:mt-0">
-                <!-- Selector de Ciudad -->
-                <select id="city-filter" class="p-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm bg-white dark:bg-gray-700 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                    <option value="">Todas las Ciudades</option>
-                    <option value="Madrid">Madrid</option>
-                    <option value="Alicante">Alicante</option>
-                    <option value="Ibi">Ibi</option>
-                    <option value="Elche">Elche</option>
-                </select>
-
-                <!-- Botón de Modo Oscuro -->
-                <button id="dark-mode-toggle" class="p-2 rounded-full text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors shadow-md">
-                    <i class="fas fa-sun text-lg" aria-label="Alternar modo oscuro"></i>
-                </button>
+            
+            <!-- Icono Carrito (similar al mockup) -->
+            <div class="relative">
+                <i data-lucide="shopping-cart" class="text-white h-6 w-6"></i>
+                <span class="absolute -top-2 -right-2 text-xs bg-cyan-500 text-white rounded-full h-4 w-4 flex items-center justify-center font-bold">2</span>
             </div>
         </div>
         
-        <!-- BARRA DE VISTAS Y DATOS -->
-        <div class="bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-            <div class="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between text-sm font-medium">
-                
-                <!-- Botones de Vista -->
-                <div class="flex space-x-2">
-                    <button id="view-all-btn" class="px-4 py-1.5 rounded-full text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors agenda-active">
-                        <i class="fas fa-th-list mr-1"></i> Todos los Eventos
-                    </button>
-                    <button id="view-agenda-btn" class="px-4 py-1.5 rounded-full text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                        <i class="fas fa-bookmark mr-1"></i> Mi Agenda
-                    </button>
-                </div>
-
-                <!-- Estado del Sistema -->
-                <div class="flex flex-wrap items-center space-x-4 mt-2 sm:mt-0">
-                    <p id="firestore-status" class="text-gray-500 dark:text-gray-400">
-                        <i class="fas fa-circle-notch animate-spin mr-1"></i> Estado: Conectando...
-                    </p>
-                    <button id="auth-status-btn" class="px-3 py-1 rounded-full text-xs text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
-                        Sin Sesión
-                    </button>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
-                        <i class="fas fa-user-circle mr-1"></i> ID Usuario: <span id="user-id-display">Cargando...</span>
-                    </p>
-                    <p id="screen-width-display" class="text-xs text-gray-500 dark:text-gray-400 hidden lg:block">Ancho: N/A</p>
-                </div>
+        <!-- Barra de Búsqueda y Filtros -->
+        <div class="max-w-4xl mx-auto p-4 pt-0 flex space-x-2">
+             <div class="relative flex-grow">
+                <!-- Input de Búsqueda Rápida -->
+                <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5"></i>
+                <input type="text" placeholder="Buscar eventos..." class="w-full pl-10 pr-4 py-2 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 text-gray-700 shadow-inner">
             </div>
+            <!-- Botón de Filtros (Acceso a PAN3) -->
+            <button class="bg-cyan-500 hover:bg-cyan-600 text-white p-3 rounded-xl transition duration-300 shadow-md flex-shrink-0">
+                 <i data-lucide="sliders" class="h-6 w-6"></i>
+            </button>
         </div>
     </header>
 
-    <!-- CUERPO PRINCIPAL DEL CONTENIDO -->
-    <main class="container mx-auto px-4 py-8">
+    <!-- 2. BODY PRINCIPAL (LISTADO DE EVENTOS) -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6">Próximos Eventos</h2>
         
-        <!-- Botón de Inicialización de Datos (visible solo si no hay datos) -->
-        <div id="seed-data-container" class="text-center mb-8 hidden">
-             <button id="seed-data-btn" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition-transform transform hover:scale-105">
-                <i class="fas fa-file-import mr-2"></i> Inicializar Datos de Ejemplo (Solo la primera vez)
-            </button>
-        </div>
+        <!-- Contenedor Grid Responsivo (Grid de 1, 2 o 3 columnas) -->
+        <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
 
-        <!-- Mensaje de Carga/Estado -->
-        <p id="loading-message" class="text-center text-xl text-gray-500 dark:text-gray-400 py-12">
-            Cargando eventos...
-        </p>
+            <!-- INICIO: Tarjeta de Evento (Mockup, 4 EJEMPLOS) -->
 
-        <!-- Cuadrícula de Eventos -->
-        <div id="events-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <!-- Las tarjetas de eventos se inyectarán aquí por JavaScript -->
-        </div>
-
-    </main>
-    
-    <!-- MODAL PERSONALIZADO (Sustituto de alert/confirm) -->
-    <div id="modal-container" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-[999]">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 transform transition-all scale-100">
-            <div class="p-6">
-                <h3 id="modal-title" class="text-2xl font-bold mb-4 text-indigo-600 dark:text-indigo-400">Título del Mensaje</h3>
-                <div class="modal-body-scroll">
-                    <p id="modal-body" class="text-gray-700 dark:text-gray-300"></p>
+            <!-- EJEMPLO 1: Concierto Rock -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                <div class="relative h-40">
+                    <img src="https://placehold.co/600x400/3b82f6/ffffff?text=CONCIERTO+ROCK" alt="Concierto Rock" class="w-full h-full object-cover">
+                    <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">Música</span>
                 </div>
-                <div class="mt-6 text-right">
-                    <button id="modal-close-btn" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition duration-150 shadow-md">
-                        Aceptar
-                    </button>
+                <div class="p-4">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Concierto Rock</h3>
+                    <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                        <i data-lucide="map-pin" class="h-4 w-4"></i>
+                        <span>Madrid, 15 NOV • 20:00 h</span>
+                    </p>
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                        <span class="text-xl font-extrabold text-green-600">$25.00</span>
+                        <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                            Detalles
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-
-    <!-- SCRIPT DE FIREBASE -->
-    <script type="module">
-        // Importaciones de Firebase desde CDN
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, writeBatch, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // -----------------------------------------------------------------------------
-        // VARIABLES GLOBALES (Configuración del entorno Canvas)
-        // -----------------------------------------------------------------------------
-        // El ID de la aplicación para aislar los datos en Firestore
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-ocioplus-app-id';
-        // Configuración de Firebase (debe ser un JSON parseable)
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' && __firebase_config.trim() !== '' ? __firebase_config : '{}');
-        // Token de autenticación inicial
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let app, db, auth;
-        let currentUserId = 'N/A';
-        let isAuthenticated = false;
-        let currentView = 'all'; // 'all' o 'agenda'
-        let allEventsCache = [];
-        let userAgendaCache = {}; // { eventId: true/false }
-
-        // -----------------------------------------------------------------------------
-        // DATOS DE EJEMPLO PARA INICIALIZAR LA BBDD
-        // -----------------------------------------------------------------------------
-        const MOCK_EVENTS = [
-            {
-                name: "Concierto Rock 'La Última Ronda'",
-                date: "2025-05-18",
-                time: "21:00",
-                city: "Madrid",
-                description: "Un tributo épico a las leyendas del rock español de los 80 y 90 en el Wizink Center.",
-                image: "https://placehold.co/400x200/4f46e5/ffffff?text=CONCIERTO+ROCK",
-                price: 25.00
-            },
-            {
-                name: "Festival de Tapas y Cerveza Artesana",
-                date: "2025-06-01",
-                time: "12:00",
-                city: "Alicante",
-                description: "Prueba las mejores tapas gourmet maridadas con cervezas locales en el Mercado Central.",
-                image: "https://placehold.co/400x200/10b981/ffffff?text=FESTIVAL+TAPAS",
-                price: 10.00
-            },
-            {
-                name: "Taller de Robótica para Niños",
-                date: "2025-05-25",
-                time: "17:30",
-                city: "Ibi",
-                description: "Aprende a construir y programar tu propio robot en un ambiente divertido y educativo.",
-                image: "https://placehold.co/400x200/f59e0b/ffffff?text=ROBOTICA",
-                price: 45.00
-            },
-            {
-                name: "Exposición de Arte Moderno 'Contrastes'",
-                date: "2025-07-10",
-                time: "10:00",
-                city: "Elche",
-                description: "Una colección que explora la dualidad de la vida contemporánea a través del color y la forma.",
-                image: "https://placehold.co/400x200/ef4444/ffffff?text=ARTE+MODERNO",
-                price: 8.50
-            },
-            {
-                name: "Clase Abierta de Yoga al Amanecer",
-                date: "2025-05-19",
-                time: "07:00",
-                city: "Madrid",
-                description: "Comienza el día con energía y paz en este retiro urbano de yoga en el Parque del Retiro.",
-                image: "https://placehold.co/400x200/6366f1/ffffff?text=YOGA+MADRID",
-                price: 15.00
-            },
-            {
-                name: "Maratón Fotográfico Urbano",
-                date: "2025-05-30",
-                time: "09:00",
-                city: "Alicante",
-                description: "Captura la esencia de la ciudad en un emocionante desafío fotográfico de 8 horas.",
-                image: "https://placehold.co/400x200/06b6d4/ffffff?text=FOTOGRAFIA",
-                price: 5.00
-            }
-        ];
-
-        // -----------------------------------------------------------------------------
-        // REFERENCIAS Y UTILIDADES DEL DOM
-        // -----------------------------------------------------------------------------
-        const dom = {
-            authStatusBtn: document.getElementById('auth-status-btn'),
-            userIdDisplay: document.getElementById('user-id-display'),
-            firestoreStatus: document.getElementById('firestore-status'),
-            eventsGrid: document.getElementById('events-grid'),
-            loadingMessage: document.getElementById('loading-message'),
-            seedDataBtn: document.getElementById('seed-data-btn'),
-            seedDataContainer: document.getElementById('seed-data-container'),
-            viewAllBtn: document.getElementById('view-all-btn'),
-            viewAgendaBtn: document.getElementById('view-agenda-btn'),
-            cityFilter: document.getElementById('city-filter'),
-            darkModeToggle: document.getElementById('dark-mode-toggle'),
-            screenWidthDisplay: document.getElementById('screen-width-display'),
-            modalContainer: document.getElementById('modal-container'),
-            modalTitle: document.getElementById('modal-title'),
-            modalBody: document.getElementById('modal-body'),
-            modalCloseBtn: document.getElementById('modal-close-btn')
-        };
-
-        /**
-         * Muestra un modal de mensaje al usuario (sustituto de alert()).
-         * @param {string} title Título del mensaje.
-         * @param {string} body Contenido del mensaje.
-         * @param {boolean} isError Si es true, el modal se muestra con un estilo de error.
-         */
-        function showModal(title, body, isError = false) {
-            dom.modalTitle.textContent = title;
-            dom.modalBody.textContent = body;
-            
-            // Aplicar estilos de error si es necesario
-            if (isError) {
-                dom.modalTitle.classList.remove('text-indigo-600', 'dark:text-indigo-400');
-                dom.modalTitle.classList.add('text-red-600', 'dark:text-red-400');
-                dom.modalCloseBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-                dom.modalCloseBtn.classList.add('bg-red-600', 'hover:bg-red-700');
-            } else {
-                dom.modalTitle.classList.remove('text-red-600', 'dark:text-red-400');
-                dom.modalTitle.classList.add('text-indigo-600', 'dark:text-indigo-400');
-                dom.modalCloseBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-                dom.modalCloseBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
-            }
-
-            dom.modalContainer.classList.remove('hidden');
-            dom.modalContainer.classList.add('flex');
-        }
-
-        // Oculta el modal al hacer clic en el botón de cerrar
-        dom.modalCloseBtn.addEventListener('click', () => {
-            dom.modalContainer.classList.remove('flex');
-            dom.modalContainer.classList.add('hidden');
-        });
-
-        // -----------------------------------------------------------------------------
-        // FUNCIONES DE FIREBASE Y AUTHENTICATION
-        // -----------------------------------------------------------------------------
-
-        /**
-         * Inicializa Firebase y configura la autenticación del usuario.
-         */
-        async function initializeFirebase() {
-            try {
-                // Establecer el nivel de log a Debug (útil para el desarrollo en canvas)
-                setLogLevel('Debug');
-
-                if (Object.keys(firebaseConfig).length === 0) {
-                    throw new Error("La configuración de Firebase está vacía o es inválida.");
-                }
-
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                // Usar persistencia de sesión para mantener el estado de autenticación
-                await setPersistence(auth, browserSessionPersistence);
-
-                // Actualizar el estado de la conexión a Firestore en la UI
-                dom.firestoreStatus.innerHTML = '<i class="fas fa-database mr-1"></i> Estado: Conectado';
-
-                // Intentar iniciar sesión con el token personalizado o anónimamente
-                await authenticateUser();
-
-                // Configurar el listener de autenticación
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentUserId = user.uid;
-                        isAuthenticated = true;
-                        updateAuthUI();
-                        
-                        // Una vez autenticado, comenzamos a escuchar los datos
-                        startFirestoreListeners();
-
-                    } else {
-                        currentUserId = 'N/A';
-                        isAuthenticated = false;
-                        updateAuthUI();
-                        // Limpiar la interfaz si no hay usuario
-                        dom.eventsGrid.innerHTML = '';
-                        dom.loadingMessage.textContent = 'Inicia sesión para ver tu agenda.';
-                        dom.loadingMessage.classList.remove('hidden');
-                    }
-                });
-
-            } catch (error) {
-                console.error("Error al inicializar Firebase:", error);
-                dom.firestoreStatus.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> Error de Conexión';
-                showModal("Error de Inicialización", "No se pudo conectar a Firebase. Revisa la consola para más detalles sobre la configuración.", true);
-            }
-        }
-
-        /**
-         * Maneja el proceso de autenticación.
-         */
-        async function authenticateUser() {
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                    console.log("Autenticación exitosa con token personalizado.");
-                } else {
-                    // Si no hay token personalizado, usa el inicio de sesión anónimo
-                    await signInAnonymously(auth);
-                    console.log("Autenticación exitosa anónima.");
-                }
-            } catch (error) {
-                console.error("Error en la autenticación:", error);
-                // Intenta una vez más con anónimo si falla el token
-                try {
-                    await signInAnonymously(auth);
-                } catch (e) {
-                     showModal("Error de Autenticación", `No se pudo iniciar sesión: ${e.message}`, true);
-                }
-            }
-        }
-
-        /**
-         * Actualiza la información de autenticación en la interfaz de usuario.
-         */
-        function updateAuthUI() {
-            dom.userIdDisplay.textContent = currentUserId;
-            if (isAuthenticated) {
-                dom.authStatusBtn.textContent = 'Sesión Activa';
-                dom.authStatusBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-                dom.authStatusBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
-            } else {
-                dom.authStatusBtn.textContent = 'Sin Sesión';
-                dom.authStatusBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
-                dom.authStatusBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
-            }
-        }
-
-        // -----------------------------------------------------------------------------
-        // FIREBASE FIRESTORE LISTENERS
-        // -----------------------------------------------------------------------------
-
-        /**
-         * Inicia los listeners de Firestore para Eventos Públicos y la Agenda Privada del Usuario.
-         */
-        function startFirestoreListeners() {
-            if (!isAuthenticated) return;
-
-            // 1. Listener para todos los eventos públicos
-            const eventsCollectionRef = collection(db, `artifacts/${appId}/public/data/events`);
-            onSnapshot(eventsCollectionRef, (snapshot) => {
-                allEventsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // Si no hay eventos, mostrar el botón de seed data
-                if (allEventsCache.length === 0) {
-                    dom.seedDataContainer.classList.remove('hidden');
-                    dom.loadingMessage.textContent = 'No hay eventos disponibles. Por favor, inicializa los datos.';
-                    dom.loadingMessage.classList.remove('hidden');
-                } else {
-                    dom.seedDataContainer.classList.add('hidden');
-                    dom.loadingMessage.classList.add('hidden');
-                }
-
-                renderEvents();
-            }, (error) => {
-                console.error("Error al escuchar eventos públicos:", error);
-                dom.loadingMessage.textContent = 'Error al cargar eventos.';
-                dom.loadingMessage.classList.remove('hidden');
-                showModal("Error de Datos", "No se pudieron cargar los eventos públicos. Revisa los permisos.", true);
-            });
-
-            // 2. Listener para la agenda privada del usuario
-            // La agenda se almacena en una colección privada bajo el ID del usuario:
-            // /artifacts/{appId}/users/{userId}/agenda
-            const agendaCollectionRef = collection(db, `artifacts/${appId}/users/${currentUserId}/agenda`);
-            onSnapshot(agendaCollectionRef, (snapshot) => {
-                userAgendaCache = {};
-                snapshot.docs.forEach(doc => {
-                    // El ID del documento es el ID del evento
-                    userAgendaCache[doc.id] = true; 
-                });
-
-                console.log("Agenda actualizada:", Object.keys(userAgendaCache).length, "eventos.");
-                renderEvents(); // Re-renderizar para actualizar el estado de los botones
-            }, (error) => {
-                console.error("Error al escuchar la agenda del usuario:", error);
-                // Si el usuario no tiene permisos para su propia agenda, esto fallará.
-                // No mostrar modal si es un simple error de permisos esperado en el setup inicial.
-            });
-        }
-
-        // -----------------------------------------------------------------------------
-        // GESTIÓN DE LA AGENDA (Añadir/Eliminar Eventos)
-        // -----------------------------------------------------------------------------
-
-        /**
-         * Añade o elimina un evento de la agenda privada del usuario.
-         * @param {string} eventId ID del evento a modificar.
-         * @param {boolean} isAdding True para añadir, false para eliminar.
-         */
-        async function toggleAgenda(eventId, isAdding) {
-            if (!isAuthenticated) {
-                showModal("Acceso Denegado", "Debes estar autenticado para añadir eventos a tu agenda.", false);
-                return;
-            }
-
-            const agendaDocRef = doc(db, `artifacts/${appId}/users/${currentUserId}/agenda`, eventId);
-
-            try {
-                if (isAdding) {
-                    // Añadir el evento a la agenda. Usamos setDoc con el ID del evento.
-                    await setDoc(agendaDocRef, { addedAt: new Date(), eventId: eventId });
-                    showModal("¡Agregado!", "El evento se ha añadido a tu agenda de OcioPlus.", false);
-                } else {
-                    // Eliminar el evento de la agenda
-                    await deleteDoc(agendaDocRef);
-                    showModal("Eliminado", "El evento se ha eliminado de tu agenda.", false);
-                }
-                // El onSnapshot se encargará de re-renderizar la vista.
-            } catch (error) {
-                console.error("Error al modificar la agenda:", error);
-                showModal("Error", `No se pudo ${isAdding ? 'añadir' : 'eliminar'} el evento de la agenda: ${error.message}`, true);
-            }
-        }
-
-        // -----------------------------------------------------------------------------
-        // RENDERIZADO Y FILTRADO DE EVENTOS
-        // -----------------------------------------------------------------------------
-
-        /**
-         * Renderiza todos los eventos en la cuadrícula, aplicando filtros y la vista actual.
-         */
-        function renderEvents() {
-            dom.eventsGrid.innerHTML = '';
-            
-            const selectedCity = dom.cityFilter.value;
-            
-            // 1. Filtrar por la vista actual ('all' o 'agenda')
-            let filteredEvents = allEventsCache.filter(event => {
-                const isAgendaMatch = currentView === 'all' || userAgendaCache[event.id];
-                const isCityMatch = !selectedCity || event.city === selectedCity;
-                return isAgendaMatch && isCityMatch;
-            });
-
-            // 2. Mostrar mensaje si no hay eventos filtrados
-            if (filteredEvents.length === 0) {
-                let message = 'No se encontraron eventos con los filtros seleccionados.';
-                if (currentView === 'agenda') {
-                    message = 'Aún no tienes eventos en tu agenda. ¡Explora y añade algunos!';
-                } else if (selectedCity) {
-                    message = `No hay eventos en ${selectedCity}.`;
-                }
-                dom.eventsGrid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
-                    <i class="fas fa-search-minus text-5xl mb-3"></i>
-                    <p class="text-xl font-semibold">${message}</p>
-                </div>`;
-                dom.loadingMessage.classList.add('hidden');
-                return;
-            }
-
-            // 3. Generar el HTML de las tarjetas
-            filteredEvents.forEach(event => {
-                const isAdded = !!userAgendaCache[event.id];
-                dom.eventsGrid.appendChild(createEventCard(event, isAdded));
-            });
-            dom.loadingMessage.classList.add('hidden');
-        }
-
-        /**
-         * Crea el elemento HTML de una tarjeta de evento.
-         * @param {object} event Objeto del evento.
-         * @param {boolean} isAdded Si el evento está en la agenda del usuario.
-         * @returns {HTMLElement} El elemento div de la tarjeta.
-         */
-        function createEventCard(event, isAdded) {
-            const card = document.createElement('div');
-            card.className = 'card-container transition duration-300';
-            card.dataset.id = event.id;
-
-            // Formatear la fecha
-            const formattedDate = new Date(event.date).toLocaleDateString('es-ES', { 
-                year: 'numeric', month: 'short', day: 'numeric' 
-            });
-            
-            // Determinar estilo y texto del botón
-            const btnIcon = isAdded ? 'fas fa-check' : 'fas fa-calendar-plus';
-            const btnText = isAdded ? 'En Agenda' : 'Añadir a Agenda';
-            const btnClass = isAdded ? 'btn-agenda-added' : 'bg-indigo-600 hover:bg-indigo-700';
-
-            card.innerHTML = `
-                <!-- Imagen del Evento -->
-                <img src="${event.image}" onerror="this.onerror=null; this.src='https://placehold.co/400x200/cccccc/333333?text=IMAGEN+NO+DISPONIBLE';" class="card-image" alt="Imagen de ${event.name}">
-                
-                <div class="p-4 flex flex-col justify-between flex-grow">
-                    <!-- Título y Descripción -->
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">${event.name}</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">${event.description}</p>
-                    </div>
-
-                    <!-- Detalles -->
-                    <div class="mt-4 space-y-2 text-sm">
-                        <p class="flex items-center text-indigo-600 dark:text-indigo-400 font-semibold">
-                            <i class="fas fa-calendar-alt w-5 mr-2"></i> ${formattedDate} (${event.time})
-                        </p>
-                        <p class="flex items-center text-gray-600 dark:text-gray-300">
-                            <i class="fas fa-map-marker-alt w-5 mr-2"></i> ${event.city}
-                        </p>
-                        <p class="flex items-center text-emerald-600 dark:text-emerald-400 font-bold">
-                            <i class="fas fa-ticket-alt w-5 mr-2"></i> ${event.price === 0 ? 'Gratis' : `${event.price.toFixed(2)} €`}
-                        </p>
-                    </div>
-
-                    <!-- Botón de Acción -->
-                    <button data-event-id="${event.id}" data-is-added="${isAdded}" 
-                            class="mt-4 w-full px-4 py-2 text-white font-semibold rounded-lg shadow-md transition duration-150 ease-in-out ${btnClass}">
-                        <i class="${btnIcon} mr-2"></i> ${btnText}
-                    </button>
+            <!-- EJEMPLO 2: Arte Moderno -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                <div class="relative h-40">
+                    <img src="https://placehold.co/600x400/06B6D4/ffffff?text=ARTE+MODERNO" alt="Arte Moderno" class="w-full h-full object-cover">
+                    <span class="absolute top-2 left-2 bg-cyan-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Exposición</span>
                 </div>
-            `;
-
-            // Añadir el listener al botón de acción
-            const actionButton = card.querySelector('button');
-            actionButton.addEventListener('click', (e) => {
-                e.stopPropagation(); // Evitar que el click se propague a la tarjeta si tuviera otro listener
-                const eventId = actionButton.dataset.eventId;
-                const currentlyAdded = actionButton.dataset.isAdded === 'true';
-                toggleAgenda(eventId, !currentlyAdded); // Invertir el estado
-            });
-
-            return card;
-        }
-
-        // -----------------------------------------------------------------------------
-        // INICIALIZACIÓN DE DATOS DE EJEMPLO
-        // -----------------------------------------------------------------------------
-
-        /**
-         * Inserta datos de ejemplo en la colección pública de eventos.
-         */
-        async function seedInitialData() {
-            if (!isAuthenticated) {
-                showModal("Error", "Debes estar autenticado para inicializar la base de datos.", true);
-                return;
-            }
-
-            dom.seedDataBtn.disabled = true;
-            dom.seedDataBtn.textContent = 'Insertando datos...';
+                <div class="p-4">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Arte Moderno</h3>
+                    <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                        <i data-lucide="map-pin" class="h-4 w-4"></i>
+                        <span>Madrid, 18 NOV • Todo el día</span>
+                    </p>
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                        <span class="text-xl font-extrabold text-green-600">Gratis</span>
+                        <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                            Detalles
+                        </button>
+                    </div>
+                </div>
+            </div>
             
-            const batch = writeBatch(db);
-            const eventsCollectionRef = collection(db, `artifacts/${appId}/public/data/events`);
+            <!-- EJEMPLO 3: Maratón Solidaria -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                <div class="relative h-40">
+                    <img src="https://placehold.co/600x400/10B981/ffffff?text=MARATON+SOLIDARIA" alt="Maratón Solidaria" class="w-full h-full object-cover">
+                    <span class="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Deporte</span>
+                </div>
+                <div class="p-4">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Maratón Solidaria</h3>
+                    <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                        <i data-lucide="map-pin" class="h-4 w-4"></i>
+                        <span>Barcelona, 20 NOV • 08:00 am</span>
+                    </p>
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                        <span class="text-xl font-extrabold text-green-600">$10.00</span>
+                        <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                            Detalles
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-            try {
-                MOCK_EVENTS.forEach(event => {
-                    const newDocRef = doc(eventsCollectionRef); // Firestore genera un ID automáticamente
-                    batch.set(newDocRef, event);
-                });
-
-                await batch.commit();
-                showModal("Éxito", "¡Datos de ejemplo inicializados correctamente en Firestore!", false);
-                dom.seedDataContainer.classList.add('hidden'); // Ocultar después de la inserción
-            } catch (error) {
-                console.error("Error al inicializar datos:", error);
-                showModal("Error", `Falló la inserción de datos: ${error.message}`, true);
-            } finally {
-                dom.seedDataBtn.disabled = false;
-                dom.seedDataBtn.textContent = 'Inicializar Datos de Ejemplo (Solo la primera vez)';
-            }
-        }
-
-        // -----------------------------------------------------------------------------
-        // MANEJO DE EVENTOS DEL DOM
-        // -----------------------------------------------------------------------------
-
-        /**
-         * Cambia la vista de eventos entre 'all' y 'agenda'.
-         * @param {string} view 'all' o 'agenda'.
-         */
-        function changeView(view) {
-            if (currentView === view) return;
-            currentView = view;
+            <!-- EJEMPLO 4: Taller Creativo -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                <div class="relative h-40">
+                    <img src="https://placehold.co/600x400/F59E0B/ffffff?text=TALLER+CREATIVO" alt="Taller Creativo" class="w-full h-full object-cover">
+                    <span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Formación</span>
+                </div>
+                <div class="p-4">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Taller Creativo</h3>
+                    <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                        <i data-lucide="map-pin" class="h-4 w-4"></i>
+                        <span>Valencia, 25 NOV • 19:30 h</span>
+                    </p>
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                        <span class="text-xl font-extrabold text-green-600">$50.00</span>
+                        <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                            Detalles
+                        </button>
+                    </div>
+                </div>
+            </div>
             
-            // Actualizar estilos de los botones
-            dom.viewAllBtn.classList.remove('agenda-active');
-            dom.viewAgendaBtn.classList.remove('agenda-active');
+            <!-- FIN: Tarjetas de Evento -->
 
-            if (view === 'all') {
-                dom.viewAllBtn.classList.add('agenda-active');
-            } else {
-                dom.viewAgendaBtn.classList.add('agenda-active');
-            }
+        </div>
 
-            renderEvents();
-        }
+        <!-- Botón Cargar Más -->
+        <div class="flex justify-center my-8">
+            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 shadow-sm">
+                Cargar más eventos
+            </button>
+        </div>
+        
+    </main>
 
-        /**
-         * Alterna el modo oscuro.
-         */
-        function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark');
-            
-            const isDark = document.documentElement.classList.contains('dark');
-            const icon = dom.darkModeToggle.querySelector('i');
-            
-            if (isDark) {
-                icon.classList.remove('fa-sun', 'text-gray-800');
-                icon.classList.add('fa-moon', 'text-gray-200');
-            } else {
-                icon.classList.remove('fa-moon', 'text-gray-200');
-                icon.classList.add('fa-sun', 'text-gray-800');
-            }
-        }
-
-        // Escuchadores de eventos
-        dom.seedDataBtn.addEventListener('click', seedInitialData);
-        dom.viewAllBtn.addEventListener('click', () => changeView('all'));
-        dom.viewAgendaBtn.addEventListener('click', () => changeView('agenda'));
-        dom.cityFilter.addEventListener('change', renderEvents);
-        dom.darkModeToggle.addEventListener('click', toggleDarkMode);
-
-        // Función para mostrar el ancho de la pantalla (Ayuda con el responsive)
-        function updateScreenWidth() {
-            dom.screenWidthDisplay.textContent = `Ancho: ${window.innerWidth}px`;
-        }
-        window.addEventListener('resize', updateScreenWidth);
-
-        // -----------------------------------------------------------------------------
-        // INICIO DE LA APLICACIÓN
-        // -----------------------------------------------------------------------------
-        window.onload = () => {
-            updateScreenWidth();
-            initializeFirebase();
-        };
-
+    <!-- 3. FOOTER FIJO (TAB BAR INFERIOR) -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-20">
+        <nav class="max-w-4xl mx-auto flex justify-around items-center h-16 border-t border-gray-100">
+            <!-- Icono: Cercanos -->
+            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-cyan-500 transition duration-150">
+                <i data-lucide="map-pin" class="h-6 w-6"></i>
+                <span class="text-xs mt-1">Cercanos</span>
+            </a>
+            <!-- Icono: Mejor Valorados -->
+            <a href="#" class="flex flex-col items-center text-cyan-500 transition duration-150">
+                <i data-lucide="star" class="h-6 w-6 fill-cyan-500"></i>
+                <span class="text-xs mt-1 font-semibold">Valorados</span>
+            </a>
+            <!-- Icono: Mi Perfil / Agenda (Acceso a PAN4) -->
+            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-cyan-500 transition duration-150">
+                <i data-lucide="user" class="h-6 w-6"></i>
+                <span class="text-xs mt-1">Perfil</span>
+            </a>
+        </nav>
+    </footer>
+    
+    <!-- Inicializar Iconos Lucide -->
+    <script>
+        lucide.createIcons();
     </script>
 </body>
 </html>
