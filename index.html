@@ -56,7 +56,8 @@
 
         /* Ajuste de padding para PAN3 (Filtros) */
         #pantalla3 main {
-             padding-top: 64px; /* Espacio para el header fijo de Filtros */
+             /* CORRECCIÓN: Ajustado padding-top para el nuevo header con breadcrumb */
+             padding-top: 100px; 
              padding-bottom: 80px; /* Espacio para el Footer de Filtros */
         }
 
@@ -275,7 +276,7 @@
             
             <!-- Botones de Control Flotantes -->
             <div class="absolute top-4 left-4">
-                <!-- Botón de Retroceso a PAN1 -->
+                <!-- Botón de Retroceso a PAN1 (Se mantiene el botón simple, no el breadcrumb) -->
                 <button onclick="mostrarPantalla1()" class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
                     <i data-lucide="chevron-left" class="h-6 w-6 text-gray-800"></i>
                 </button>
@@ -346,14 +347,24 @@
         
         <!-- 1. HEADER FIJO (NAV SUPERIOR PARA FILTROS) -->
         <header class="fixed top-0 left-0 right-0 bg-white shadow-md z-20">
-            <div class="max-w-4xl mx-auto p-4 flex items-center justify-between">
-                <!-- Título -->
-                <h1 class="text-2xl font-bold text-gray-800">Filtros Avanzados</h1>
+            <div class="max-w-4xl mx-auto p-4 pb-2 flex flex-col">
                 
-                <!-- Botón de Cerrar (Retroceso a PAN1) -->
-                <button onclick="mostrarPantalla1()" class="text-gray-500 hover:text-gray-800 transition duration-200">
-                    <i data-lucide="x" class="h-6 w-6"></i>
-                </button>
+                 <!-- Breadcrumb de Navegación (Inicio > Filtros) - NUEVO -->
+                <div class="flex items-center text-sm mb-2 text-gray-500">
+                    <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200 font-medium">Inicio</a>
+                    <i data-lucide="chevron-right" class="h-4 w-4 mx-1"></i>
+                    <span class="font-semibold text-gray-800">Filtros</span>
+                </div>
+
+                <!-- Título y Botón de Cerrar -->
+                <div class="flex items-center justify-between">
+                    <h1 class="text-2xl font-bold text-gray-800">Filtros Avanzados</h1>
+                    
+                    <!-- Botón de Cerrar (Retroceso a PAN1) - Mantenido -->
+                    <button onclick="mostrarPantalla1()" class="text-gray-500 hover:text-gray-800 transition duration-200 p-1">
+                        <i data-lucide="x" class="h-6 w-6"></i>
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -466,20 +477,27 @@
                 
                 <!-- Breadcrumb de Navegación (Inicio > Mi Agenda) -->
                 <div class="flex items-center text-sm mb-2 text-gray-500">
-                    <!-- Enlace a Inicio (PAN1) - CORREGIDO -->
+                    <!-- Enlace a Inicio (PAN1) -->
                     <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200 font-medium">Inicio</a>
                     <i data-lucide="chevron-right" class="h-4 w-4 mx-1"></i>
                     <span class="font-semibold text-gray-800">Mi Agenda</span>
                 </div>
 
-                <!-- Título y Botón de Configuración/Perfil -->
+                <!-- Título y Botones de Control (Cerrar y Configuración) -->
                 <div class="flex items-center justify-between">
                     <h1 class="text-2xl font-extrabold text-gray-800">Mi Agenda</h1>
                     
-                    <!-- Botón de Configuración/Perfil -->
-                    <button class="p-2 text-gray-500 hover:text-gray-800 transition duration-200 rounded-full">
-                        <i data-lucide="settings" class="h-6 w-6"></i>
-                    </button>
+                    <!-- Contenedor de botones (Cerrar y Configuración) - MODIFICADO -->
+                    <div class="flex space-x-2">
+                        <!-- Botón de Cerrar (NUEVO) -->
+                        <button onclick="mostrarPantalla1()" class="p-2 text-gray-500 hover:text-gray-800 transition duration-200 rounded-full">
+                            <i data-lucide="x" class="h-6 w-6"></i>
+                        </button>
+                        <!-- Botón de Configuración/Perfil -->
+                        <button class="p-2 text-gray-500 hover:text-gray-800 transition duration-200 rounded-full">
+                            <i data-lucide="settings" class="h-6 w-6"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
