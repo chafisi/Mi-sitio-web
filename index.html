@@ -248,48 +248,43 @@
         // #################################################################
 
         // Función para renderizar una única tarjeta de evento
+        // Función para renderizar una única tarjeta de evento
         function renderEventCard(event) {
-            // Obtener la URL optimizada para la miniatura (80px de ancho)
-            const thumbnailUrl = getOptimizedImageUrl(event.URL_IMAGEN, 'w80');
+            // Obtener la URL optimizada para la miniatura (usamos 800px para el nuevo diseño grande)
+            const thumbnailUrl = getOptimizedImageUrl(event.URL_IMAGEN, 'w800');
 
             // Uso del símbolo del Euro (€)
             const priceText = event.PRECIO_MIN > 0 ? `${event.PRECIO_MIN.toFixed(0)} €` : 'Gratis';
             const priceColor = event.PRECIO_MIN > 0 ? 'text-green-600 font-bold' : 'text-cyan-600 font-bold';
             const ratingHtml = getStarRating(event.RATING_ESTRELLAS);
 
-            // Rediseño de la tarjeta para incluir la imagen como thumbnail
+            // Nuevo diseño de tarjeta con imagen destacada (Estilo 4-2-1)
             return `
-                <div onclick="handleNavigation('PAN2', ${event.ID_EVENTO})" class="bg-white rounded-xl shadow-lg card-effect cursor-pointer flex p-3 space-x-4 items-start">
+                <div onclick="handleNavigation('PAN2', ${event.ID_EVENTO})" class="bg-white rounded-xl shadow-lg card-effect cursor-pointer group overflow-hidden">
                     
-                    <!-- Imagen como Thumbnail -->
-                    <div class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden shadow-md">
+                    <div class="h-48 overflow-hidden">
                         <img src="${thumbnailUrl}" 
-                             onerror="this.onerror=null; this.src='https://placehold.co/80x80/94a3b8/FFFFFF?text=IMG';" 
+                             onerror="this.onerror=null; this.src='https://placehold.co/800x400/94a3b8/FFFFFF?text=IMG+Evento';" 
                              alt="${event.TITULO}" 
-                             class="w-full h-full object-cover">
+                             class="w-full h-full object-cover transition duration-300 group-hover:scale-105">
                     </div>
 
-                    <!-- Contenido del Evento -->
-                    <div class="flex-grow min-w-0">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-bold text-gray-900 truncate pr-2">${event.TITULO}</h3>
-                            <!-- Tag de Categoría -->
+                    <div class="p-4">
+                        <div class="flex items-start justify-between">
+                            <div class="min-w-0 pr-2">
+                                <h3 class="text-xl font-extrabold text-gray-900 truncate">${event.TITULO}</h3>
+                                <p class="text-sm text-gray-500 mt-1 truncate">
+                                    ${event.UBICACION_CIUDAD}, ${new Date(event.FECHA_EVENTO).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })} • ${new Date(event.FECHA_EVENTO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            </div>
                             <span class="flex-shrink-0 bg-cyan-100 text-cyan-800 text-xs px-2 py-0.5 rounded-full font-semibold">${event.CATEGORIA}</span>
                         </div>
                         
-                        <!-- Ubicación/Fecha/Hora (RF 1.02) -->
-                        <p class="text-sm text-gray-500 mt-1 truncate">
-                            ${event.UBICACION_CIUDAD}, ${new Date(event.FECHA_EVENTO).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })} • ${new Date(event.FECHA_EVENTO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-
-                        <!-- Valoración y Precio -->
-                        <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
-                            <!-- Valoración en Estrellas (RF 1.02) -->
+                        <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
                             <div class="flex items-center space-x-1">
                                 ${ratingHtml}
                             </div>
-                            <!-- Precio -->
-                            <span class="${priceColor} text-base">${priceText}</span>
+                            <span class="${priceColor} text-lg">${priceText}</span>
                         </div>
                     </div>
                 </div>
