@@ -101,7 +101,7 @@
         <h2 id="list-title" class="text-2xl font-bold text-gray-800 mb-4">Próximos Eventos</h2>
 
         <!-- Contenedor del Listado de Eventos -->
-        <div id="events-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div id="events-list" class="grid grid-cols-1 gap-6">
             <!-- Las tarjetas de eventos se inyectarán aquí -->
             <div id="loading-spinner" class="col-span-full flex justify-center items-center h-40">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
@@ -175,6 +175,30 @@
             updateCartCounter();
         });
 
+        /**
+         * Ajusta el parámetro 'sz' de una URL de thumbnail de Google Drive.
+         * @param {string} url La URL original de la imagen.
+         * @param {string} size El tamaño deseado (ej: 'w80', 'w800').
+         * @returns {string} La URL optimizada.
+         */
+        function getOptimizedImageUrl(url, size) {
+            if (!url || typeof url !== 'string') {
+                // Fallback si la URL es inválida
+                return 'https://placehold.co/800x400/94a3b8/FFFFFF?text=IMG+Error';
+            }
+
+            // Regex para encontrar '?sz=...' o '&sz=...' y lo que le siga
+            const sizeRegex = /([?&])sz=[^&]*/;
+
+            if (url.match(sizeRegex)) {
+                // Reemplaza el parámetro 'sz' existente
+                return url.replace(sizeRegex, `$1sz=${size}`);
+            } else {
+                // Añade el parámetro 'sz' al final. Usa '?' si no hay, o '&' si ya hay parámetros
+                return url.includes('?') ? `${url}&sz=${size}` : `${url}?sz=${size}`;
+            }
+        }
+
         // Función para simular el formato de estrellas (RF 1.02)
         function getStarRating(rating) {
             const fullStar = '<i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-400 inline"></i>';
@@ -225,40 +249,47 @@
 
         // Función para renderizar una única tarjeta de evento
         function renderEventCard(event) {
-            const priceText = event.PRECIO_MIN > 0 ? `$${event.PRECIO_MIN.toFixed(0)} GEAI` : 'Gratis';
+            // Obtener la URL optimizada para la miniatura (80px de ancho)
+            const thumbnailUrl = getOptimizedImageUrl(event.URL_IMAGEN, 'w80');
+
+            // Uso del símbolo del Euro (€)
+            const priceText = event.PRECIO_MIN > 0 ? `${event.PRECIO_MIN.toFixed(0)} €` : 'Gratis';
             const priceColor = event.PRECIO_MIN > 0 ? 'text-green-600 font-bold' : 'text-cyan-600 font-bold';
             const ratingHtml = getStarRating(event.RATING_ESTRELLAS);
 
+            // Rediseño de la tarjeta para incluir la imagen como thumbnail
             return `
-                <div onclick="handleNavigation('PAN2', ${event.ID_EVENTO})" class="bg-white rounded-xl overflow-hidden shadow-lg card-effect cursor-pointer">
-                    <!-- Imagen del Evento -->
-                    <div class="relative h-40 w-full">
-                        <img src="${event.URL_IMAGEN}" onerror="this.onerror=null; this.src='https://placehold.co/400x400/94a3b8/FFFFFF?text=Imagen+no+disponible';" alt="${event.TITULO}" class="w-full h-full object-cover">
-                        <!-- Tag de Categoría -->
-                        <span class="absolute top-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full font-semibold">${event.CATEGORIA}</span>
+                <div onclick="handleNavigation('PAN2', ${event.ID_EVENTO})" class="bg-white rounded-xl shadow-lg card-effect cursor-pointer flex p-3 space-x-4 items-start">
+                    
+                    <!-- Imagen como Thumbnail -->
+                    <div class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden shadow-md">
+                        <img src="${thumbnailUrl}" 
+                             onerror="this.onerror=null; this.src='https://placehold.co/80x80/94a3b8/FFFFFF?text=IMG';" 
+                             alt="${event.TITULO}" 
+                             class="w-full h-full object-cover">
                     </div>
 
-                    <div class="p-4">
-                        <h3 class="text-lg font-semibold text-gray-900 truncate">${event.TITULO}</h3>
+                    <!-- Contenido del Evento -->
+                    <div class="flex-grow min-w-0">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-gray-900 truncate pr-2">${event.TITULO}</h3>
+                            <!-- Tag de Categoría -->
+                            <span class="flex-shrink-0 bg-cyan-100 text-cyan-800 text-xs px-2 py-0.5 rounded-full font-semibold">${event.CATEGORIA}</span>
+                        </div>
                         
                         <!-- Ubicación/Fecha/Hora (RF 1.02) -->
-                        <p class="text-sm text-gray-500 mt-1">
+                        <p class="text-sm text-gray-500 mt-1 truncate">
                             ${event.UBICACION_CIUDAD}, ${new Date(event.FECHA_EVENTO).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })} • ${new Date(event.FECHA_EVENTO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                         </p>
 
-                        <!-- Valoración en Estrellas (RF 1.02) -->
-                        <div class="flex items-center space-x-1 mt-1">
-                            ${ratingHtml}
-                        </div>
-
-                        <!-- Precio y Botón (RF 1.02) -->
-                        <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-100">
+                        <!-- Valoración y Precio -->
+                        <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                            <!-- Valoración en Estrellas (RF 1.02) -->
+                            <div class="flex items-center space-x-1">
+                                ${ratingHtml}
+                            </div>
+                            <!-- Precio -->
                             <span class="${priceColor} text-base">${priceText}</span>
-                            <!-- Botón "Lista" simula ser un CTA rápido -->
-                            <button class="flex items-center text-sm px-3 py-1 bg-cyan-50 text-cyan-600 rounded-full font-semibold hover:bg-cyan-100 transition">
-                                <i data-lucide="plus" class="w-4 h-4 mr-1"></i>
-                                Lista
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -317,51 +348,59 @@
                 return;
             }
 
+            // Obtener la URL optimizada para el detalle (800px de ancho)
+            const detailImageUrl = getOptimizedImageUrl(event.URL_IMAGEN, 'w800');
+
             // Actualizar el header
             document.getElementById('pan2-title-header').textContent = event.TITULO.substring(0, 20) + '...';
             updateFavoriteButton(event.FAVORITO);
             
-            const priceText = event.PRECIO_MIN > 0 ? `$${event.PRECIO_MIN.toFixed(0)} GEAI` : 'Gratis';
+            // Uso del símbolo del Euro (€)
+            const priceText = event.PRECIO_MIN > 0 ? `${event.PRECIO_MIN.toFixed(0)} €` : 'Gratis';
             const priceStyle = event.PRECIO_MIN > 0 ? 'text-xl font-bold text-green-600' : 'text-xl font-bold text-cyan-600';
             const ctaButtonText = event.RESERVADO > 0 ? `Compradas (${event.RESERVADO})` : 'Reservar Entrada';
             const ctaButtonStyle = event.RESERVADO > 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600';
             const ratingHtml = getStarRating(event.RATING_ESTRELLAS);
 
             const detailHtml = `
-                <div class="bg-white rounded-xl shadow-2xl overflow-hidden mb-6">
-                    <!-- Imagen de cabecera -->
-                    <img src="${event.URL_IMAGEN}" onerror="this.onerror=null; this.src='https://placehold.co/800x400/94a3b8/FFFFFF?text=Imagen+no+disponible';" alt="${event.TITULO}" class="w-full h-64 object-cover">
+                <div class="bg-white rounded-xl shadow-2xl mb-6 p-5">
                     
-                    <div class="p-5">
-                        <h2 class="text-3xl font-extrabold text-gray-900">${event.TITULO}</h2>
-                        
-                        <!-- Categoría y Valoración -->
-                        <div class="flex items-center space-x-4 mt-2 mb-4 text-sm">
-                            <span class="px-3 py-1 bg-cyan-100 text-cyan-800 rounded-full font-semibold">${event.CATEGORIA}</span>
-                            <div class="flex items-center space-x-1">
-                                ${ratingHtml}
-                                <span class="text-gray-600 font-medium ml-1">${event.RATING_ESTRELLAS.toFixed(1)} (${event.NUM_RESEÑAS})</span>
-                            </div>
+                    <h2 class="text-3xl font-extrabold text-gray-900">${event.TITULO}</h2>
+                    
+                    <!-- Imagen colocada debajo del TITULO -->
+                    <div class="mt-4 mb-5 rounded-lg overflow-hidden shadow-xl">
+                        <img src="${detailImageUrl}" 
+                             onerror="this.onerror=null; this.src='https://placehold.co/800x400/94a3b8/FFFFFF?text=Imagen+del+Evento';" 
+                             alt="${event.TITULO}" 
+                             class="w-full h-auto object-cover max-h-80">
+                    </div>
+                    
+                    <!-- Categoría y Valoración -->
+                    <div class="flex flex-wrap items-center space-x-4 mt-2 mb-4 text-sm">
+                        <span class="px-3 py-1 bg-cyan-100 text-cyan-800 rounded-full font-semibold">${event.CATEGORIA}</span>
+                        <div class="flex items-center space-x-1 mt-1 sm:mt-0">
+                            ${ratingHtml}
+                            <span class="text-gray-600 font-medium ml-1">${event.RATING_ESTRELLAS.toFixed(1)} (${event.NUM_RESEÑAS})</span>
                         </div>
+                    </div>
 
-                        <!-- Info Rápida -->
-                        <div class="grid grid-cols-2 gap-4 border-t pt-4">
-                            <div class="flex items-center space-x-2">
-                                <i data-lucide="calendar" class="w-5 h-5 text-gray-500"></i>
-                                <span class="text-sm font-medium text-gray-700">${new Date(event.FECHA_EVENTO).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <i data-lucide="clock" class="w-5 h-5 text-gray-500"></i>
-                                <span class="text-sm font-medium text-gray-700">${new Date(event.FECHA_EVENTO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <i data-lucide="map-pin" class="w-5 h-5 text-gray-500"></i>
-                                <span class="text-sm font-medium text-gray-700">${event.UBICACION_CIUDAD}</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <i data-lucide="tag" class="w-5 h-5 text-gray-500"></i>
-                                <span class="${priceStyle}">${priceText}</span>
-                            </div>
+                    <!-- Info Rápida -->
+                    <div class="grid grid-cols-2 gap-4 border-t pt-4">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="calendar" class="w-5 h-5 text-gray-500"></i>
+                            <span class="text-sm font-medium text-gray-700">${new Date(event.FECHA_EVENTO).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="clock" class="w-5 h-5 text-gray-500"></i>
+                            <span class="text-sm font-medium text-gray-700">${new Date(event.FECHA_EVENTO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="map-pin" class="w-5 h-5 text-gray-500"></i>
+                            <span class="text-sm font-medium text-gray-700">${event.UBICACION_CIUDAD}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="tag" class="w-5 h-5 text-gray-500"></i>
+                            <span class="${priceStyle}">${priceText}</span>
                         </div>
                     </div>
                 </div>
@@ -456,9 +495,6 @@
             spinner.classList.remove('hidden');
             document.getElementById('events-list').innerHTML = ''; // Limpia por si acaso
 
-            // Nota: Aquí iría la lógica de fetch real de GAS, pero usamos simulación por ahora
-            // para que el prototipo funcione sin necesidad de la URL real desplegada.
-
             // SIMULACIÓN DE DATOS (Necesario para que el prototipo funcione sin la URL real)
             try {
                 const response = await fetch(GAS_WEB_APP_URL);
@@ -473,17 +509,18 @@
             } catch (error) {
                 console.warn("Fallo al conectar con la API o respuesta inválida. Usando datos simulados. Reemplace 'GAS_WEB_APP_URL' con la URL real.", error);
                 
+                // URLs de ejemplo con el formato drive.google.com/thumbnail
                 eventsData = [
-                    { ID_EVENTO: 101, TITULO: "El Rey León, El Musical", CATEGORIA: "Musicales", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 542, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 35, FECHA_EVENTO: "2024-11-14 20:00", URL_IMAGEN: "https://placehold.co/400x400/06B6D4/FFFFFF?text=Rey+Leon", DESCRIPCION: "Una experiencia teatral inolvidable que transporta al espectador a la sabana africana. Con impresionantes vestuarios y música icónica.", VISTO: 1, CONTACTO: "reyleon@gmail.com", ENLACE_DE_RESERVA: "https://example.com/rey-leon", RESERVADO: 1, FAVORITO: 0 },
-                    { ID_EVENTO: 102, TITULO: "Monólogo de Raúl Antón", CATEGORIA: "Monólogos", RATING_ESTRELLAS: 3, NUM_RESEÑAS: 187, UBICACION_CIUDAD: "Ibi", PRECIO_MIN: 28, FECHA_EVENTO: "2024-02-25 21:30", URL_IMAGEN: "https://placehold.co/400x400/ef4444/FFFFFF?text=Raul+Anton", DESCRIPCION: "Noche de risas garantizadas con el humor irreverente y cercano de Raúl Antón. ¡No pararás de reír!", VISTO: 1, CONTACTO: "raulanton12@gmail.com", ENLACE_DE_RESERVA: "https://example.com/raul-anton", RESERVADO: 0, FAVORITO: 1 },
-                    { ID_EVENTO: 103, TITULO: "Concierto de Nathy Peluso", CATEGORIA: "Musicales", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 310, UBICACION_CIUDAD: "Alicante", PRECIO_MIN: 45, FECHA_EVENTO: "2024-02-26 22:00", URL_IMAGEN: "https://placehold.co/400x400/f97316/FFFFFF?text=Nathy+Peluso", DESCRIPCION: "La artista argentina Nathy Peluso en vivo, presentando sus éxitos y nuevos temas con su inconfundible estilo.", VISTO: 0, CONTACTO: "eventime23@gmail.com", ENLACE_DE_RESERVA: "https://example.com/nathy-peluso", RESERVADO: 0, FAVORITO: 1 },
-                    { ID_EVENTO: 104, TITULO: "Festival de Jazz de Madrid", CATEGORIA: "Festivales", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 250, UBICACION_CIUDAD: "Elche", PRECIO_MIN: 25, FECHA_EVENTO: "2024-03-10 19:00", URL_IMAGEN: "https://placehold.co/400x400/8b5cf6/FFFFFF?text=Festival+Jazz", DESCRIPCION: "Una selección de los mejores talentos del jazz nacional e internacional en diferentes escenarios de la ciudad.", VISTO: 0, CONTACTO: "jazzmadrid@gmail.com", ENLACE_DE_RESERVA: "https://example.com/jazz-madrid", RESERVADO: 0, FAVORITO: 0 },
-                    { ID_EVENTO: 106, TITULO: "Formula 1 Madrid Grand Prix", CATEGORIA: "Motor", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 789, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 150, FECHA_EVENTO: "2025-05-18 15:00", URL_IMAGEN: "https://placehold.co/400x400/10b981/FFFFFF?text=F1+Madrid", DESCRIPCION: "La emoción de la Fórmula 1 llega a Madrid con una carrera urbana espectacular. Vive la velocidad y la adrenalina en primera persona.", VISTO: 1, CONTACTO: "f1best@gmail.com", ENLACE_DE_RESERVA: "https://example.com/f1", RESERVADO: 0, FAVORITO: 0 },
-                    { ID_EVENTO: 107, TITULO: "Exposición Maestros del Renacimiento", CATEGORIA: "Arte", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 120, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 15, FECHA_EVENTO: "2024-03-20 11:00", URL_IMAGEN: "https://placehold.co/400x400/a3a3a3/FFFFFF?text=Arte+Renacimiento", DESCRIPCION: "Un viaje a través de las obras cumbre de los grandes artistas del Renacimiento europeo.", VISTO: 1, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/renacimiento", RESERVADO: 0, FAVORITO: 0 },
-                    { ID_EVENTO: 108, TITULO: "Festival de Comedia Indie", CATEGORIA: "Comedia", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 65, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 18, FECHA_EVENTO: "2024-04-05 21:00", URL_IMAGEN: "https://placehold.co/400x400/fcd34d/000000?text=Comedia+Indie", DESCRIPCION: "Descubre nuevas voces del stand-up y monólogos emergentes en este festival innovador.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/comedia-indie", RESERVADO: 0, FAVORITO: 0 },
-                    { ID_EVENTO: 109, TITULO: "Ópera: Carmen en el Real", CATEGORIA: "Ópera", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 450, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 70, FECHA_EVENTO: "2024-05-10 20:30", URL_IMAGEN: "https://placehold.co/400x400/fb7185/FFFFFF?text=Opera+Carmen", DESCRIPCION: "La icónica ópera de Bizet, Carmen, interpretada por un elenco de talla mundial en el Teatro Real.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/opera-carmen", RESERVADO: 0, FAVORITO: 0 },
-                    { ID_EVENTO: 110, TITULO: "Maratón de Madrid 2024", CATEGORIA: "Deportes", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 980, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 50, FECHA_EVENTO: "2024-04-28 08:00", URL_IMAGEN: "https://placehold.co/400x400/facc15/000000?text=Maraton+Madrid", DESCRIPCION: "Corre por las calles de Madrid en uno de los maratones más emblemáticos de España.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/maraton", RESERVADO: 0, FAVORITO: 0 },
-                    { ID_EVENTO: 111, TITULO: "Conferencia 'El Futuro de la IA'", CATEGORIA: "Conferencias", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 75, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 25, FECHA_EVENTO: "2024-06-15 10:00", URL_IMAGEN: "https://placehold.co/400x400/22c55e/FFFFFF?text=Conferencia+IA", DESCRIPCION: "Expertos en inteligencia artificial debaten sobre los avances y el impacto de la IA en nuestra sociedad.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/ia-conferencia", RESERVADO: 0, FAVORITO: 0 }
+                    { ID_EVENTO: 101, TITULO: "El Rey León, El Musical", CATEGORIA: "Musicales", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 542, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 35, FECHA_EVENTO: "2024-11-14 20:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1wL1MID8BLWZL0PvzkLqNh61jb4i4S1ey&sz=w500", DESCRIPCION: "Una experiencia teatral inolvidable que transporta al espectador a la sabana africana. Con impresionantes vestuarios y música icónica.", VISTO: 1, CONTACTO: "reyleon@gmail.com", ENLACE_DE_RESERVA: "https://example.com/rey-leon", RESERVADO: 1, FAVORITO: 0 },
+                    { ID_EVENTO: 102, TITULO: "Monólogo de Raúl Antón", CATEGORIA: "Monólogos", RATING_ESTRELLAS: 3, NUM_RESEÑAS: 187, UBICACION_CIUDAD: "Ibi", PRECIO_MIN: 28, FECHA_EVENTO: "2024-02-25 21:30", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1c6uN8M4B7V-Q8h-N_3eL7s4n7x9R6o9T&sz=w500", DESCRIPCION: "Noche de risas garantizadas con el humor irreverente y cercano de Raúl Antón. ¡No pararás de reír!", VISTO: 1, CONTACTO: "raulanton12@gmail.com", ENLACE_DE_RESERVA: "https://example.com/raul-anton", RESERVADO: 0, FAVORITO: 1 },
+                    { ID_EVENTO: 103, TITULO: "Concierto de Nathy Peluso", CATEGORIA: "Musicales", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 310, UBICACION_CIUDAD: "Alicante", PRECIO_MIN: 45, FECHA_EVENTO: "2024-02-26 22:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1RjH6sK1pZ2nJ4D9y8q5y5b7x2f8v6m8U&sz=w500", DESCRIPCION: "La artista argentina Nathy Peluso en vivo, presentando sus éxitos y nuevos temas con su inconfundible estilo.", VISTO: 0, CONTACTO: "eventime23@gmail.com", ENLACE_DE_RESERVA: "https://example.com/nathy-peluso", RESERVADO: 0, FAVORITO: 1 },
+                    { ID_EVENTO: 104, TITULO: "Festival de Jazz de Madrid", CATEGORIA: "Festivales", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 250, UBICACION_CIUDAD: "Elche", PRECIO_MIN: 25, FECHA_EVENTO: "2024-03-10 19:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1dE8v0lQ1G4m5y1t3r7q6o8i9j0k2l4h6&sz=w500", DESCRIPCION: "Una selección de los mejores talentos del jazz nacional e internacional en diferentes escenarios de la ciudad.", VISTO: 0, CONTACTO: "jazzmadrid@gmail.com", ENLACE_DE_RESERVA: "https://example.com/jazz-madrid", RESERVADO: 0, FAVORITO: 0 },
+                    { ID_EVENTO: 106, TITULO: "Formula 1 Madrid Grand Prix", CATEGORIA: "Motor", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 789, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 150, FECHA_EVENTO: "2025-05-18 15:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1gA4x5y1zB3cW7r9tX0v2u4w6p8q0s2T&sz=w500", DESCRIPCION: "La emoción de la Fórmula 1 llega a Madrid con una carrera urbana espectacular. Vive la velocidad y la adrenalina en primera persona.", VISTO: 1, CONTACTO: "f1best@gmail.com", ENLACE_DE_RESERVA: "https://example.com/f1", RESERVADO: 0, FAVORITO: 0 },
+                    { ID_EVENTO: 107, TITULO: "Exposición Maestros del Renacimiento", CATEGORIA: "Arte", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 120, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 15, FECHA_EVENTO: "2024-03-20 11:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1kO7p3q2E1xZ9y8w4v6u0t2r5s1a4b3c&sz=w500", DESCRIPCION: "Un viaje a través de las obras cumbre de los grandes artistas del Renacimiento europeo.", VISTO: 1, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/renacimiento", RESERVADO: 0, FAVORITO: 0 },
+                    { ID_EVENTO: 108, TITULO: "Festival de Comedia Indie", CATEGORIA: "Comedia", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 65, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 18, FECHA_EVENTO: "2024-04-05 21:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1qW8s4t0X3zC1aV2bU5dY7e9f1g3h5j7&sz=w500", DESCRIPCION: "Descubre nuevas voces del stand-up y monólogos emergentes en este festival innovador.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/comedia-indie", RESERVADO: 0, FAVORITO: 0 },
+                    { ID_EVENTO: 109, TITULO: "Ópera: Carmen en el Real", CATEGORIA: "Ópera", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 450, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 70, FECHA_EVENTO: "2024-05-10 20:30", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1uY0v6w2r4t6u8y1zX3c5v7b9n2m4q6p&sz=w500", DESCRIPCION: "La icónica ópera de Bizet, Carmen, interpretada por un elenco de talla mundial en el Teatro Real.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/opera-carmen", RESERVADO: 0, FAVORITO: 0 },
+                    { ID_EVENTO: 110, TITULO: "Maratón de Madrid 2024", CATEGORIA: "Deportes", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 980, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 50, FECHA_EVENTO: "2024-04-28 08:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1aS2d3f4g5h6j7k8l9m0n1p2q3r4s5t6&sz=w500", DESCRIPCION: "Corre por las calles de Madrid en uno de los maratones más emblemáticos de España.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/maraton", RESERVADO: 0, FAVORITO: 0 },
+                    { ID_EVENTO: 111, TITULO: "Conferencia 'El Futuro de la IA'", CATEGORIA: "Conferencias", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 75, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 25, FECHA_EVENTO: "2024-06-15 10:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1bX3c5v7b9n2m4q6p8r0t2u4w6x8y0z2&sz=w500", DESCRIPCION: "Expertos en inteligencia artificial debaten sobre los avances y el impacto de la IA en nuestra sociedad.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/ia-conferencia", RESERVADO: 0, FAVORITO: 0 }
                 ];
             }
 
