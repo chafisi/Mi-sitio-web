@@ -4,755 +4,656 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OcioPlus - Eventos</title>
-    <!-- Incluir el CDN de Tailwind CSS y la fuente Inter -->
+    <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de Lucide Icons (Iconografía) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap'); /* Añadido weight 900 */
+        /* Estilos personalizados y tipografía */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        :root {
+            --primary: #06b6d4; /* Cyan-500 */
+            --primary-dark: #0e7490; /* Cyan-700 */
+            --bg-light: #f3f4f6; /* Gray-100 */
+            --cta-reserve: #10b981; /* Emerald-500 */
+            --cta-reserve-dark: #059669; /* Emerald-600 */
+        }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #F9FAFB; /* Gray 50 */
+            background-color: var(--bg-light);
+            /* Reservar espacio para el header y el footer */
+            padding-top: 64px; 
+            padding-bottom: 72px; 
         }
-        
-        /* Estilos generales para las pantallas */
-        .screen {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
+        /* Estilos para el Header Fijo */
+        .header-fixed {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
         }
-
-        /* Estilos específicos para la TabBar */
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            padding: 0.5rem;
-            transition: all 0.3s ease;
+        /* Estilos para la Barra de Navegación Fija */
+        .navbar-fixed {
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -2px rgba(0, 0, 0, 0.06);
         }
-        
-        /* Estilo para el icono activo (gestionado ahora por JS para ser dinámico) */
-        .nav-item-active .icon-bg {
-            background-color: #06B6D4; /* Cyan 500 */
-            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+        /* Clase para simular el efecto de tarjeta/elevación */
+        .card-effect {
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .nav-item-active {
-             /* Estilos de elemento activo en el TabBar */
-            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+        .card-effect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
         }
-
-        /* Ajuste de padding para PAN1 (Listado) */
-        #pantalla1 main {
-             /* CORRECCIÓN: Aumentado de 100px a 140px para evitar que el header fijo tape el título */
-             padding-top: 140px; 
-             padding-bottom: 80px; /* Espacio para el TabBar fijo */
+        /* Estilo para ajustar el body cuando el navbar inferior está oculto (en PAN2) */
+        .body-pan2 {
+             padding-bottom: 0px !important; 
         }
-        
-        /* Ajuste de padding para PAN2 (Detalle) para evitar que el contenido se solape con el CTA fijo) */
-        #pantalla2 main {
-            padding-bottom: 80px; /* Espacio para el CTA fijo */
-        }
-
-        /* Ajuste de padding para PAN3 (Filtros) */
-        #pantalla3 main {
-             /* CORRECCIÓN: Ajustado padding-top para el nuevo header con breadcrumb */
-             padding-top: 100px; 
-             padding-bottom: 80px; /* Espacio para el Footer de Filtros */
-        }
-
-        /* Ajuste de padding para PAN4 (Agenda/Perfil) - Se ajusta con estilo inline en el main */
-        
-        /* Estilos para el rango de precios */
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #4F46E5; /* Indigo 600 */
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-        }
-
-        input[type=range]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #4F46E5; /* Indigo 600 */
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-            border: none;
-        }
-
     </style>
-    <!-- Iconos Lucide (simulando los del mockup) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="min-h-screen">
+<body>
 
-    <!-- ---------------------------------------------------- -->
-    <!-- PANTALLA 1: INICIO / LISTADO DE EVENTOS (PAN1) -->
-    <!-- ---------------------------------------------------- -->
-    <div id="pantalla1" class="screen">
-        
-        <!-- 1. HEADER FIJO (NAV SUPERIOR) -->
-        <header class="fixed top-0 left-0 right-0 bg-indigo-600 shadow-lg z-20">
-            <div class="max-w-4xl mx-auto p-4 flex items-center justify-between">
-                
-                <!-- Logo y Menú -->
-                <div class="flex items-center space-x-3">
-                    <i data-lucide="menu" class="text-white h-6 w-6"></i>
-                    <h1 class="text-2xl font-extrabold text-white">OcioPlus</h1>
-                </div>
-                
-                <!-- Icono Carrito -->
-                <div class="relative">
-                    <i data-lucide="shopping-cart" class="text-white h-6 w-6"></i>
-                    <span class="absolute -top-2 -right-2 text-xs bg-cyan-500 text-white rounded-full h-4 w-4 flex items-center justify-center font-bold">2</span>
-                </div>
-            </div>
-            
-            <!-- Barra de Búsqueda y Filtros -->
-            <div class="max-w-4xl mx-auto p-4 pt-0 flex space-x-2">
-                <div class="relative flex-grow">
-                    <!-- Input de Búsqueda Rápida -->
-                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5"></i>
-                    <input type="text" placeholder="Buscar eventos..." class="w-full pl-10 pr-4 py-2 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 text-gray-700 shadow-inner">
-                </div>
-                <!-- Botón de Filtros (Acceso a PAN3) -->
-                <button onclick="mostrarPantalla3()" class="bg-cyan-500 hover:bg-cyan-600 text-white p-3 rounded-xl transition duration-300 shadow-md flex-shrink-0">
-                    <i data-lucide="sliders" class="h-6 w-6"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- 2. BODY PRINCIPAL (LISTADO DE EVENTOS) -->
-        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
-            <!-- El aumento del padding en CSS asegura que este título sea visible -->
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">Próximos Eventos</h2>
-            
-            <!-- Contenedor Grid Responsivo (Grid de 1, 2 o 3 columnas) -->
-            <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-
-                <!-- Las tarjetas ahora tienen un manejador de clic para ir a PAN2 -->
-                <!-- EJEMPLO 1: Concierto Rock -->
-                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
-                    <div class="relative h-40">
-                        <img src="https://placehold.co/600x400/3b82f6/ffffff?text=CONCIERTO+ROCK" alt="" class="w-full h-full object-cover">
-                        <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">Música</span>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Concierto Rock</h3>
-                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                            <i data-lucide="map-pin" class="h-4 w-4"></i>
-                            <span>Madrid, 15 NOV • 20:00 h</span>
-                        </p>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <span class="text-xl font-extrabold text-green-600">25.00 €</span>
-                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                                Detalles
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- EJEMPLO 2: Arte Moderno -->
-                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
-                    <div class="relative h-40">
-                        <img src="https://placehold.co/600x400/06B6D4/ffffff?text=ARTE+MODERNO" alt="[Image of Modern Art]" class="w-full h-full object-cover">
-                        <span class="absolute top-2 left-2 bg-cyan-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Exposición</span>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Arte Moderno</h3>
-                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                            <i data-lucide="map-pin" class="h-4 w-4"></i>
-                            <span>Madrid, 18 NOV • Todo el día</span>
-                        </p>
-                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                        <span class="text-xl font-extrabold text-green-600">Gratis</span>
-                        <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                            Detalles
-                        </button>
-                    </div>
-                </div>
-                </div>
-                
-                <!-- EJEMPLO 3: Maratón Solidaria -->
-                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
-                    <div class="relative h-40">
-                        <img src="https://placehold.co/600x400/10B981/ffffff?text=MARATON+SOLIDARIA" alt="" class="w-full h-full object-cover">
-                        <span class="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Deporte</span>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Maratón Solidaria</h3>
-                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                            <i data-lucide="map-pin" class="h-4 w-4"></i>
-                            <span>Barcelona, 20 NOV • 08:00 am</span>
-                        </p>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <span class="text-xl font-extrabold text-green-600">10.00 €</span>
-                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                                Detalles
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- EJEMPLO 4: Taller Creativo -->
-                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
-                    <div class="relative h-40">
-                        <img src="https://placehold.co/600x400/F59E0B/ffffff?text=TALLER+CREATIVO" alt="" class="w-full h-full object-cover">
-                        <span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Formación</span>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Taller Creativo</h3>
-                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                            <i data-lucide="map-pin" class="h-4 w-4"></i>
-                            <span>Valencia, 25 NOV • 19:30 h</span>
-                        </p>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <span class="text-xl font-extrabold text-green-600">50.00 €</span>
-                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                                Detalles
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Botón Cargar Más -->
-            <div class="flex justify-center my-8">
-                <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 shadow-sm">
-                    Cargar más eventos
-                </button>
-            </div>
-            
-        </main>
-
-        <!-- 3. FOOTER FIJO (TAB BAR INFERIOR MODERNO) -->
-        <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-20 rounded-t-3xl border-t border-gray-100">
-            <nav class="max-w-4xl mx-auto flex justify-around items-end h-20 px-4">
-                
-                <!-- Item: Cercanos (Vuelve a PAN1) -->
-                <!-- CORRECCIÓN: Agregada la función mostrarPantalla1() -->
-                <a href="javascript:void(0)" id="nav-cercanos" class="nav-item text-gray-500 hover:text-indigo-600 group" onclick="mostrarPantalla1()">
-                    <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
-                        <i data-lucide="map-pin" class="h-6 w-6"></i>
-                    </div>
-                    <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Cercanos</span>
-                </a>
-
-                <!-- Item: Mejor Valorados (Vuelve a PAN1) -->
-                <!-- CORRECCIÓN: Agregada la función mostrarPantalla1() -->
-                <a href="javascript:void(0)" id="nav-valorados" class="nav-item text-gray-500 hover:text-indigo-600 group" onclick="mostrarPantalla1()">
-                    <div class="icon-bg w-14 h-14 rounded-full transition duration-300 flex items-center justify-center">
-                        <i data-lucide="star" class="h-8 w-8 text-white fill-white"></i>
-                    </div>
-                    <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Valorados</span>
-                </a>
-
-                <!-- Icono: Mi Perfil / Agenda (Acceso a PAN4) -->
-                <a href="javascript:void(0)" id="nav-perfil" class="nav-item text-gray-500 hover:text-indigo-600 group" onclick="mostrarPantalla4()">
-                    <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
-                        <i data-lucide="user" class="h-6 w-6"></i>
-                    </div>
-                    <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Perfil</span>
-                </a>
-            </nav>
-        </footer>
-    </div>
-
-
-    <!-- ---------------------------------------------------- -->
-    <!-- PANTALLA 2: DETALLE DE EVENTO (PAN2) -->
-    <!-- ---------------------------------------------------- -->
-    <div id="pantalla2" class="screen hidden">
-        
-        <!-- HEADER (Imagen de fondo y Controles) -->
-        <header class="relative h-80">
-            <!-- Imagen Principal -->
-            <img src="https://placehold.co/1000x500/3b82f6/ffffff?text=CONCIERTO+ROCK+DESTACADO" alt="" class="w-full h-full object-cover">
-            
-            <!-- Botones de Control Flotantes -->
-            <div class="absolute top-4 left-4">
-                <!-- Botón de Retroceso a PAN1 (Se mantiene el botón simple, no el breadcrumb) -->
-                <button onclick="mostrarPantalla1()" class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
-                    <i data-lucide="chevron-left" class="h-6 w-6 text-gray-800"></i>
-                </button>
-            </div>
-            <div class="absolute top-4 right-4">
-                <!-- Botón de Guardar/Favorito -->
-                <button class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
-                    <i data-lucide="bookmark" class="h-6 w-6 text-gray-800"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- BODY (Contenido principal con efecto de superposición) -->
-        <main class="flex-grow max-w-4xl mx-auto -mt-10 z-10 relative px-4 sm:px-6 lg:px-8">
-            <div class="bg-white p-6 rounded-t-3xl shadow-xl">
-                
-                <!-- Título -->
-                <h1 class="text-4xl font-extrabold text-gray-900 mb-4">Concierto Rock "The Phantoms"</h1>
-                
-                <!-- Metadatos Clave -->
-                <div class="space-y-3 mb-6 border-b pb-4">
-                    <p class="text-lg text-gray-700 flex items-center space-x-3">
-                        <i data-lucide="calendar" class="h-6 w-6 text-indigo-500"></i>
-                        <span class="font-semibold">Fecha:</span> 15 de Noviembre, 2025
-                    </p>
-                    <p class="text-lg text-gray-700 flex items-center space-x-3">
-                        <i data-lucide="clock" class="h-6 w-6 text-indigo-500"></i>
-                        <span class="font-semibold">Hora:</span> 20:00 h (Apertura de puertas 19:00 h)
-                    </p>
-                    <p class="text-lg text-gray-700 flex items-center space-x-3">
-                        <i data-lucide="map-pin" class="h-6 w-6 text-indigo-500"></i>
-                        <span class="font-semibold">Ubicación:</span> Sala Apollo, Calle Príncipe de Vergara, Madrid.
-                    </p>
-                </div>
-
-                <!-- Descripción Completa -->
-                <h2 class="text-2xl font-bold text-gray-800 mb-3">Sobre el Evento</h2>
-                <p class="text-gray-600 mb-6 leading-relaxed">
-                    ¡Prepárate para una noche épica con "The Phantoms"! La banda de rock alternativo más aclamada de la escena nacional llega a Madrid para presentar su nuevo álbum, "Ecos de Medianoche". Con un sonido potente y un espectáculo de luces inmersivo, esta es una cita obligada para los amantes del buen rock. 
-                    <br><br>
-                    Las entradas incluyen acceso a la zona VIP después del concierto para un encuentro exclusivo con los miembros de la banda. ¡No te lo pierdas!
-                </p>
-
-                <!-- Precio -->
-                <div class="text-center p-4 bg-green-50 rounded-xl">
-                    <span class="text-sm font-medium text-gray-600 block">Precio base por persona</span>
-                    <span class="text-4xl font-extrabold text-green-600">25.00 €</span>
-                </div>
-            </div>
-        </main>
-        
-        <!-- FOOTER (Barra de Acción Fija - CTA más grande) -->
-        <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-20 p-4">
-            <div class="max-w-4xl mx-auto">
-                <!-- Botón con mayor padding vertical (py-4) y texto más grueso (font-black) -->
-                <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/50 text-lg">
-                    Reservar ahora (25.00 €)
-                </button>
-            </div>
-        </footer>
-    </div>
-
-
-    <!-- ---------------------------------------------------- -->
-    <!-- PANTALLA 3: FILTROS (PAN3) -->
-    <!-- ---------------------------------------------------- -->
-    <div id="pantalla3" class="screen hidden bg-white">
-        
-        <!-- 1. HEADER FIJO (NAV SUPERIOR PARA FILTROS) -->
-        <header class="fixed top-0 left-0 right-0 bg-white shadow-md z-20">
-            <div class="max-w-4xl mx-auto p-4 pb-2 flex flex-col">
-                
-                 <!-- Breadcrumb de Navegación (Inicio > Filtros) - NUEVO -->
-                <div class="flex items-center text-sm mb-2 text-gray-500">
-                    <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200 font-medium">Inicio</a>
-                    <i data-lucide="chevron-right" class="h-4 w-4 mx-1"></i>
-                    <span class="font-semibold text-gray-800">Filtros</span>
-                </div>
-
-                <!-- Título y Botón de Cerrar -->
-                <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-gray-800">Filtros Avanzados</h1>
-                    
-                    <!-- Botón de Cerrar (Retroceso a PAN1) - Mantenido -->
-                    <button onclick="mostrarPantalla1()" class="text-gray-500 hover:text-gray-800 transition duration-200 p-1">
-                        <i data-lucide="x" class="h-6 w-6"></i>
+    <!-- ###################################################################### -->
+    <!-- COMPONENTE: HEADER FIJO (RF 1.06, 1.07) -->
+    <!-- ###################################################################### -->
+    <header id="main-header" class="header-fixed fixed top-0 left-0 w-full z-10 bg-white p-3">
+        <div id="pan1-header" class="max-w-xl mx-auto">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <button onclick="handleNavigation('PAN_MENU')" class="p-2 rounded-full hover:bg-gray-100">
+                        <i data-lucide="menu" class="w-6 h-6 text-gray-700"></i>
                     </button>
+                    <h1 class="text-2xl font-extrabold text-cyan-700">OcioPlus</h1>
                 </div>
+                <button onclick="handleNavigation('PAN_CARRITO')" class="p-2 rounded-full hover:bg-gray-100 relative">
+                    <i data-lucide="shopping-cart" class="w-6 h-6 text-gray-700"></i>
+                    <!-- RF 1.07: Contador de ítems en el carrito (simulado) -->
+                    <span id="cart-counter" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">0</span>
+                </button>
             </div>
-        </header>
-
-        <!-- 2. BODY PRINCIPAL (OPCIONES DE FILTRO) -->
-        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow overflow-y-auto">
-
-            <!-- CONTENEDOR DE FILTROS EN GRID DE 2 COLUMNAS (Para tablet/desktop) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-
-                <!-- FILTRO 1: Categoría -->
-                <section class="mb-4 sm:mb-0 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
-                        <i data-lucide="list-checks" class="h-5 w-5 text-cyan-500"></i>
-                        <span>Categoría</span>
-                    </h2>
-                    <div class="grid grid-cols-2 gap-3">
-                        <!-- Opciones de Categoría -->
-                        <div class="flex items-center space-x-2 p-3 bg-cyan-50 rounded-lg border border-cyan-300">
-                            <input type="checkbox" id="cat-musica" checked class="form-checkbox h-5 w-5 text-cyan-600 rounded-lg border-gray-300 focus:ring-cyan-500">
-                            <label for="cat-musica" class="text-gray-800 font-semibold">Música</label>
-                        </div>
-                        <div class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition duration-200">
-                            <input type="checkbox" id="cat-deporte" class="form-checkbox h-5 w-5 text-cyan-600 rounded-lg border-gray-300 focus:ring-cyan-500">
-                            <label for="cat-deporte" class="text-gray-800">Deporte</label>
-                        </div>
-                        <div class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition duration-200">
-                            <input type="checkbox" id="cat-formacion" class="form-checkbox h-5 w-5 text-cyan-600 rounded-lg border-gray-300 focus:ring-cyan-500">
-                            <label for="cat-formacion" class="text-gray-800">Formación</label>
-                        </div>
-                        <div class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition duration-200">
-                            <input type="checkbox" id="cat-teatro" class="form-checkbox h-5 w-5 text-cyan-600 rounded-lg border-gray-300 focus:ring-cyan-500">
-                            <label for="cat-teatro" class="text-gray-800">Teatro</label>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- FILTRO 2: Distancia -->
-                <section class="mb-4 sm:mb-0 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
-                        <i data-lucide="route" class="h-5 w-5 text-orange-500"></i>
-                        <span>Distancia desde mi ubicación</span>
-                    </h2>
-                    <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        <option selected>Sin límite</option>
-                        <option>10 km</option>
-                        <option>20 km</option>
-                        <option>50 km</option>
-                        <option>100 km</option>
-                        <option>200 km</option>
-                        <option>500 km</option>
-                        <option>Todo</option>
-                    </select>
-                    <p class="text-xs text-gray-500 mt-2">Basado en la ubicación actual (simulada).</p>
-                </section>
-                
-                <!-- FILTRO 3: Rango de Precios -->
-                <section class="mb-4 sm:mb-0 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center space-x-2">
-                        <i data-lucide="euro" class="h-5 w-5 text-indigo-500"></i>
-                        <span>Precio Máximo</span>
-                    </h2>
-                    <div class="flex justify-between items-center mb-4">
-                        <span id="price-min" class="text-lg font-semibold text-gray-600">0 €</span>
-                        <span id="price-max" class="text-2xl font-extrabold text-indigo-600">50+ €</span>
-                    </div>
-                    
-                    <!-- Input de rango simulado con estilo personalizado -->
-                    <input type="range" min="0" max="100" value="50" class="w-full h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer range-lg">
-                </section>
-
-                 <!-- FILTRO 4: Fecha -->
-                 <section class="mb-4 sm:mb-0 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
-                        <i data-lucide="calendar-check" class="h-5 w-5 text-green-500"></i>
-                        <span>Fecha</span>
-                    </h2>
-                    <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        <option>Cualquier fecha</option>
-                        <option selected>Esta semana</option>
-                        <option>Este fin de semana</option>
-                        <option>Este mes</option>
-                    </select>
-                </section>
-
+            
+            <!-- Área de Búsqueda (RF 1.08, 1.09) -->
+            <div class="max-w-xl mx-auto mt-2 flex space-x-2">
+                <div class="relative flex-grow">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                    <input type="text" id="search-input" oninput="debounceSearch()" placeholder="Buscar eventos..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-cyan-500 focus:border-cyan-500 shadow-sm transition">
+                </div>
+                <button onclick="handleNavigation('PAN3')" class="p-3 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition">
+                    <i data-lucide="sliders" class="w-5 h-5"></i>
+                </button>
             </div>
-        </main>
+        </div>
         
-        <!-- 3. FOOTER FIJO (BARRA DE ACCIÓN DE FILTROS) -->
-        <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-20 p-4">
-            <div class="max-w-4xl mx-auto flex space-x-4">
-                <button onclick="mostrarPantalla1()" class="w-1/3 border-2 border-red-500 text-red-500 font-bold py-3 rounded-xl transition duration-300 hover:bg-red-50">
-                    Limpiar
-                </button>
-                <button onclick="mostrarPantalla1()" class="w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/50 text-lg">
-                    Aplicar Filtros
-                </button>
-            </div>
-        </footer>
-    </div>
-
-
-    <!-- ---------------------------------------------------- -->
-    <!-- PANTALLA 4: PERFIL / AGENDA (PAN4) -->
-    <!-- ---------------------------------------------------- -->
-    <div id="pantalla4" class="screen hidden bg-gray-50">
-        
-        <!-- 1. HEADER FIJO (NAV SUPERIOR - Perfil) -->
-        <header class="fixed top-0 left-0 right-0 bg-white shadow-md z-20">
-            <div class="max-w-4xl mx-auto p-4 pb-2 flex flex-col">
-                
-                <!-- Breadcrumb de Navegación (Inicio > Mi Agenda) -->
-                <div class="flex items-center text-sm mb-2 text-gray-500">
-                    <!-- Enlace a Inicio (PAN1) -->
-                    <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200 font-medium">Inicio</a>
-                    <i data-lucide="chevron-right" class="h-4 w-4 mx-1"></i>
-                    <span class="font-semibold text-gray-800">Mi Agenda</span>
-                </div>
-
-                <!-- Título y Botones de Control (Cerrar y Configuración) -->
-                <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-extrabold text-gray-800">Mi Agenda</h1>
-                    
-                    <!-- Contenedor de botones (Cerrar y Configuración) - MODIFICADO -->
-                    <div class="flex space-x-2">
-                        <!-- Botón de Cerrar (NUEVO) -->
-                        <button onclick="mostrarPantalla1()" class="p-2 text-gray-500 hover:text-gray-800 transition duration-200 rounded-full">
-                            <i data-lucide="x" class="h-6 w-6"></i>
-                        </button>
-                        <!-- Botón de Configuración/Perfil -->
-                        <button class="p-2 text-gray-500 hover:text-gray-800 transition duration-200 rounded-full">
-                            <i data-lucide="settings" class="h-6 w-6"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Toggle Tabs (Comprados / Guardados) -->
-            <div class="max-w-4xl mx-auto px-4 flex border-b border-gray-200">
-                <button id="tab-comprados" onclick="selectTab('comprados')" class="py-3 px-4 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 transition duration-300 flex-grow">
-                    Comprados (2)
-                </button>
-                <button id="tab-guardados" onclick="selectTab('guardados')" class="py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition duration-300 flex-grow">
-                    Guardados (2)
-                </button>
-            </div>
-        </header>
-
-        <!-- 2. BODY PRINCIPAL (Contenido de las pestañas) -->
-        <!-- Se ha aumentado el padding-top del main para dejar espacio al nuevo header de perfil (incluyendo breadcrumb) -->
-        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow overflow-y-auto" style="padding-top: 155px; padding-bottom: 80px;">
-
-            <!-- Contenido: Eventos Comprados -->
-            <div id="content-comprados" class="space-y-6">
-                
-                <h2 class="text-xl font-bold text-gray-700 mt-4 mb-2">Eventos con Entrada</h2>
-
-                <!-- Tarjeta de Evento Comprado (EJEMPLO 1: Concierto Rock) -->
-                <div class="bg-white rounded-xl shadow-lg border border-indigo-100 p-4">
-                    <div class="flex justify-between items-start mb-3 border-b pb-3">
-                        <div>
-                            <span class="text-xs font-medium text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">CONFIRMADO</span>
-                            <h3 class="text-xl font-extrabold text-gray-900 mt-1">Concierto Rock</h3>
-                            <p class="text-sm text-gray-500">Madrid, 15 NOV • 20:00 h</p>
-                        </div>
-                        <!-- Botón de Compartir -->
-                        <button class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition duration-200">
-                            <i data-lucide="share-2" class="h-5 w-5"></i>
-                        </button>
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Entrada: #XP-3209R</span>
-                        <button onclick="showQrModal()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-md flex items-center space-x-2">
-                            <i data-lucide="qr-code" class="h-5 w-5"></i>
-                            <span>Ver QR</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tarjeta de Evento Comprado (EJEMPLO 2: Taller Creativo) -->
-                <div class="bg-white rounded-xl shadow-lg border border-indigo-100 p-4">
-                    <div class="flex justify-between items-start mb-3 border-b pb-3">
-                        <div>
-                            <span class="text-xs font-medium text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">CONFIRMADO</span>
-                            <h3 class="text-xl font-extrabold text-gray-900 mt-1">Taller Creativo</h3>
-                            <p class="text-sm text-gray-500">Valencia, 25 NOV • 19:30 h</p>
-                        </div>
-                         <!-- Botón de Compartir -->
-                        <button class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition duration-200">
-                            <i data-lucide="share-2" class="h-5 w-5"></i>
-                        </button>
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Entrada: #QR-9937D</span>
-                        <button onclick="showQrModal()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-md flex items-center space-x-2">
-                            <i data-lucide="qr-code" class="h-5 w-5"></i>
-                            <span>Ver QR</span>
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Contenido: Eventos Guardados (Inicialmente oculto) -->
-            <div id="content-guardados" class="space-y-6 hidden">
-                 
-                <h2 class="text-xl font-bold text-gray-700 mt-4 mb-2">Mi Lista de Deseados</h2>
-
-                <!-- Tarjeta de Evento Guardado (EJEMPLO 1: Arte Moderno) -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                    <div class="relative h-24">
-                        <img src="https://placehold.co/600x400/06B6D4/ffffff?text=ARTE+MODERNO" alt="[Image of Modern Art]" class="w-full h-full object-cover">
-                        <span class="absolute top-2 left-2 bg-cyan-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Exposición</span>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Arte Moderno</h3>
-                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                            <i data-lucide="map-pin" class="h-4 w-4"></i>
-                            <span>Madrid, 18 NOV • Todo el día (Gratis)</span>
-                        </p>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <button onclick="mostrarPantalla2()" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition duration-300">
-                                Ver Detalles
-                            </button>
-                            <button class="text-red-500 hover:text-red-700 text-sm font-semibold flex items-center space-x-1 transition duration-300">
-                                <i data-lucide="trash-2" class="h-4 w-4"></i>
-                                <span>Eliminar</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tarjeta de Evento Guardado (EJEMPLO 2: Maratón Solidaria) -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                    <div class="relative h-24">
-                        <img src="https://placehold.co/600x400/10B981/ffffff?text=MARATON+SOLIDARIA" alt="" class="w-full h-full object-cover">
-                        <span class="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Deporte</span>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Maratón Solidaria</h3>
-                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                            <i data-lucide="map-pin" class="h-4 w-4"></i>
-                            <span>Barcelona, 20 NOV • 08:00 am (10.00 €)</span>
-                        </p>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <button onclick="mostrarPantalla2()" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition duration-300">
-                                Ver Detalles
-                            </button>
-                            <button class="text-red-500 hover:text-red-700 text-sm font-semibold flex items-center space-x-1 transition duration-300">
-                                <i data-lucide="trash-2" class="h-4 w-4"></i>
-                                <span>Eliminar</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </main>
-        
-        <!-- El footer de PAN4 es el mismo TabBar de PAN1, manejado globalmente. -->
-    </div>
-
-    <!-- MODAL DE VISUALIZACIÓN QR (Fuera de PAN4) -->
-    <div id="qr-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4" onclick="closeQrModal()">
-        <div class="bg-white rounded-xl p-8 max-w-sm w-full shadow-2xl" onclick="event.stopPropagation()">
-            <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">Tu Entrada</h3>
-            <p class="text-center text-sm text-gray-600 mb-4">Muestra este código al acceder al evento.</p>
-            <!-- Simulación de Código QR -->
-            <div class="bg-white p-4 border-8 border-gray-100 rounded-lg">
-                <img src="https://placehold.co/300x300/1F2937/F9FAFB?text=QR+CODE" alt="[Image of QR Code]" class="w-full h-auto rounded">
-            </div>
-            <p class="text-center text-xs font-mono mt-4 text-gray-800 break-all">#XP-3209R</p>
-            <button onclick="closeQrModal()" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition duration-300">
-                Cerrar
+        <!-- Header de la Pantalla 2 (Detalle) - Inicialmente Oculto -->
+        <div id="pan2-header" class="hidden flex items-center justify-between max-w-xl mx-auto">
+            <button onclick="handleNavigation('PAN1')" class="p-2 rounded-full hover:bg-gray-100">
+                <i data-lucide="arrow-left" class="w-6 h-6 text-gray-700"></i>
+            </button>
+            <h1 class="text-xl font-bold text-gray-800 truncate" id="pan2-title-header">Detalle del Evento</h1>
+            <button id="pan2-favorite-button" onclick="toggleFavorite(currentEvent ? currentEvent.ID_EVENTO : null)" class="p-2 rounded-full hover:bg-gray-100">
+                <!-- Icono de Corazón se actualiza con JS -->
+                <i data-lucide="heart" class="w-6 h-6 text-gray-700"></i> 
             </button>
         </div>
-    </div>
+    </header>
+
+    <!-- ###################################################################### -->
+    <!-- CONTENIDO PRINCIPAL (PANEL 1: HOME) -->
+    <!-- ###################################################################### -->
+    <main id="pan1-main-content" class="p-4 max-w-xl mx-auto">
+        
+        <h2 id="list-title" class="text-2xl font-bold text-gray-800 mb-4">Próximos Eventos</h2>
+
+        <!-- Contenedor del Listado de Eventos -->
+        <div id="events-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Las tarjetas de eventos se inyectarán aquí -->
+            <div id="loading-spinner" class="col-span-full flex justify-center items-center h-40">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
+            </div>
+        </div>
+
+        <!-- RF 1.03: Botón de Cargar Más -->
+        <div id="load-more-container" class="mt-8 text-center hidden">
+            <button onclick="loadMoreEvents()" class="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-full hover:bg-gray-300 transition shadow-md">
+                Cargar más eventos
+            </button>
+        </div>
+
+    </main>
+
+    <!-- ###################################################################### -->
+    <!-- CONTENIDO PRINCIPAL (PANEL 2: DETALLE DEL EVENTO) -->
+    <!-- ###################################################################### -->
+    <section id="pan2-detail" class="hidden p-4 max-w-xl mx-auto">
+        <!-- El contenido se inyecta dinámicamente -->
+    </section>
+
+    <!-- ###################################################################### -->
+    <!-- COMPONENTE: FOOTER / BARRA DE NAVEGACIÓN (RF 1.10 - 1.13) -->
+    <!-- ###################################################################### -->
+    <footer id="main-navbar" class="navbar-fixed fixed bottom-0 left-0 w-full bg-white z-10 p-2 border-t border-gray-200">
+        <div class="flex justify-around items-center max-w-xl mx-auto">
+            <!-- RF 1.10: Cercanos -->
+            <button id="tab-cercanos" onclick="setActiveTab('cercanos')" class="flex flex-col items-center p-2 rounded-full transition duration-300 transform hover:scale-105">
+                <i data-lucide="map-pin" class="w-6 h-6 text-gray-400"></i>
+                <span class="text-xs font-medium text-gray-500 mt-1">Cercanos</span>
+            </button>
+            <!-- RF 1.11: Mejor Valorados (Default) -->
+            <button id="tab-valorados" onclick="setActiveTab('valorados')" class="flex flex-col items-center p-2 rounded-full transition duration-300 transform scale-110 shadow-lg bg-cyan-50 text-cyan-600">
+                <i data-lucide="star" class="w-6 h-6 text-cyan-600 fill-cyan-400"></i>
+                <span class="text-xs font-bold text-cyan-600 mt-1">Valorados</span>
+            </button>
+            <!-- RF 1.12: Mi Agenda/Perfil -->
+            <button id="tab-perfil" onclick="setActiveTab('perfil')" class="flex flex-col items-center p-2 rounded-full transition duration-300 transform hover:scale-105">
+                <i data-lucide="user" class="w-6 h-6 text-gray-400"></i>
+                <span class="text-xs font-medium text-gray-500 mt-1">Perfil</span>
+            </button>
+        </div>
+    </footer>
 
 
-    <!-- ---------------------------------------------------- -->
-    <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
-    <!-- ---------------------------------------------------- -->
+    <!-- ###################################################################### -->
+    <!-- LÓGICA JAVASCRIPT -->
+    <!-- ###################################################################### -->
     <script>
-        // Inicializar Iconos Lucide
-        lucide.createIcons();
-        
-        // Oculta todas las pantallas excepto la especificada y gestiona el estado del TabBar
-        function mostrarPantalla(pantallaId) {
-            const pantallas = ['pantalla1', 'pantalla2', 'pantalla3', 'pantalla4'];
-            pantallas.forEach(id => {
-                const screen = document.getElementById(id);
-                if (screen) {
-                    if (id === pantallaId) {
-                        screen.classList.remove('hidden');
-                    } else {
-                        screen.classList.add('hidden');
-                    }
-                }
-            });
-            window.scrollTo(0, 0); // Ir al inicio de la página al cambiar de pantalla
+        // Placeholder para la URL de la API de Google Apps Script
+        const GAS_WEB_APP_URL = "YOUR_GAS_WEB_APP_URL_HERE"; // ¡REEMPLAZAR CON LA URL REAL!
 
-            // --- Lógica de la TabBar ---
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => {
-                // Limpiar clases de activo
-                item.classList.remove('nav-item-active', 'text-cyan-500', 'transform', 'scale-110', '-translate-y-2');
-                // Restaurar clases de inactivo por defecto
-                item.classList.add('text-gray-500', 'hover:text-indigo-600', 'group');
-            });
+        let eventsData = []; // Almacena todos los datos de la hoja de cálculo
+        let filteredEvents = []; // Eventos después de aplicar filtros y búsqueda
+        let currentPage = 0;
+        const eventsPerPage = 6;
+        let activeTab = 'valorados'; // RF 1.11: Valorados es el default
+        let currentView = 'PAN1';
+        let currentEvent = null; // Almacena el evento actual en PAN2
+
+        // #################################################################
+        // UTILITIES
+        // #################################################################
+
+        // Inicializa los iconos de Lucide
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadEvents();
+            // Inicializa el contador del carrito al cargar
+            updateCartCounter();
+        });
+
+        // Función para simular el formato de estrellas (RF 1.02)
+        function getStarRating(rating) {
+            const fullStar = '<i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-400 inline"></i>';
+            const emptyStar = '<i data-lucide="star" class="w-4 h-4 text-gray-300 inline"></i>';
             
-            // Activar el item correspondiente a la pantalla
-            let activeItemId = null;
-            if (pantallaId === 'pantalla1' || pantallaId === 'pantalla2' || pantallaId === 'pantalla3') {
-                // Por defecto, al volver a la pantalla principal, se destaca 'Valorados' (el centro)
-                activeItemId = 'nav-valorados'; 
-            } else if (pantallaId === 'pantalla4') {
-                activeItemId = 'nav-perfil'; 
-            }
-
-            if (activeItemId) {
-                const activeItem = document.getElementById(activeItemId);
-                if (activeItem) {
-                    // Remover clases de inactivo
-                    activeItem.classList.remove('text-gray-500', 'hover:text-indigo-600', 'group');
-                    // Añadir clases de activo
-                    activeItem.classList.add('nav-item-active', 'text-cyan-500', 'transform', 'scale-110', '-translate-y-2');
+            let starsHtml = '';
+            // Asegurarse de que el icono de estrella se actualice si es necesario
+            lucide.createIcons(); 
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    starsHtml += fullStar;
+                } else {
+                    starsHtml += emptyStar;
                 }
             }
+            return starsHtml;
         }
 
-
-        // Funciones específicas para la UX
-        function mostrarPantalla1() {
-            mostrarPantalla('pantalla1');
+        // Debounce para la búsqueda rápida (RF 1.08)
+        let searchTimeout;
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                applyFiltersAndRender();
+            }, 300); // 300ms de retardo
         }
 
-        function mostrarPantalla2() {
-            mostrarPantalla('pantalla2');
+        // Función para simular un modal de éxito/error (Reemplaza a alert())
+        function showMessage(message, type = 'success') {
+            const backgroundColor = type === 'success' ? 'bg-emerald-500' : 'bg-red-500';
+            const html = `
+                <div class="fixed top-20 left-1/2 transform -translate-x-1/2 ${backgroundColor} text-white px-4 py-2 rounded-lg shadow-xl z-50 transition-opacity duration-300" role="alert" style="max-width: 90%;">
+                    ${message}
+                </div>
+            `;
+            const container = document.createElement('div');
+            container.innerHTML = html;
+            document.body.appendChild(container);
+
+            setTimeout(() => {
+                container.remove();
+            }, 3000);
+        }
+
+        // #################################################################
+        // RENDERIZADO Y VISTAS (PANEL 1)
+        // #################################################################
+
+        // Función para renderizar una única tarjeta de evento
+        function renderEventCard(event) {
+            const priceText = event.PRECIO_MIN > 0 ? `$${event.PRECIO_MIN.toFixed(0)} GEAI` : 'Gratis';
+            const priceColor = event.PRECIO_MIN > 0 ? 'text-green-600 font-bold' : 'text-cyan-600 font-bold';
+            const ratingHtml = getStarRating(event.RATING_ESTRELLAS);
+
+            return `
+                <div onclick="handleNavigation('PAN2', ${event.ID_EVENTO})" class="bg-white rounded-xl overflow-hidden shadow-lg card-effect cursor-pointer">
+                    <!-- Imagen del Evento -->
+                    <div class="relative h-40 w-full">
+                        <img src="${event.URL_IMAGEN}" onerror="this.onerror=null; this.src='https://placehold.co/400x400/94a3b8/FFFFFF?text=Imagen+no+disponible';" alt="${event.TITULO}" class="w-full h-full object-cover">
+                        <!-- Tag de Categoría -->
+                        <span class="absolute top-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full font-semibold">${event.CATEGORIA}</span>
+                    </div>
+
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold text-gray-900 truncate">${event.TITULO}</h3>
+                        
+                        <!-- Ubicación/Fecha/Hora (RF 1.02) -->
+                        <p class="text-sm text-gray-500 mt-1">
+                            ${event.UBICACION_CIUDAD}, ${new Date(event.FECHA_EVENTO).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })} • ${new Date(event.FECHA_EVENTO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+
+                        <!-- Valoración en Estrellas (RF 1.02) -->
+                        <div class="flex items-center space-x-1 mt-1">
+                            ${ratingHtml}
+                        </div>
+
+                        <!-- Precio y Botón (RF 1.02) -->
+                        <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-100">
+                            <span class="${priceColor} text-base">${priceText}</span>
+                            <!-- Botón "Lista" simula ser un CTA rápido -->
+                            <button class="flex items-center text-sm px-3 py-1 bg-cyan-50 text-cyan-600 rounded-full font-semibold hover:bg-cyan-100 transition">
+                                <i data-lucide="plus" class="w-4 h-4 mr-1"></i>
+                                Lista
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Renderiza el lote actual de eventos en el DOM
+        function appendEventsToDOM(events, isNewLoad = false) {
+            const listContainer = document.getElementById('events-list');
+            
+            if (isNewLoad) {
+                listContainer.innerHTML = '';
+            }
+            
+            const start = currentPage * eventsPerPage;
+            const end = start + eventsPerPage;
+            const eventsToRender = events.slice(start, end);
+
+            if (eventsToRender.length === 0 && isNewLoad) {
+                listContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 mt-10">No se encontraron eventos con los criterios actuales.</p>';
+                document.getElementById('load-more-container').classList.add('hidden');
+            } else {
+                eventsToRender.forEach(event => {
+                    listContainer.innerHTML += renderEventCard(event);
+                });
+                // Vuelve a crear los iconos después de inyectar el HTML
+                lucide.createIcons();
+                
+                // Mostrar/Ocultar el botón "Cargar Más"
+                if (end < events.length) {
+                    document.getElementById('load-more-container').classList.remove('hidden');
+                } else {
+                    document.getElementById('load-more-container').classList.add('hidden');
+                }
+            }
         }
         
-        function mostrarPantalla3() {
-            mostrarPantalla('pantalla3');
+        // Carga más eventos al hacer clic en el botón (RF 1.03)
+        function loadMoreEvents() {
+            currentPage++;
+            appendEventsToDOM(filteredEvents, false);
         }
+        
+        // #################################################################
+        // RENDERIZADO Y VISTAS (PANEL 2: DETALLE)
+        // #################################################################
 
-        function mostrarPantalla4() {
-            mostrarPantalla('pantalla4');
-        }
-
-        // Lógica de Pestañas en PAN4
-        let currentTab = 'comprados';
-        function selectTab(tabName) {
-            if (currentTab === tabName) return;
-
-            // Ocultar/Mostrar contenido
-            document.getElementById('content-comprados').classList.add('hidden');
-            document.getElementById('content-guardados').classList.add('hidden');
-            document.getElementById(`content-${tabName}`).classList.remove('hidden');
-
-            // Actualizar estilo de pestañas
-            document.getElementById('tab-comprados').classList.remove('border-indigo-600', 'text-indigo-600');
-            document.getElementById('tab-comprados').classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700');
+        // Renderiza la vista de detalle para un evento
+        function renderEventDetail(eventId) {
+            const event = eventsData.find(e => e.ID_EVENTO === eventId);
+            currentEvent = event;
+            const detailContainer = document.getElementById('pan2-detail');
             
-            document.getElementById('tab-guardados').classList.remove('border-indigo-600', 'text-indigo-600');
-            document.getElementById('tab-guardados').classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700');
+            if (!event) {
+                detailContainer.innerHTML = '<p class="text-center text-red-500 mt-10">Evento no encontrado.</p>';
+                return;
+            }
 
-            document.getElementById(`tab-${tabName}`).classList.add('border-indigo-600', 'text-indigo-600');
-            document.getElementById(`tab-${tabName}`).classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700');
+            // Actualizar el header
+            document.getElementById('pan2-title-header').textContent = event.TITULO.substring(0, 20) + '...';
+            updateFavoriteButton(event.FAVORITO);
+            
+            const priceText = event.PRECIO_MIN > 0 ? `$${event.PRECIO_MIN.toFixed(0)} GEAI` : 'Gratis';
+            const priceStyle = event.PRECIO_MIN > 0 ? 'text-xl font-bold text-green-600' : 'text-xl font-bold text-cyan-600';
+            const ctaButtonText = event.RESERVADO > 0 ? `Compradas (${event.RESERVADO})` : 'Reservar Entrada';
+            const ctaButtonStyle = event.RESERVADO > 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600';
+            const ratingHtml = getStarRating(event.RATING_ESTRELLAS);
 
-            currentTab = tabName;
+            const detailHtml = `
+                <div class="bg-white rounded-xl shadow-2xl overflow-hidden mb-6">
+                    <!-- Imagen de cabecera -->
+                    <img src="${event.URL_IMAGEN}" onerror="this.onerror=null; this.src='https://placehold.co/800x400/94a3b8/FFFFFF?text=Imagen+no+disponible';" alt="${event.TITULO}" class="w-full h-64 object-cover">
+                    
+                    <div class="p-5">
+                        <h2 class="text-3xl font-extrabold text-gray-900">${event.TITULO}</h2>
+                        
+                        <!-- Categoría y Valoración -->
+                        <div class="flex items-center space-x-4 mt-2 mb-4 text-sm">
+                            <span class="px-3 py-1 bg-cyan-100 text-cyan-800 rounded-full font-semibold">${event.CATEGORIA}</span>
+                            <div class="flex items-center space-x-1">
+                                ${ratingHtml}
+                                <span class="text-gray-600 font-medium ml-1">${event.RATING_ESTRELLAS.toFixed(1)} (${event.NUM_RESEÑAS})</span>
+                            </div>
+                        </div>
+
+                        <!-- Info Rápida -->
+                        <div class="grid grid-cols-2 gap-4 border-t pt-4">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="calendar" class="w-5 h-5 text-gray-500"></i>
+                                <span class="text-sm font-medium text-gray-700">${new Date(event.FECHA_EVENTO).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="clock" class="w-5 h-5 text-gray-500"></i>
+                                <span class="text-sm font-medium text-gray-700">${new Date(event.FECHA_EVENTO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="map-pin" class="w-5 h-5 text-gray-500"></i>
+                                <span class="text-sm font-medium text-gray-700">${event.UBICACION_CIUDAD}</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="tag" class="w-5 h-5 text-gray-500"></i>
+                                <span class="${priceStyle}">${priceText}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Descripción Detallada -->
+                <div class="bg-white p-5 rounded-xl shadow-lg mb-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Sobre el Evento</h3>
+                    <p class="text-gray-600 whitespace-pre-wrap">${event.DESCRIPCION}</p>
+                </div>
+
+                <!-- Contacto y Enlace -->
+                <div class="bg-white p-5 rounded-xl shadow-lg mb-20">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Información Adicional</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="mail" class="w-5 h-5 text-gray-500"></i>
+                            <p class="text-gray-600">Contacto: <a href="mailto:${event.CONTACTO}" class="text-cyan-600 hover:text-cyan-800 underline">${event.CONTACTO}</a></p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="external-link" class="w-5 h-5 text-gray-500"></i>
+                            <p class="text-gray-600">Enlace de reserva: <a href="${event.ENLACE_DE_RESERVA}" target="_blank" class="text-cyan-600 hover:text-cyan-800 underline">${event.ENLACE_DE_RESERVA}</a></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barra de acción flotante (Fixed Bottom) -->
+                <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-20 p-4" id="pan2-cta-bar">
+                    <div class="max-w-xl mx-auto flex justify-between items-center">
+                        <span class="${priceStyle} text-2xl">${priceText}</span>
+                        <button onclick="makeReservation(${event.ID_EVENTO}, ${event.RESERVADO})" class="px-6 py-3 text-white font-bold rounded-full transition shadow-lg ${ctaButtonStyle} flex items-center">
+                            <i data-lucide="${event.RESERVADO > 0 ? 'check-circle' : 'ticket'}" class="w-5 h-5 mr-2"></i>
+                            ${ctaButtonText}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            detailContainer.innerHTML = detailHtml;
+            lucide.createIcons(); // Volver a crear iconos para el nuevo HTML inyectado
         }
 
-        // Lógica del Modal QR
-        function showQrModal() {
-            document.getElementById('qr-modal').classList.remove('hidden');
+        // Actualiza el icono de favorito en el header de PAN2
+        function updateFavoriteButton(isFavorite) {
+            const favButton = document.getElementById('pan2-favorite-button');
+            favButton.innerHTML = `<i data-lucide="heart" class="w-6 h-6 ${isFavorite ? 'text-red-500 fill-red-400' : 'text-gray-700'}"></i>`;
+            lucide.createIcons();
         }
 
-        function closeQrModal() {
-            document.getElementById('qr-modal').classList.add('hidden');
+        // #################################################################
+        // LÓGICA DE DATOS Y FILTRADO (PANEL 1)
+        // #################################################################
+
+        // Filtra y ordena los eventos según la pestaña activa y la búsqueda
+        function applyFiltersAndRender(resetPage = true) {
+            if (resetPage) {
+                currentPage = 0;
+            }
+            
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const listTitle = document.getElementById('list-title');
+
+            // 1. Filtrado por Búsqueda (RF 1.08)
+            let tempEvents = eventsData.filter(event => {
+                const searchMatch = event.TITULO.toLowerCase().includes(query) ||
+                                    event.CATEGORIA.toLowerCase().includes(query) ||
+                                    event.UBICACION_CIUDAD.toLowerCase().includes(query);
+                return searchMatch;
+            });
+            
+            // 2. Ordenación y Título según Tab Activa (RF 1.10, 1.11)
+            if (activeTab === 'valorados') {
+                // RF 1.11: Ordenar por RATING_ESTRELLAS
+                tempEvents.sort((a, b) => b.RATING_ESTRELLAS - a.RATING_ESTRELLAS);
+                listTitle.textContent = "Mejor Valorados";
+            } else if (activeTab === 'cercanos') {
+                // RF 1.10: Simulación de ordenación por Cercanía (usaremos ID_EVENTO como proxy)
+                tempEvents.sort((a, b) => a.ID_EVENTO - b.ID_EVENTO); 
+                listTitle.textContent = "Eventos Cercanos";
+            } else {
+                 // Default: Próximos Eventos (Ordenado por fecha)
+                 tempEvents.sort((a, b) => new Date(a.FECHA_EVENTO) - new Date(b.FECHA_EVENTO));
+                 listTitle.textContent = "Próximos Eventos";
+            }
+
+            filteredEvents = tempEvents;
+            appendEventsToDOM(filteredEvents, true); // Renderiza desde la primera página
+        }
+        
+        // Carga inicial de datos desde la API
+        async function loadEvents() {
+            const spinner = document.getElementById('loading-spinner');
+            spinner.classList.remove('hidden');
+            document.getElementById('events-list').innerHTML = ''; // Limpia por si acaso
+
+            // Nota: Aquí iría la lógica de fetch real de GAS, pero usamos simulación por ahora
+            // para que el prototipo funcione sin necesidad de la URL real desplegada.
+
+            // SIMULACIÓN DE DATOS (Necesario para que el prototipo funcione sin la URL real)
+            try {
+                const response = await fetch(GAS_WEB_APP_URL);
+                const result = await response.json();
+
+                if (result.status === 'success' && result.data) {
+                    eventsData = result.data;
+                } else {
+                     // Si falla, usa los datos mock
+                    throw new Error(result.error || 'Respuesta inesperada de la API.');
+                }
+            } catch (error) {
+                console.warn("Fallo al conectar con la API o respuesta inválida. Usando datos simulados. Reemplace 'GAS_WEB_APP_URL' con la URL real.", error);
+                
+                eventsData = [
+                    { ID_EVENTO: 101, TITULO: "El Rey León, El Musical", CATEGORIA: "Musicales", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 542, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 35, FECHA_EVENTO: "2024-11-14 20:00", URL_IMAGEN: "https://placehold.co/400x400/06B6D4/FFFFFF?text=Rey+Leon", DESCRIPCION: "Una experiencia teatral inolvidable que transporta al espectador a la sabana africana. Con impresionantes vestuarios y música icónica.", VISTO: 1, CONTACTO: "reyleon@gmail.com", ENLACE_DE_RESERVA: "https://example.com/rey-leon", RESERVADO: 1, FAVORITO: 0 },
+                    { ID_EVENTO: 102, TITULO: "Monólogo de Raúl Antón", CATEGORIA: "Monólogos", RATING_ESTRELLAS: 3, NUM_RESEÑAS: 187, UBICACION_CIUDAD: "Ibi", PRECIO_MIN: 28, FECHA_EVENTO: "2024-02-25 21:30", URL_IMAGEN: "https://placehold.co/400x400/ef4444/FFFFFF?text=Raul+Anton", DESCRIPCION: "Noche de risas garantizadas con el humor irreverente y cercano de Raúl Antón. ¡No pararás de reír!", VISTO: 1, CONTACTO: "raulanton12@gmail.com", ENLACE_DE_RESERVA: "https://example.com/raul-anton", RESERVADO: 0, FAVORITO: 1 },
+                    { ID_EVENTO: 103, TITULO: "Concierto de Nathy Peluso", CATEGORIA: "Musicales", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 310, UBICACION_CIUDAD: "Alicante", PRECIO_MIN: 45, FECHA_EVENTO: "2024-02-26 22:00", URL_IMAGEN: "https://placehold.co/400x400/f97316/FFFFFF?text=Nathy+Peluso", DESCRIPCION: "La artista argentina Nathy Peluso en vivo, presentando sus éxitos y nuevos temas con su inconfundible estilo.", VISTO: 0, CONTACTO: "eventime23@gmail.com", ENLACE_DE_RESERVA: "https://example.com/nathy-peluso", RESERVADO: 0, FAVORITO: 1 },
+                    { ID_EVENTO: 104, TITULO: "Festival de Jazz de Madrid", CATEGORIA: "Festivales", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 250, UBICACION_CIUDAD: "Elche", PRECIO_MIN: 25, FECHA_EVENTO: "2024-03-10 19:00", URL_IMAGEN: "https://placehold.co/400x400/8b5cf6/FFFFFF?text=Festival+Jazz", DESCRIPCION: "Una selección de los mejores talentos del jazz nacional e internacional en diferentes escenarios de la ciudad.", VISTO: 0, CONTACTO: "jazzmadrid@gmail.com", ENLACE_DE_RESERVA: "https://example.com/jazz-madrid", RESERVADO: 0, FAVORITO: 0 },
+                    { ID_EVENTO: 106, TITULO: "Formula 1 Madrid Grand Prix", CATEGORIA: "Motor", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 789, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 150, FECHA_EVENTO: "2025-05-18 15:00", URL_IMAGEN: "https://placehold.co/400x400/10b981/FFFFFF?text=F1+Madrid", DESCRIPCION: "La emoción de la Fórmula 1 llega a Madrid con una carrera urbana espectacular. Vive la velocidad y la adrenalina en primera persona.", VISTO: 1, CONTACTO: "f1best@gmail.com", ENLACE_DE_RESERVA: "https://example.com/f1", RESERVADO: 0, FAVORITO: 0 },
+                    { ID_EVENTO: 107, TITULO: "Exposición Maestros del Renacimiento", CATEGORIA: "Arte", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 120, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 15, FECHA_EVENTO: "2024-03-20 11:00", URL_IMAGEN: "https://placehold.co/400x400/a3a3a3/FFFFFF?text=Arte+Renacimiento", DESCRIPCION: "Un viaje a través de las obras cumbre de los grandes artistas del Renacimiento europeo.", VISTO: 1, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/renacimiento", RESERVADO: 0, FAVORITO: 0 },
+                    { ID_EVENTO: 108, TITULO: "Festival de Comedia Indie", CATEGORIA: "Comedia", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 65, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 18, FECHA_EVENTO: "2024-04-05 21:00", URL_IMAGEN: "https://placehold.co/400x400/fcd34d/000000?text=Comedia+Indie", DESCRIPCION: "Descubre nuevas voces del stand-up y monólogos emergentes en este festival innovador.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/comedia-indie", RESERVADO: 0, FAVORITO: 0 },
+                    { ID_EVENTO: 109, TITULO: "Ópera: Carmen en el Real", CATEGORIA: "Ópera", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 450, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 70, FECHA_EVENTO: "2024-05-10 20:30", URL_IMAGEN: "https://placehold.co/400x400/fb7185/FFFFFF?text=Opera+Carmen", DESCRIPCION: "La icónica ópera de Bizet, Carmen, interpretada por un elenco de talla mundial en el Teatro Real.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/opera-carmen", RESERVADO: 0, FAVORITO: 0 },
+                    { ID_EVENTO: 110, TITULO: "Maratón de Madrid 2024", CATEGORIA: "Deportes", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 980, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 50, FECHA_EVENTO: "2024-04-28 08:00", URL_IMAGEN: "https://placehold.co/400x400/facc15/000000?text=Maraton+Madrid", DESCRIPCION: "Corre por las calles de Madrid en uno de los maratones más emblemáticos de España.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/maraton", RESERVADO: 0, FAVORITO: 0 },
+                    { ID_EVENTO: 111, TITULO: "Conferencia 'El Futuro de la IA'", CATEGORIA: "Conferencias", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 75, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 25, FECHA_EVENTO: "2024-06-15 10:00", URL_IMAGEN: "https://placehold.co/400x400/22c55e/FFFFFF?text=Conferencia+IA", DESCRIPCION: "Expertos en inteligencia artificial debaten sobre los avances y el impacto de la IA en nuestra sociedad.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/ia-conferencia", RESERVADO: 0, FAVORITO: 0 }
+                ];
+            }
+
+            applyFiltersAndRender(true);
+            spinner.classList.add('hidden');
+            updateCartCounter();
         }
 
-        // Inicializar en PAN1 al cargar la página y configurar el TabBar
-        window.onload = () => {
-             // Asegura que se muestre PAN1 y se configure el TabBar inicial
-             mostrarPantalla('pantalla1'); 
-             // Asegura que la pestaña inicial de PAN4 sea 'comprados'
-             selectTab('comprados');
-        };
+        // #################################################################
+        // ACTUALIZACIÓN DE ESTADO (POST/PATCH SIMULADO)
+        // #################################################################
+
+        // Función para actualizar el estado FAVORITO
+        async function toggleFavorite(eventId) {
+            if (!eventId) return;
+            const event = eventsData.find(e => e.ID_EVENTO === eventId);
+            if (!event) return showMessage('Error: Evento no encontrado para actualizar.', 'error');
+
+            const newFavoriteStatus = event.FAVORITO === 1 ? 0 : 1;
+            
+            // Simulación de la petición POST/PATCH a GAS
+            try {
+                // await fetch(GAS_WEB_APP_URL, { ... cuerpo de la petición ... });
+                
+                // Actualizar el estado localmente
+                event.FAVORITO = newFavoriteStatus;
+                updateFavoriteButton(newFavoriteStatus);
+                showMessage(newFavoriteStatus === 1 ? '¡Evento añadido a Favoritos!' : 'Evento eliminado de Favoritos.', 'success');
+                
+            } catch (error) {
+                console.error("Error al actualizar favorito:", error);
+                showMessage('Fallo en la conexión al servidor. Inténtelo de nuevo.', 'error');
+            }
+        }
+
+        // Función para simular la reserva de una entrada (sólo se permite 1)
+        async function makeReservation(eventId, currentReserved) {
+            if (currentReserved > 0) {
+                // Mostrar un mensaje más informativo para el usuario
+                return showMessage('Ya tienes una reserva para este evento. Consulta "Mi Agenda".', 'error');
+            }
+            
+            const event = eventsData.find(e => e.ID_EVENTO === eventId);
+            if (!event) return showMessage('Error: Evento no encontrado para reservar.', 'error');
+
+            const newReserved = 1; // Reservamos 1 entrada
+
+            // Simulación de la petición POST/PATCH a GAS
+            try {
+                // await fetch(GAS_WEB_APP_URL, { ... cuerpo de la petición ... });
+                
+                // Actualizar el estado localmente y recargar la vista de detalle
+                event.RESERVADO = newReserved;
+                renderEventDetail(eventId); // Recargar PAN2 para actualizar el botón
+                updateCartCounter();
+                showMessage('¡Reserva confirmada! 1 entrada añadida a tu Agenda.', 'success');
+                
+            } catch (error) {
+                console.error("Error al reservar:", error);
+                showMessage('Fallo en la conexión al servidor. Inténtelo de nuevo.', 'error');
+            }
+        }
+        
+        // Actualiza el contador del carrito (RF 1.07)
+        function updateCartCounter() {
+            const totalReservados = eventsData.reduce((sum, event) => sum + (event.RESERVADO || 0), 0);
+            document.getElementById('cart-counter').textContent = totalReservados;
+        }
+
+
+        // #################################################################
+        // NAVEGACIÓN Y ESTADO DE LA UI
+        // #################################################################
+        
+        // Muestra u oculta los contenedores principales y headers
+        function setView(pan) {
+            currentView = pan;
+            const pan1Main = document.getElementById('pan1-main-content');
+            const pan2Detail = document.getElementById('pan2-detail');
+            const pan1Header = document.getElementById('pan1-header');
+            const pan2Header = document.getElementById('pan2-header');
+            const navBar = document.getElementById('main-navbar');
+            
+            // Gestiona el padding del body (quitamos el espacio del navbar en PAN2)
+            document.body.classList.remove('body-pan2');
+
+            if (pan === 'PAN1') {
+                pan1Main.classList.remove('hidden');
+                pan1Header.classList.remove('hidden');
+                navBar.classList.remove('hidden');
+                pan2Detail.classList.add('hidden');
+                pan2Header.classList.add('hidden');
+                currentEvent = null; // Limpiar evento actual
+                applyFiltersAndRender(false); // Refrescar la lista sin resetear la paginación/filtros
+            } else if (pan === 'PAN2') {
+                pan1Main.classList.add('hidden');
+                pan1Header.classList.add('hidden');
+                navBar.classList.add('hidden');
+                pan2Detail.classList.remove('hidden');
+                pan2Header.classList.remove('hidden');
+                document.body.classList.add('body-pan2');
+            }
+            // Las vistas PAN3 y PAN4 se implementarán después
+        }
+
+
+        // Manejo de la navegación entre pantallas (RF 1.04, 1.09, 1.12)
+        function handleNavigation(pan, eventId = null) {
+            if (pan === 'PAN2' && eventId) {
+                // Navegación a Detalle
+                renderEventDetail(eventId);
+                setView('PAN2');
+                window.scrollTo(0, 0); // Ir al inicio de la página
+            } else if (pan === 'PAN1') {
+                // Volver al Home
+                setView('PAN1');
+            } else if (pan === 'PAN3') {
+                // RF 1.09: Navegación a filtros
+                showMessage('Simulación: Navegando a Pantalla 3 (Filtros Avanzados)', 'error');
+            } else if (pan === 'PAN_CARRITO' || pan === 'perfil') {
+                // RF 1.12: Navegación a Perfil/Agenda
+                showMessage('Simulación: Navegando a Pantalla 4 (Mi Agenda/Perfil - Reservas)', 'error');
+            } else {
+                showMessage(`Acción o vista no implementada: ${pan}`, 'error');
+            }
+        }
+        
+        // Cambia la pestaña activa (RF 1.10, 1.11, 1.13)
+        function setActiveTab(tabName) {
+            if (currentView !== 'PAN1') return; // Solo funciona en la vista principal
+
+            if (tabName === 'perfil') {
+                handleNavigation('perfil'); // RF 1.12
+                return;
+            }
+            
+            if (activeTab === tabName) return; // No hacer nada si ya está activa
+
+            activeTab = tabName;
+
+            // RF 1.13: Actualizar estilos visuales
+            const tabs = ['cercanos', 'valorados', 'perfil'];
+            tabs.forEach(tab => {
+                const button = document.getElementById(`tab-${tab}`);
+                const icon = button.querySelector('i');
+                const span = button.querySelector('span');
+
+                if (tab === activeTab) {
+                    // Estilo Activo (RF 1.13)
+                    button.classList.add('scale-110', 'shadow-lg', 'bg-cyan-50', 'text-cyan-600');
+                    button.classList.remove('hover:scale-105');
+                    icon.classList.add('text-cyan-600', 'fill-cyan-400');
+                    icon.classList.remove('text-gray-400');
+                    span.classList.add('font-bold', 'text-cyan-600');
+                    span.classList.remove('text-gray-500', 'font-medium');
+                } else {
+                    // Estilo Inactivo
+                    button.classList.remove('scale-110', 'shadow-lg', 'bg-cyan-50', 'text-cyan-600');
+                    button.classList.add('hover:scale-105');
+                    icon.classList.remove('text-cyan-600', 'fill-cyan-400');
+                    icon.classList.add('text-gray-400');
+                    span.classList.remove('font-bold', 'text-cyan-600');
+                    span.classList.add('text-gray-500', 'font-medium');
+                }
+            });
+            
+            // Re-renderizar con el nuevo filtro (RF 1.10, 1.11)
+            applyFiltersAndRender();
+        }
+
     </script>
 </body>
 </html>
