@@ -158,7 +158,7 @@ function cargarTarjetas(datosAMostrar = filteredEvents) {
 
     //V13 mostrar si no hay resultados
     if (datosAMostrar.length === 0) {
-        contenedor.innerHTML = `
+        container.innerHTML = `
             <div class="col-span-full py-12 text-center">
                 <p class="text-gray-400">No se han encontrado eventos con esos filtros.</p>
             </div>`;
