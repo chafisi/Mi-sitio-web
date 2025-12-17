@@ -2,7 +2,7 @@
     <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
     <!-- ---------------------------------------------------- -->*/
     
-alert("El archivo JS se ha cargado correctamente barra busqueda y v5");
+alert("v10");
 console.log("Prueba de consola");
 
     // Inicializar Iconos Lucide
@@ -356,6 +356,8 @@ function mostrarPantalla2(idEvento) {
 
     mostrarPantalla('pantalla2');
 
+    actualizarFooterDetalle(evento);
+
     // 7. Refrescamos Lucide para que los nuevos iconos se dibujen
     if (window.lucide) lucide.createIcons();
 }
@@ -392,8 +394,111 @@ function toggleFavorito(idEvento) {
     // podrías llamar a cargarTarjetas(), pero no es obligatorio hasta que el usuario vuelva.
 }
 
-/**---FIN---- */
 
+/*************/
+/** RF2.08 A 2.14 logica de la compra y tarjeta*/
+/*Lo llamaremos al pulsar en el icono*/
+/*************/
+let currentPanelEventId = null;
+let currentQuantity = 1;
+
+// RF 2.10: Abrir Panel
+function openPurchasePanel(idEvento) {
+    const evento = eventsData.find(e => e.ID_EVENTO === idEvento);
+    if (!evento) return;
+
+    currentPanelEventId = idEvento;
+    currentQuantity = 1; // Por defecto siempre 1 al abrir
+    
+    // Rellenar datos básicos (RF 2.11)
+    document.getElementById('panel-event-name').innerText = evento.TITULO;
+    updatePanelUI(evento.PRECIO_MIN);
+
+    // Animación de apertura
+    const overlay = document.getElementById('purchase-panel-overlay');
+    const panel = document.getElementById('purchase-panel');
+    
+    overlay.classList.remove('hidden');
+    setTimeout(() => {
+        overlay.classList.replace('opacity-0', 'opacity-100');
+        panel.classList.replace('translate-x-full', 'translate-x-0');
+    }, 10);
+
+    // Configurar botón final
+    document.getElementById('btn-confirmar-compra').onclick = () => confirmPurchase(idEvento);
+    
+    if (window.lucide) lucide.createIcons();
+}
+
+// RF 2.10: Cerrar Panel
+function closePurchasePanel() {
+    const overlay = document.getElementById('purchase-panel-overlay');
+    const panel = document.getElementById('purchase-panel');
+
+    overlay.classList.replace('opacity-100', 'opacity-0');
+    panel.classList.replace('translate-x-0', 'translate-x-full');
+
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+    }, 300);
+}
+
+// RF 2.12 & 2.13: Control de cantidad y Cálculos
+function updatePanelQuantity(change) {
+    const evento = eventsData.find(e => e.ID_EVENTO === currentPanelEventId);
+    
+    // Mínimo 1 entrada
+    if (currentQuantity + change < 1) return;
+    
+    currentQuantity += change;
+    updatePanelUI(evento.PRECIO_MIN);
+}
+
+function updatePanelUI(precioUnitario) {
+    const subtotal = precioUnitario * currentQuantity;
+    const taxes = subtotal * 0.10; // 10% gestión
+    const total = subtotal + taxes;
+
+    document.getElementById('panel-quantity').innerText = currentQuantity;
+    document.getElementById('panel-subtotal').innerText = `${subtotal.toFixed(2)} €`;
+    document.getElementById('panel-taxes').innerText = `${taxes.toFixed(2)} €`;
+    document.getElementById('panel-total').innerText = `${total.toFixed(2)} €`;
+}
+
+// RF 2.14: Finalización de Reserva
+function confirmPurchase(idEvento) {
+    const evento = eventsData.find(e => e.ID_EVENTO === idEvento);
+    
+    // Sumamos la cantidad al valor actual de RESERVADO (RF 2.14.1)
+    evento.RESERVADO += currentQuantity;
+
+    // Feedback visual y cierre
+    alert(`¡Reserva confirmada! Has adquirido ${currentQuantity} entradas para ${evento.TITULO}.`);
+    
+    closePurchasePanel();
+    
+    // Actualizamos la interfaz de la Pantalla 2 para reflejar el cambio (RF 2.14.2)
+    actualizarFooterDetalle(evento);
+}
+
+// Actualizar el botón del footer de la Pantalla 2 (RF 2.07)
+function actualizarFooterDetalle(evento) {
+    const btnReserva = document.getElementById('p2-btn-reserva');
+    const precioTexto = evento.PRECIO_MIN === 0 ? "Gratis" : `${evento.PRECIO_MIN.toFixed(2)} €`;
+
+    if (evento.RESERVADO === 0) {
+        btnReserva.innerHTML = `Reservar ahora (${precioTexto})`;
+        btnReserva.classList.replace('bg-green-600', 'bg-indigo-600');
+    } else {
+        btnReserva.innerHTML = `Reservadas ${evento.RESERVADO} entradas. Añadir más`;
+        btnReserva.classList.replace('bg-indigo-600', 'bg-green-600');
+    }
+    
+    // Aseguramos que el botón abra el panel de compra
+    btnReserva.onclick = () => openPurchasePanel(evento.ID_EVENTO);
+}
+
+/**---FIN---- */
 // --- DISPARADOR DE INICIO ---
 window.onload = function() {
     console.log("Página cargada. Iniciando sistemasadfasdfasdfasdfasdfasdfasdfasdf...");

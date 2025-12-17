@@ -575,6 +575,66 @@
         </div>
     </div>
 
+
+    <!-- ---------------------------------------------------- -->
+    <!-- EXTRA: PANTALLA 2: PANEL DE COMPRA DE ENTRADAS
+    <!-- ---------------------------------------------------- -->
+    <div id="purchase-panel-overlay" class="fixed inset-0 bg-black/50 z-50 hidden backdrop-blur-sm transition-opacity duration-300 opacity-0">
+        
+    </div>
+
+        <div id="purchase-panel" class="fixed top-0 right-0 h-full w-full max-w-md bg-white z-[60] shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+            <div class="p-6 border-b flex justify-between items-center bg-indigo-50">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Finalizar Reserva</h3>
+                    <p id="panel-event-name" class="text-sm text-indigo-600 font-medium truncate"></p>
+                </div>
+                <button onclick="closePurchasePanel()" class="p-2 hover:bg-white rounded-full transition">
+                    <i data-lucide="x" class="h-6 w-6 text-gray-500"></i>
+                </button>
+            </div>
+
+            <div class="p-6 flex-grow overflow-y-auto">
+                <div class="mb-8">
+                    <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Selecciona cantidad</label>
+                    <div class="flex items-center justify-between bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
+                        <span class="text-gray-700 font-semibold">Entradas</span>
+                        <div class="flex items-center space-x-6">
+                            <button onclick="updatePanelQuantity(-1)" class="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-indigo-600 hover:bg-indigo-600 hover:text-white transition">
+                                <i data-lucide="minus" class="h-5 w-5"></i>
+                            </button>
+                            <span id="panel-quantity" class="text-2xl font-black text-gray-900">1</span>
+                            <button onclick="updatePanelQuantity(1)" class="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center text-indigo-600 hover:bg-indigo-600 hover:text-white transition">
+                                <i data-lucide="plus" class="h-5 w-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3 border-t pt-6">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Subtotal</span>
+                        <span id="panel-subtotal">0.00 €</span>
+                    </div>
+                    <div class="flex justify-between text-gray-600">
+                        <span>Gastos de gestión (10%)</span>
+                        <span id="panel-taxes">0.00 €</span>
+                    </div>
+                    <div class="flex justify-between text-xl font-black text-gray-900 pt-3 border-t">
+                        <span>Total</span>
+                        <span id="panel-total" class="text-indigo-600">0.00 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 border-t bg-gray-50">
+                <button id="btn-confirmar-compra" class="w-full bg-green-600 hover:bg-green-700 text-white font-black py-4 rounded-2xl transition shadow-xl flex items-center justify-center space-x-2">
+                    <i data-lucide="check-circle" class="h-5 w-5"></i>
+                    <span>Confirmar y Pagar</span>
+                </button>
+            </div>
+        </div> 
+
 <script src="javascript2.js"></script>
 
 </body>
