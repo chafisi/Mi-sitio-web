@@ -219,31 +219,22 @@
 
         <!-- HEADER (Imagen de fondo y Controles) -->
         <header class="relative h-80">
-            <!-- Imagen Principal -->
-            <img src="https://placehold.co/1000x500/3b82f6/ffffff?text=CONCIERTO+ROCK+DESTACADO" alt="" class="w-full h-full object-cover">
+        <!-- Imagen Principal -->
+        <img src="https://placehold.co/1000x500/3b82f6/ffffff?text=CONCIERTO+ROCK+DESTACADO" alt="" class="w-full h-full object-cover">
 
-            <!-- Botones de Control Flotantes -->
-            <div class="absolute top-4 left-4">
-                <!-- Botón de Retroceso a PAN1 (Se mantiene el botón simple, no el breadcrumb) -->
-                <button onclick="mostrarPantalla1()" class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
-                <i data-lucide="chevron-left" class="h-6 w-6 text-gray-800"></i>
-                </button>
-            </div>
-            <!-- añadido en la V8 -->
-            <div class="absolute top-4 right-4">
-                <button onclick="mostrarCarrito()" class="p-2 rounded-full hover:bg-gray-100 relative">
-                <i data-lucide="shopping-cart" class="w-6 h-6 text-gray-700"></i>
-                <!-- RF 1.07: Contador de ítems en el carrito (simulado) -->
-                <span id="cart-counter" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">0</span>
-            </div>
+        <!-- Botones de Control Flotantes -->
+        <div class="absolute top-4 left-4">
+            <!-- Botón de Retroceso a PAN1 (Se mantiene el botón simple, no el breadcrumb) -->
+            <button onclick="mostrarPantalla1()" class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
+            <i data-lucide="chevron-left" class="h-6 w-6 text-gray-800"></i>
             </button>
-            
-            <div class="absolute top-4 right-4">
-                <!-- Botón de Guardar/Favorito -->
-                <button class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
-                <i data-lucide="bookmark" class="h-6 w-6 text-gray-800"></i>
-                </button>
-            </div>
+        </div>
+        <div class="absolute top-4 right-4">
+            <!-- Botón de Guardar/Favorito -->
+            <button class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
+            <i data-lucide="bookmark" class="h-6 w-6 text-gray-800"></i>
+            </button>
+        </div>
         </header>
 
         <!-- BODY (Contenido principal con efecto de superposición) -->
