@@ -244,13 +244,13 @@ function filtrarEventosInicio() {
 function agregarEventoDom(events, isNewLoad = false) {
     const listContainer = document.getElementById('events-list');
     
-    if (isNewLoad) {
-        listContainer.innerHTML = '';
-    }
+    //Borramos los elementos
+    listContainer.innerHTML = '';
+    
     
     //const start = currentPage * eventsPerPage;
     //const end = start + eventsPerPage;
-    const eventsToRender = events.slice(start, end);
+    //const eventsToRender = events.slice(start, end);
 
     if (eventsToRender.length === 0 && isNewLoad) {
         listContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 mt-10">No se encontraron eventos con los criterios actuales.</p>';
@@ -260,14 +260,14 @@ function agregarEventoDom(events, isNewLoad = false) {
             listContainer.innerHTML += renderEventCard(event);
         });
         // Vuelve a crear los iconos después de inyectar el HTML
-        lucide.createIcons();
+        //lucide.createIcons();
         
         // Mostrar/Ocultar el botón "Cargar Más"
-        if (end < events.length) {
+        /*if (end < events.length) {
             document.getElementById('load-more-container').classList.remove('hidden');
         } else {
             document.getElementById('load-more-container').classList.add('hidden');
-        }
+        }*/
     }
 }
 
