@@ -310,6 +310,51 @@ function setActiveTab(tab) {
     cargarTarjetas(filteredEvents);
 }
 
+/*************/
+/** RF2 PANTALLA DOS  */
+/*SECUENCIAR LOS DATOS EN LA PÁGINA
+/*************/
+function mostrarPantalla2(idEvento) {
+    // 1. Buscamos el objeto del evento dentro de nuestro array global
+    const evento = eventsData.find(ev => ev.ID_EVENTO === idEvento);
+    
+    if (!evento) {
+        console.error("Evento no encontrado");
+        return;
+    }
+
+    // 2. Formateamos el precio
+    const precioTexto = evento.PRECIO_MIN === 0 ? "Gratis" : `${evento.PRECIO_MIN.toFixed(2)} €`;
+
+    // 3. Formateamos la fecha (Separamos fecha y hora)
+    // Suponiendo formato: "2024-11-14 20:00"
+    const [fecha, hora] = evento.FECHA_EVENTO.split(' ');
+
+    // 4. Inyectamos los datos en el HTML
+    document.getElementById('p2-imagen').src = evento.URL_IMAGEN;
+    document.getElementById('p2-titulo').textContent = evento.TITULO;
+    document.getElementById('p2-fecha').textContent = fecha;
+    document.getElementById('p2-hora').textContent = `${hora} h`;
+    document.getElementById('p2-ubicacion').textContent = evento.UBICACION_CIUDAD;
+    document.getElementById('p2-descripcion').textContent = evento.DESCRIPCION;
+    document.getElementById('p2-precio-caja').textContent = precioTexto;
+    
+    // Texto del botón del footer
+    document.getElementById('p2-btn-reserva').textContent = `Reservar ahora (${precioTexto})`;
+
+    // 5. Gestionar estado de Favorito (Icono relleno o vacío)
+    const btnFavo = document.getElementById('p2-btn-favorito');
+    btnFavo.innerHTML = evento.FAVORITO === 1 
+        ? '<i data-lucide="bookmark" class="h-6 w-6 text-red-500 fill-red-500"></i>' 
+        : '<i data-lucide="bookmark" class="h-6 w-6 text-gray-800"></i>';
+
+    // 6. Cambiamos de pantalla (Usando tu función general)
+    mostrarPantalla('pantalla2');
+
+    // 7. Refrescamos Lucide para que los nuevos iconos se dibujen
+    if (window.lucide) lucide.createIcons();
+}
+
 
 /**---FIN---- */
 
