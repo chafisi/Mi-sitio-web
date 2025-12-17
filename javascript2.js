@@ -283,17 +283,6 @@ function renderEventCard(event) {
 
     // Nuevo diseño de tarjeta con imagen destacada (Estilo 4-2-1)
     return `
-        // Formatear el precio (si es 0 poner Gratis)
-        const precioTexto = evento.PRECIO_MIN === 0 ? "Gratis" : `${evento.PRECIO_MIN.toFixed(2)} €`;
-        
-        // Crear el elemento div de la tarjeta
-        const card = document.createElement('div');
-        card.className = "bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer";
-        
-        // Al hacer clic, llamamos a mostrarPantalla2 pasando el ID del evento
-        card.setAttribute('onclick', `mostrarPantalla2(${evento.ID_EVENTO})`);
-
-
         <div class="relative h-40">
             <img src="${evento.URL_IMAGEN}" alt="${evento.TITULO}" class="w-full h-full object-cover">
             <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
