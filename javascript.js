@@ -182,115 +182,136 @@ function loadMoreEvents() {
 // RENDERIZADO Y VISTAS (PANEL 2: DETALLE)
 // #################################################################
 
-// Renderiza la vista de detalle para un evento
+// Variable global para el ID del evento actual en PAN2
+let currentEventId = null;
+
+/**
+ * Función para renderizar la pantalla de detalle del evento (PAN2)
+ *
+ * @param {number} eventId - El ID del evento a mostrar.
+ */
 function renderEventDetail(eventId) {
     const event = eventsData.find(e => e.ID_EVENTO === eventId);
-    currentEvent = event;
-    const detailContainer = document.getElementById('pan2-detail');
-    
     if (!event) {
-        detailContainer.innerHTML = '<p class="text-center text-red-500 mt-10">Evento no encontrado.</p>';
+        showMessage('Error: Evento no encontrado.', 'error');
         return;
     }
-
-    // Obtener la URL optimizada para el detalle (800px de ancho)
-    const detailImageUrl = getOptimizedImageUrl(event.URL_IMAGEN, 'w800');
-
-    // Actualizar el header
-    document.getElementById('pan2-title-header').textContent = event.TITULO.substring(0, 20) + '...';
-    updateFavoriteButton(event.FAVORITO);
     
-    // Uso del símbolo del Euro (€)
-    const priceText = event.PRECIO_MIN > 0 ? `${event.PRECIO_MIN.toFixed(0)} €` : 'Gratis';
-    const priceStyle = event.PRECIO_MIN > 0 ? 'text-xl font-bold text-green-600' : 'text-xl font-bold text-cyan-600';
-    const ctaButtonText = event.RESERVADO > 0 ? `Compradas (${event.RESERVADO})` : 'Reservar Entrada';
-    const ctaButtonStyle = event.RESERVADO > 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600';
-    const ratingHtml = getStarRating(event.RATING_ESTRELLAS);
+    // 1. Guardar el ID actual y datos de estado
+    currentEventId = eventId;
 
-    const detailHtml = `
-        <div class="bg-white rounded-xl shadow-2xl mb-6 p-5">
-            
-            <h2 class="text-3xl font-extrabold text-gray-900">${event.TITULO}</h2>
-            
-            <!-- Imagen colocada debajo del TITULO -->
-            <div class="mt-4 mb-5 rounded-lg overflow-hidden shadow-xl">
-                <img src="${detailImageUrl}" 
-                        onerror="this.onerror=null; this.src='https://placehold.co/800x400/94a3b8/FFFFFF?text=Imagen+del+Evento';" 
-                        alt="${event.TITULO}" 
-                        class="w-full h-auto object-cover max-h-80">
-            </div>
-            
-            <!-- Categoría y Valoración -->
-            <div class="flex flex-wrap items-center space-x-4 mt-2 mb-4 text-sm">
-                <span class="px-3 py-1 bg-cyan-100 text-cyan-800 rounded-full font-semibold">${event.CATEGORIA}</span>
-                <div class="flex items-center space-x-1 mt-1 sm:mt-0">
-                    ${ratingHtml}
-                    <span class="text-gray-600 font-medium ml-1">${event.RATING_ESTRELLAS.toFixed(1)} (${event.NUM_RESEÑAS})</span>
-                </div>
-            </div>
+    // Obtener datos formateados
+    const optimizedImageUrl = getOptimizedImageUrl(event.URL_IMAGEN, 'w1200');
+    // Formato de fecha detallado (Ej: viernes, 15 de Noviembre de 2025)
+    const dateStr = new Date(event.FECHA_EVENTO).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    // Formato de hora (Ej: 20:00)
+    const timeStr = new Date(event.FECHA_EVENTO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    
+    // Formato de precio
+    const priceText = event.PRECIO_MIN > 0 ? `${event.PRECIO_MIN.toFixed(2)} €` : 'Gratis';
+    // Clase de color para el precio (verde para pago, cian para gratis/destacado)
+    const priceColorClass = event.PRECIO_MIN > 0 ? 'text-green-600' : 'text-cyan-600';
+    
+    // Lógica de estado simulada con localStorage
+    const isFavorite = localStorage.getItem(`favorite-${eventId}`) === 'true';
+    const isReserved = localStorage.getItem(`reserved-${eventId}`) === 'true';
 
-            <!-- Info Rápida -->
-            <div class="grid grid-cols-2 gap-4 border-t pt-4">
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="calendar" class="w-5 h-5 text-gray-500"></i>
-                    <span class="text-sm font-medium text-gray-700">${new Date(event.FECHA_EVENTO).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="clock" class="w-5 h-5 text-gray-500"></i>
-                    <span class="text-sm font-medium text-gray-700">${new Date(event.FECHA_EVENTO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="map-pin" class="w-5 h-5 text-gray-500"></i>
-                    <span class="text-sm font-medium text-gray-700">${event.UBICACION_CIUDAD}</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="tag" class="w-5 h-5 text-gray-500"></i>
-                    <span class="${priceStyle}">${priceText}</span>
-                </div>
-            </div>
+    // 2. Renderizar el HEADER (Imagen de cabecera)
+    const headerImageDiv = document.getElementById('pan2-header-image');
+    headerImageDiv.innerHTML = `
+        <img src="${optimizedImageUrl}" 
+             onerror="this.onerror=null; this.src='https://placehold.co/1000x500/3b82f6/ffffff?text=CONCIERTO+DESTACADO';" 
+             alt="${event.TITULO}" 
+             class="w-full h-full object-cover">
+    `;
+
+    // 3. Renderizar el BODY (Contenido principal)
+    const contentBody = document.getElementById('pan2-content-body');
+    
+    contentBody.innerHTML = `
+        <!-- Título -->
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-4">${event.TITULO}</h1>
+        
+        <!-- Valoración -->
+        <div class="mb-4">
+            ${getStarRating(event.RATING_ESTRELLAS)}
         </div>
 
-        <!-- Descripción Detallada -->
-        <div class="bg-white p-5 rounded-xl shadow-lg mb-6">
-            <h3 class="text-xl font-bold text-gray-800 mb-3">Sobre el Evento</h3>
-            <p class="text-gray-600 whitespace-pre-wrap">${event.DESCRIPCION}</p>
+        <!-- Metadatos Clave -->
+        <div class="space-y-3 mb-6 border-b pb-4">
+            <!-- Fecha -->
+            <p class="text-lg text-gray-700 flex items-center space-x-3">
+                <i data-lucide="calendar" class="h-6 w-6 text-cyan-600"></i>
+                <span class="font-semibold">Fecha:</span> ${dateStr}
+            </p>
+            <!-- Hora -->
+            <p class="text-lg text-gray-700 flex items-center space-x-3">
+                <i data-lucide="clock" class="h-6 w-6 text-cyan-600"></i>
+                <span class="font-semibold">Hora:</span> ${timeStr}
+            </p>
+            <!-- Ubicación -->
+            <p class="text-lg text-gray-700 flex items-center space-x-3">
+                <i data-lucide="map-pin" class="h-6 w-6 text-cyan-600"></i>
+                <span class="font-semibold">Ubicación:</span> ${event.UBICACION_CIUDAD}, ${event.UBICACION_DIRECCION}.
+            </p>
         </div>
 
-        <!-- Contacto y Enlace -->
-        <div class="bg-white p-5 rounded-xl shadow-lg mb-20">
-            <h3 class="text-xl font-bold text-gray-800 mb-3">Información Adicional</h3>
-            <div class="space-y-2">
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="mail" class="w-5 h-5 text-gray-500"></i>
-                    <p class="text-gray-600">Contacto: <a href="mailto:${event.CONTACTO}" class="text-cyan-600 hover:text-cyan-800 underline">${event.CONTACTO}</a></p>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="external-link" class="w-5 h-5 text-gray-500"></i>
-                    <p class="text-gray-600">Enlace de reserva: <a href="${event.ENLACE_DE_RESERVA}" target="_blank" class="text-cyan-600 hover:text-cyan-800 underline">${event.ENLACE_DE_RESERVA}</a></p>
-                </div>
-            </div>
-        </div>
+        <!-- Descripción Completa -->
+        <h2 class="text-2xl font-bold text-gray-800 mb-3">Sobre el Evento</h2>
+        <p class="text-gray-600 mb-6 leading-relaxed">
+            ${event.DESCRIPCION}
+        </p>
 
-        <!-- Barra de acción flotante (Fixed Bottom) -->
-        <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-20 p-4" id="pan2-cta-bar">
-            <div class="max-w-xl mx-auto flex justify-between items-center">
-                <span class="${priceStyle} text-2xl">${priceText}</span>
-                <button onclick="makeReservation(${event.ID_EVENTO}, ${event.RESERVADO})" class="px-6 py-3 text-white font-bold rounded-full transition shadow-lg ${ctaButtonStyle} flex items-center">
-                    <i data-lucide="${event.RESERVADO > 0 ? 'check-circle' : 'ticket'}" class="w-5 h-5 mr-2"></i>
-                    ${ctaButtonText}
-                </button>
-            </div>
+        <!-- Precio Destacado -->
+        <div class="text-center p-4 bg-cyan-50 rounded-xl">
+            <span class="text-sm font-medium text-gray-600 block">Precio base por persona desde</span>
+            <span class="text-4xl font-extrabold ${priceColorClass}">${priceText}</span>
         </div>
     `;
     
-    detailContainer.innerHTML = detailHtml;
-    lucide.createIcons(); // Volver a crear iconos para el nuevo HTML inyectado
+    // 4. Renderizar el FOOTER (Botón CTA)
+    const reserveBtn = document.getElementById('pan2-reserve-btn');
+    
+    if (isReserved) {
+        reserveBtn.textContent = `¡Entradas reservadas!`;
+        reserveBtn.classList.remove('bg-cyan-600', 'shadow-cyan-500/50', 'hover:bg-cyan-700');
+        reserveBtn.classList.add('bg-green-600', 'shadow-green-500/50', 'hover:bg-green-700');
+    } else {
+        reserveBtn.textContent = `Reservar ahora (${priceText})`;
+        reserveBtn.classList.add('bg-cyan-600', 'shadow-cyan-500/50', 'hover:bg-cyan-700');
+        reserveBtn.classList.remove('bg-green-600', 'shadow-green-500/50', 'hover:bg-green-700');
+    }
+
+    // 5. Actualizar el icono de favorito
+    updateFavoriteIcon(eventId, isFavorite);
+    
+    // 6. Volver a renderizar los iconos de Lucide (necesario para el contenido inyectado dinámicamente)
+    lucide.createIcons();
 }
 
-// Actualiza el icono de favorito en el header de PAN2
-function updateFavoriteButton(isFavorite) {
-    const favButton = document.getElementById('pan2-favorite-button');
-    favButton.innerHTML = `<i data-lucide="heart" class="w-6 h-6 ${isFavorite ? 'text-red-500 fill-red-400' : 'text-gray-700'}"></i>`;
+/**
+ * Función auxiliar para actualizar el icono de favorito en PAN2.
+ * Muestra un corazón relleno (rojo) si es favorito, o solo el contorno si no lo es.
+ *
+ * @param {number} eventId - El ID del evento.
+ * @param {boolean} isFavorite - Si el evento está marcado como favorito.
+ */
+function updateFavoriteIcon(eventId, isFavorite) {
+    const iconElement = document.getElementById('pan2-favorite-icon');
+    if (!iconElement) return;
+
+    if (isFavorite) {
+        // Favorito: Corazón relleno y color rojo
+        iconElement.setAttribute('data-lucide', 'heart');
+        iconElement.classList.add('fill-red-500', 'text-red-500');
+        iconElement.classList.remove('text-gray-800');
+    } else {
+        // No Favorito: Contorno de corazón y color gris
+        iconElement.setAttribute('data-lucide', 'heart'); 
+        iconElement.classList.remove('fill-red-500', 'text-red-500');
+        iconElement.classList.add('text-gray-800');
+    }
+    // Recrear iconos para aplicar los cambios SVG
     lucide.createIcons();
 }
 
