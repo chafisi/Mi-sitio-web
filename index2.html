@@ -105,7 +105,7 @@
                         </button>
                         <h1 class="text-2xl font-extrabold text-cyan-700">OcioPlus</h1>
                     </div>
-                    <button onclick="handleNavigation('mostrarCarrito()')" class="p-2 rounded-full hover:bg-gray-100 relative">
+                        <button onclick="mostrarCarrito()" class="p-2 rounded-full hover:bg-gray-100 relative">
                         <i data-lucide="shopping-cart" class="w-6 h-6 text-gray-700"></i>
                         <!-- RF 1.07: Contador de ítems en el carrito (simulado) -->
                         <span id="cart-counter" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">0</span>
@@ -116,7 +116,7 @@
                 <div class="max-w-xl mx-auto mt-2 flex space-x-2">
                     <div class="relative flex-grow">
                         <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
-                        <input type="text" id="search-input" oninput="debounceSearch()" placeholder="Buscar eventos..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-cyan-500 focus:border-cyan-500 shadow-sm transition">
+                        <input type="text" id="search-input" oninput="buscarEventoInicio()" placeholder="Buscar eventos..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-cyan-500 focus:border-cyan-500 shadow-sm transition">
                     </div>
                     <button onclick="mostrarPantalla3()" class="p-3 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition">
                         <i data-lucide="sliders" class="w-5 h-5"></i>
@@ -124,7 +124,7 @@
                 </div>
             </div>
             
-            <!-- Header de la Pantalla 2 (Detalle) - Inicialmente Oculto -->
+            <!-- Header de la Pantalla 2 (Detalle) - Inicialmente Oculto y actualmente sin uso-->
             <div id="pan2-header" class="hidden flex items-center justify-between max-w-xl mx-auto">
                 <button onclick="handleNavigation('PAN1')" class="p-2 rounded-full hover:bg-gray-100">
                     <i data-lucide="arrow-left" class="w-6 h-6 text-gray-700"></i>
