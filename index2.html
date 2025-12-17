@@ -516,6 +516,7 @@
     <!-- Se ha aumentado el padding-top del main para dejar espacio al nuevo header de perfil (incluyendo breadcrumb) -->
     <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow overflow-y-auto" style="padding-top: 155px; padding-bottom: 80px;">
 
+        <!--####EVENTOS COMPRADOS#####-->
         <!-- Contenido: Eventos Comprados -->
         <div id="content-comprados" class="space-y-6">
 
@@ -569,58 +570,59 @@
 
         </div>
 
+        <!--####EVENTOS GUARDADOS#####-->
         <!-- Contenido: Eventos Guardados (Inicialmente oculto) -->
         <div id="content-guardados" class="space-y-6 hidden">
 
-        <h2 class="text-xl font-bold text-gray-700 mt-4 mb-2">Mi Lista de Deseados</h2>
+            <h2 class="text-xl font-bold text-gray-700 mt-4 mb-2">Mi Lista de Deseados</h2>
 
-        <!-- Tarjeta de Evento Guardado (EJEMPLO 1: Arte Moderno) -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-            <div class="relative h-24">
-                <img src="https://placehold.co/600x400/06B6D4/ffffff?text=ARTE+MODERNO" alt="[Image of Modern Art]" class="w-full h-full object-cover">
-                <span class="absolute top-2 left-2 bg-cyan-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Exposición</span>
+            <!-- Tarjeta de Evento Guardado (EJEMPLO 1: Arte Moderno) -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                <div class="relative h-24">
+                    <img src="https://placehold.co/600x400/06B6D4/ffffff?text=ARTE+MODERNO" alt="[Image of Modern Art]" class="w-full h-full object-cover">
+                    <span class="absolute top-2 left-2 bg-cyan-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Exposición</span>
+                </div>
+                <div class="p-4">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Arte Moderno</h3>
+                    <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                    <i data-lucide="map-pin" class="h-4 w-4"></i>
+                    <span>Madrid, 18 NOV • Todo el día (Gratis)</span>
+                    </p>
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                        <button onclick="mostrarPantalla2()" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition duration-300">
+                            Ver Detalles
+                        </button>
+                        <button class="text-red-500 hover:text-red-700 text-sm font-semibold flex items-center space-x-1 transition duration-300">
+                            <i data-lucide="trash-2" class="h-4 w-4"></i>
+                            <span>Eliminar</span>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="p-4">
-                <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Arte Moderno</h3>
-                <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                <i data-lucide="map-pin" class="h-4 w-4"></i>
-                <span>Madrid, 18 NOV • Todo el día (Gratis)</span>
-                </p>
-                <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                <button onclick="mostrarPantalla2()" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition duration-300">
-                    Ver Detalles
-                </button>
-                <button class="text-red-500 hover:text-red-700 text-sm font-semibold flex items-center space-x-1 transition duration-300">
-                    <i data-lucide="trash-2" class="h-4 w-4"></i>
-                    <span>Eliminar</span>
-                </button>
-          </div>
-        </div>
-    </div>
 
-    <!-- Tarjeta de Evento Guardado (EJEMPLO 2: Maratón Solidaria) -->
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-    <div class="relative h-24">
-    <img src="https://placehold.co/600x400/10B981/ffffff?text=MARATON+SOLIDARIA" alt="" class="w-full h-full object-cover">
-    <span class="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Deporte</span>
-    </div>
-    <div class="p-4">
-    <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Maratón Solidaria</h3>
-    <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-    <i data-lucide="map-pin" class="h-4 w-4"></i>
-    <span>Barcelona, 20 NOV • 08:00 am (10.00 €)</span>
-    </p>
-    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-    <button onclick="mostrarPantalla2()" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition duration-300">
-    Ver Detalles
-    </button>
-    <button class="text-red-500 hover:text-red-700 text-sm font-semibold flex items-center space-x-1 transition duration-300">
-    <i data-lucide="trash-2" class="h-4 w-4"></i>
-    <span>Eliminar</span>
-    </button>
-    </div>
-    </div>
-    </div>
+            <!-- Tarjeta de Evento Guardado (EJEMPLO 2: Maratón Solidaria) -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                <div class="relative h-24">
+                    <img src="https://placehold.co/600x400/10B981/ffffff?text=MARATON+SOLIDARIA" alt="" class="w-full h-full object-cover">
+                    <span class="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Deporte</span>
+                </div>
+                <div class="p-4">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Maratón Solidaria</h3>
+                    <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                    <i data-lucide="map-pin" class="h-4 w-4"></i>
+                    <span>Barcelona, 20 NOV • 08:00 am (10.00 €)</span>
+                    </p>
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                        <button onclick="mostrarPantalla2()" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition duration-300">
+                        Ver Detalles
+                        </button>
+                        <button class="text-red-500 hover:text-red-700 text-sm font-semibold flex items-center space-x-1 transition duration-300">
+                        <i data-lucide="trash-2" class="h-4 w-4"></i>
+                        <span>Eliminar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </main>
@@ -630,18 +632,18 @@
 
     <!-- MODAL DE VISUALIZACIÓN QR (Fuera de PAN4) -->
     <div id="qr-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4" onclick="closeQrModal()">
-    <div class="bg-white rounded-xl p-8 max-w-sm w-full shadow-2xl" onclick="event.stopPropagation()">
-    <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">Tu Entrada</h3>
-    <p class="text-center text-sm text-gray-600 mb-4">Muestra este código al acceder al evento.</p>
-    <!-- Simulación de Código QR -->
-    <div class="bg-white p-4 border-8 border-gray-100 rounded-lg">
-    <img src="https://placehold.co/300x300/1F2937/F9FAFB?text=QR+CODE" alt="[Image of QR Code]" class="w-full h-auto rounded">
-    </div>
-    <p class="text-center text-xs font-mono mt-4 text-gray-800 break-all">#XP-3209R</p>
-    <button onclick="closeQrModal()" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition duration-300">
-    Cerrar
-    </button>
-    </div>
+        <div class="bg-white rounded-xl p-8 max-w-sm w-full shadow-2xl" onclick="event.stopPropagation()">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">Tu Entrada</h3>
+            <p class="text-center text-sm text-gray-600 mb-4">Muestra este código al acceder al evento.</p>
+            <!-- Simulación de Código QR -->
+            <div class="bg-white p-4 border-8 border-gray-100 rounded-lg">
+                <img src="https://placehold.co/300x300/1F2937/F9FAFB?text=QR+CODE" alt="[Image of QR Code]" class="w-full h-auto rounded">
+            </div>
+            <p class="text-center text-xs font-mono mt-4 text-gray-800 break-all">#XP-3209R</p>
+            <button onclick="closeQrModal()" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition duration-300">
+                Cerrar
+            </button>
+        </div>
     </div>
 
 
