@@ -2,7 +2,7 @@
     <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
     <!-- ---------------------------------------------------- -->*/
     
-//alert("El archivo JS se ha cargado correctamente");
+alert("El archivo JS se ha cargado correctamente barra busqueda");
 console.log("Prueba de consola");
 
     // Inicializar Iconos Lucide
