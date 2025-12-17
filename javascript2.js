@@ -113,7 +113,7 @@ let eventsData = []; // Aquí se guardarán los eventos (de Google o Mock)
 let GAS_WEB_APP_URL = 'TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUI';
 
 // Carga inicial de datos desde la API
-async function loadEvents() {
+async function cargarEventos() {
     const spinner = document.getElementById('loading-spinner');
     spinner.classList.remove('hidden');
     document.getElementById('events-list').innerHTML = ''; // Limpia por si acaso
@@ -151,3 +151,64 @@ async function loadEvents() {
     spinner.classList.add('hidden');
     updateCartCounter();
 }
+
+function cargarTarjetas() {
+    //Se definió la clase event-list que es el listado de eventos de PAN1 donde están las tarjetas y ahora las vamos a cargar conectando con el modelo de datos
+    const container = document.getElementById('events-list');
+    if (!container) return;
+
+    container.innerHTML = ''; // Limpiar el grid antes de cargar los datos
+
+    eventsData.forEach(evento => {
+        // Formatear el precio (si es 0 poner Gratis)
+        const precioTexto = evento.PRECIO_MIN === 0 ? "Gratis" : `${evento.PRECIO_MIN.toFixed(2)} €`;
+        
+        // Crear el elemento div de la tarjeta
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer";
+        
+        // Al hacer clic, llamamos a mostrarPantalla2 pasando el ID del evento
+        card.setAttribute('onclick', `mostrarPantalla2(${evento.ID_EVENTO})`);
+
+        card.innerHTML = `
+            <div class="relative h-40">
+                <img src="${evento.URL_IMAGEN}" alt="${evento.TITULO}" class="w-full h-full object-cover">
+                <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                    ${evento.CATEGORIA}
+                </span>
+            </div>
+            <div class="p-4">
+                <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">${evento.TITULO}</h3>
+                <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                    <i data-lucide="map-pin" class="h-4 w-4"></i>
+                    <span>${evento.UBICACION_CIUDAD} • ${evento.FECHA_EVENTO}</span>
+                </p>
+                <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                    <span class="text-xl font-extrabold text-green-600">${precioTexto}</span>
+                    <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                        Detalles
+                    </button>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+
+    // Re-ejecutar Lucide para que los iconos (map-pin) se dibujen en las nuevas tarjetas
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+//Nada más abrir la página cargamos los eventos
+// Espera a que el HTML esté cargado completamente
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Inicializa los iconos de la interfaz base
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+
+    // 2. Llama a la carga de datos
+    cargarEventos();
+});

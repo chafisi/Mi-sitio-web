@@ -133,11 +133,12 @@
             <h2 class="text-3xl font-bold text-gray-800 mb-6">Próximos Eventos</h2>
 
             <!-- Contenedor Grid Responsivo (Grid de 1, 2 o 3 columnas) -->
-            <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <div id="events-list" class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
 
+                
                 <!-- Las tarjetas ahora tienen un manejador de clic para ir a PAN2 -->
                 <!-- EJEMPLO 1: Concierto Rock -->
-                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                <!--<div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
                     <div class="relative h-40">
                         <img src="https://placehold.co/600x400/3b82f6/ffffff?text=CONCIERTO+ROCK" alt="" class="w-full h-full object-cover">
                         <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">Música</span>
@@ -155,70 +156,9 @@
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>-->
 
-                <!-- EJEMPLO 2: Arte Moderno -->
-                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
-                    <div class="relative h-40">
-                        <img src="https://placehold.co/600x400/06B6D4/ffffff?text=ARTE+MODERNO" alt="[Image of Modern Art]" class="w-full h-full object-cover">
-                        <span class="absolute top-2 left-2 bg-cyan-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Exposición</span>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Arte Moderno</h3>
-                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                            <i data-lucide="map-pin" class="h-4 w-4"></i>
-                            <span>Madrid, 18 NOV • Todo el día</span>
-                        </p>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <span class="text-xl font-extrabold text-green-600">Gratis</span>
-                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                                Detalles
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- EJEMPLO 3: Maratón Solidaria -->
-                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
-                    <div class="relative h-40">
-                        <img src="https://placehold.co/600x400/10B981/ffffff?text=MARATON+SOLIDARIA" alt="" class="w-full h-full object-cover">
-                            <span class="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Deporte</span>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Maratón Solidaria</h3>
-                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                            <i data-lucide="map-pin" class="h-4 w-4"></i>
-                            <span>Barcelona, 20 NOV • 08:00 am</span>
-                        </p>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <span class="text-xl font-extrabold text-green-600">10.00 €</span>
-                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                                Detalles
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- EJEMPLO 4: Taller Creativo -->
-                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
-                    <div class="relative h-40">
-                        <img src="https://placehold.co/600x400/F59E0B/ffffff?text=TALLER+CREATIVO" alt="" class="w-full h-full object-cover">
-                            <span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Formación</span>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Taller Creativo</h3>
-                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                            <i data-lucide="map-pin" class="h-4 w-4"></i>
-                            <span>Valencia, 25 NOV • 19:30 h</span>
-                        </p>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <span class="text-xl font-extrabold text-green-600">50.00 €</span>
-                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                                Detalles
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                
             </div>
 
             <!-- Botón Cargar Más -->
