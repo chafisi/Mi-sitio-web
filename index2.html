@@ -215,122 +215,78 @@
     <!-- ---------------------------------------------------- -->
     <!-- PANTALLA 2: DETALLE DE EVENTO (PAN2) -->
     <!-- ---------------------------------------------------- -->
-    <div id="pantalla2" class="screen hidden bg-gray-50 min-h-screen pb-24">
-        <header class="fixed top-0 left-0 right-0 bg-white shadow-sm z-30">
-            <div class="max-w-4xl mx-auto p-4 flex flex-col">
-                <div class="flex items-center text-xs mb-1 text-gray-500">
-                    <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200">Inicio</a>
-                    <i data-lucide="chevron-right" class="h-3 w-3 mx-1"></i>
-                    <span id="detalles-breadcrumb-categoria" class="font-semibold text-indigo-600 uppercase tracking-wider">Categoría</span>
-                </div>
+    <div id="pantalla2" class="screen hidden">
 
-<<<<<<< HEAD
-        
-        <!-- 1. HEADER FIJO (NAV SUPERIOR PARA FILTROS) -->
-        <header class="fixed top-0 left-0 right-0 bg-white shadow-md z-20">
-            <div class="max-w-4xl mx-auto p-4 pb-2 flex flex-col">
+        <!-- HEADER (Imagen de fondo y Controles) -->
+        <header class="relative h-80">
+            <!-- Imagen Principal -->
+            <img src="https://placehold.co/1000x500/3b82f6/ffffff?text=CONCIERTO+ROCK+DESTACADO" alt="" class="w-full h-full object-cover">
 
-                <!-- Breadcrumb de Navegación (Inicio > Filtros) - NUEVO -->
-                <div class="flex items-center text-sm mb-2 text-gray-500">
-                    <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200 font-medium">Inicio</a>
-                    <i data-lucide="chevron-right" class="h-4 w-4 mx-1"></i>
-                    <span class="font-semibold text-gray-800">Detalles evento</span>
-                </div>
-
-            <!-- Título y Botón de Cerrar -->
-            <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-bold text-gray-800">Nombre del Evento</h1>
-
-                <!-- Botón de Cerrar (Retroceso a PAN1) - Mantenido -->
-                <button onclick="mostrarPantalla1()" class="text-gray-500 hover:text-gray-800 transition duration-200 p-1">
-                    <i data-lucide="x" class="h-6 w-6"></i>
+            <!-- Botones de Control Flotantes -->
+            <div class="absolute top-4 left-4">
+                <!-- Botón de Retroceso a PAN1 (Se mantiene el botón simple, no el breadcrumb) -->
+                <button onclick="mostrarPantalla1()" class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
+                <i data-lucide="chevron-left" class="h-6 w-6 text-gray-800"></i>
                 </button>
-                </div>
             </div>
-            <div class="flex items-center space-x-3">
-                    <!-- Botón de Guardar/Favorito -->
-                    <button class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
-                        <i data-lucide="bookmark" class="h-6 w-6 text-gray-800"></i>
-                    </button>
-                    <!-- Botón de carrito de compras -->
-                    <button class="relative p-2 rounded-full hover:bg-gray-100 transition text-gray-700">
-                        <i data-lucide="shopping-cart" class="h-6 w-6"></i>
-                        <span class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 rounded-full">0</span>
-                    </button>
-                </div>
-                <!-- Imagen Principal -->
-                <img src="https://placehold.co/1000x500/3b82f6/ffffff?text=CONCIERTO+ROCK+DESTACADO" alt="" class="w-full h-full object-cover">
-            </div>        
+            <div class="absolute top-4 right-4">
+                <!-- Botón de Guardar/Favorito -->
+                <button class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
+                <i data-lucide="bookmark" class="h-6 w-6 text-gray-800"></i>
+                </button>
+            </div>
         </header>
 
-        <main class="pt-24 max-w-4xl mx-auto px-4 pb-10">
-            
-            <div class="relative h-64 sm:h-80 w-full mb-6 rounded-3xl overflow-hidden shadow-lg border-4 border-white">
-                <img id="detalles-imagen" src="" alt="" class="w-full h-full object-cover">
-                <div class="absolute bottom-4 left-4">
-                    <span id="detalles-tag-categoria" class="bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg"></span>
-                </div>
+        <!-- BODY (Contenido principal con efecto de superposición) -->
+        <main class="flex-grow max-w-4xl mx-auto -mt-10 z-10 relative px-4 sm:px-6 lg:px-8">
+        <div class="bg-white p-6 rounded-t-3xl shadow-xl">
+
+            <!-- Título -->
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-4">Concierto Rock "The Phantoms"</h1>
+
+            <!-- Metadatos Clave -->
+            <div class="space-y-3 mb-6 border-b pb-4">
+                <p class="text-lg text-gray-700 flex items-center space-x-3">
+                <i data-lucide="calendar" class="h-6 w-6 text-indigo-500"></i>
+                <span class="font-semibold">Fecha:</span> 15 de Noviembre, 2025
+                    </p>
+                    <p class="text-lg text-gray-700 flex items-center space-x-3">
+                    <i data-lucide="clock" class="h-6 w-6 text-indigo-500"></i>
+                <span class="font-semibold">Hora:</span> 20:00 h (Apertura de puertas 19:00 h)
+                    </p>
+                    <p class="text-lg text-gray-700 flex items-center space-x-3">
+                    <i data-lucide="map-pin" class="h-6 w-6 text-indigo-500"></i>
+                <span class="font-semibold">Ubicación:</span> Sala Apollo, Calle Príncipe de Vergara, Madrid.
+                </p>
             </div>
 
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                <h2 id="detalles-titulo-principal" class="text-3xl font-extrabold text-gray-900 mb-4 leading-tight"></h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                    <div class="flex items-start space-x-3 p-3 rounded-2xl bg-gray-50">
-                        <div class="p-2 bg-indigo-100 rounded-xl text-indigo-600">
-                            <i data-lucide="calendar" class="h-5 w-5"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-500 font-bold uppercase">Fecha</p>
-                            <p id="detalles-fecha" class="text-gray-800 font-medium"></p>
-                        </div>
-                    </div>
+                <!-- Descripción Completa -->
+                <h2 class="text-2xl font-bold text-gray-800 mb-3">Sobre el Evento</h2>
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                ¡Prepárate para una noche épica con "The Phantoms"! La banda de rock alternativo más aclamada de la escena nacional llega a Madrid para presentar su nuevo álbum, "Ecos de Medianoche". Con un sonido potente y un espectáculo de luces inmersivo, esta es una cita obligada para los amantes del buen rock.
+                <br><br>
+                Las entradas incluyen acceso a la zona VIP después del concierto para un encuentro exclusivo con los miembros de la banda. ¡No te lo pierdas!
+                </p>
 
-                    <div class="flex items-start space-x-3 p-3 rounded-2xl bg-gray-50">
-                        <div class="p-2 bg-green-100 rounded-xl text-green-600">
-                            <i data-lucide="map-pin" class="h-5 w-5"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-500 font-bold uppercase">Ubicación</p>
-                            <p id="detalles-ubicacion" class="text-gray-800 font-medium"></p>
-                        </div>
-                    </div>
+                <!-- Precio -->
+                <div class="text-center p-4 bg-green-50 rounded-xl">
+                    <span class="text-sm font-medium text-gray-600 block">Precio base por persona</span>
+                    <span class="text-4xl font-extrabold text-green-600">25.00 €</span>
                 </div>
-
-                <div class="mb-8">
-                    <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
-                        <i data-lucide="align-left" class="h-5 w-5 mr-2 text-indigo-500"></i>
-                        Sobre este evento
-                    </h3>
-                    <p id="detalles-descripcion" class="text-gray-600 leading-relaxed text-base"></p>
-                </div>
-
-                <div class="flex items-center justify-between p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
-                    <div>
-                        <p class="text-xs text-indigo-600 font-bold uppercase tracking-tight">Desde</p>
-                        <p id="detalles-precio" class="text-3xl font-black text-indigo-900"></p>
-                    </div>
-                    <button class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold shadow-md hover:bg-indigo-700 transition transform active:scale-95">
-                        Reservar Ahora
-                    </button>
-                </div>
-            </div>
-        </main>
     </div>
+    </main>
 
-<<<<<<< HEAD
     <!-- FOOTER (Barra de Acción Fija - CTA más grande) -->
     <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-20 p-4">
-        <div class="max-w-4xl mx-auto">
-        <!-- Botón con mayor padding vertical (py-4) y texto más grueso (font-black) -->
-        <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/50 text-lg">
-            Reservar ahora (25.00 €)
-        </button>
-        </div>
+    <div class="max-w-4xl mx-auto">
+    <!-- Botón con mayor padding vertical (py-4) y texto más grueso (font-black) -->
+    <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/50 text-lg">
+    Reservar ahora (25.00 €)
+    </button>
+    </div>
     </footer>
     </div>
-=======
->>>>>>> 4b91cbf568d78fb6f9dd9ad0150f53ec17656474
+
 
     <!-- ---------------------------------------------------- -->
     <!-- PANTALLA 3: FILTROS (PAN3) -->
