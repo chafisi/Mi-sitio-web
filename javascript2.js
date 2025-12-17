@@ -316,6 +316,51 @@ function setActiveTab(tab) {
 }
 
 /*************/
+/** RF1.106 V14  */
+/*MENU HAMBURGUESA*/
+/*************/
+function mostrarMenuHamburguesa() {
+    const menu = document.getElementById('side-menu');
+    const overlay = document.getElementById('menu-overlay');
+
+    // Mostramos el overlay con fade-in
+    overlay.classList.remove('hidden');
+    setTimeout(() => overlay.classList.add('opacity-100'), 10);
+
+    // Deslizamos el menú
+    menu.classList.remove('-translate-x-full');
+    
+    // Bloqueamos el scroll del body para que no se mueva el fondo
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarMenuHamburguesa() {
+    const menu = document.getElementById('side-menu');
+    const overlay = document.getElementById('menu-overlay');
+
+    // Ocultamos el overlay
+    overlay.classList.remove('opacity-100');
+    setTimeout(() => overlay.classList.add('hidden'), 300);
+
+    // Escondemos el menú
+    menu.classList.add('-translate-x-full');
+    
+    // Restauramos el scroll
+    document.body.style.overflow = 'auto';
+}
+
+// Función auxiliar para navegar y cerrar el menú al mismo tiempo
+function navegarDesdeMenu(pantallaId) {
+    cerrarMenuHamburguesa();
+    
+    // Usamos las funciones que ya tienes creadas
+    if (pantallaId === 'pantalla1') mostrarPantalla1();
+    else if (pantallaId === 'pantalla2') mostrarPantalla2();
+    else if (pantallaId === 'pantalla3') mostrarPantalla('pantalla3');
+    else if (pantallaId === 'pantalla4') mostrarPantalla4();
+}
+
+/*************/
 /** RF2 PANTALLA DOS  */
 /*SECUENCIAR LOS DATOS EN LA PÁGINA
 /*************/
