@@ -343,22 +343,19 @@
                     </label>
                 </div>
             </section>
-
+            
             <section class="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2 border-b pb-2">
-                    <i data-lucide="route" class="h-5 w-5 text-orange-500"></i>
-                    <span>Distancia Máxima</span>
+                    <i data-lucide="calendar-check" class="h-5 w-5 text-green-500"></i>
+                    <span>¿Cuándo?</span>
                 </h2>
-                <select id="f-distancia" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                    <option value="9999" selected>Sin límite</option>
-                    <option value="10">10 km</option>
-                    <option value="20">20 km</option>
-                    <option value="50">50 km</option>
-                    <option value="100">100 km</option>
-                    <option value="200">200 km</option>
-                    <option value="500">500 km</option>
+                <select id="f-fecha" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="todas" selected>Cualquier fecha</option>
+                    <option value="hoy">Hoy</option>
+                    <option value="semana">Esta semana</option>
+                    <option value="finsemana">Este fin de semana</option>
+                    <option value="mes">Este mes</option>
                 </select>
-                <p class="text-[10px] text-gray-400 mt-2 italic">* La distancia se calcula desde tu posición GPS actual.</p>
             </section>
 
             <section class="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
@@ -379,18 +376,20 @@
 
             <section class="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2 border-b pb-2">
-                    <i data-lucide="calendar-check" class="h-5 w-5 text-green-500"></i>
-                    <span>¿Cuándo?</span>
+                    <i data-lucide="route" class="h-5 w-5 text-orange-500"></i>
+                    <span>Distancia Máxima</span>
                 </h2>
-                <select id="f-fecha" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                    <option value="todas" selected>Cualquier fecha</option>
-                    <option value="hoy">Hoy</option>
-                    <option value="semana">Esta semana</option>
-                    <option value="finsemana">Este fin de semana</option>
-                    <option value="mes">Este mes</option>
+                <select id="f-distancia" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="9999" selected>Sin límite</option>
+                    <option value="10">10 km</option>
+                    <option value="20">20 km</option>
+                    <option value="50">50 km</option>
+                    <option value="100">100 km</option>
+                    <option value="200">200 km</option>
+                    <option value="500">500 km</option>
                 </select>
-            </section>
-
+                <p class="text-[10px] text-gray-400 mt-2 italic">* La distancia se calcula desde tu posición GPS actual.</p>
+            </section>    
         </div>
     </main>
 
