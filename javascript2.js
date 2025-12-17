@@ -309,7 +309,7 @@ function renderEventCard(event) {
 
 // --- DISPARADOR DE INICIO ---
 window.onload = function() {
-    console.log("Página cargada. Iniciando sistema...");
+    console.log("Página cargada. Iniciando sistemasadfasdfasdfasdfasdfasdfasdfasdf...");
     
     // 1. Dibujar iconos iniciales (Menú, perfil, etc.)
     if (window.lucide) {
@@ -320,4 +320,5 @@ window.onload = function() {
     cargarEventos();
 
 };
+
 
