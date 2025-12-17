@@ -2,7 +2,10 @@
     <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
     <!-- ---------------------------------------------------- -->*/
     
-// Inicializar Iconos Lucide
+alert("El archivo JS se ha cargado correctamente");
+console.log("Prueba de consola");
+
+    // Inicializar Iconos Lucide
 lucide.createIcons();
 
 // Oculta todas las pantallas excepto la especificada y gestiona el estado del TabBar
