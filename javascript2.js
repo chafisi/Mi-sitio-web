@@ -391,7 +391,6 @@ function toggleFavorito(idEvento) {
     // 5. Opcional: Si queremos que al volver a la PAN1 se vea actualizado, 
     // podrías llamar a cargarTarjetas(), pero no es obligatorio hasta que el usuario vuelva.
 }
-2. Actualización en
 
 /**---FIN---- */
 
