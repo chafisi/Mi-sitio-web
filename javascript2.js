@@ -76,6 +76,7 @@ function mostrarPantalla3() {
 }
 
 function mostrarPantalla4() {
+    cargarAgenda(); // Cargamos los datos frescos del array
     mostrarPantalla('pantalla4');
 }
 
@@ -102,14 +103,6 @@ function selectTab(tabName) {
     currentTab = tabName;
 }
 
-// Lógica del Modal QR
-function showQrModal() {
-    document.getElementById('qr-modal').classList.remove('hidden');
-}
-
-function closeQrModal() {
-    document.getElementById('qr-modal').classList.add('hidden');
-}
 
 // Inicializar en PAN1 al cargar la página y configurar el TabBar
 window.onload = () => {
@@ -498,7 +491,142 @@ function actualizarFooterDetalle(evento) {
     btnReserva.onclick = () => openPurchasePanel(evento.ID_EVENTO);
 }
 
+/*************/
+/** PANTALLA 4  */
+/*************/
+
+
+/******V12 RF4.06 a 4.13 EL 4.13 es simulado*******/
+// RF4 Función principal para cambiar entre pestañas (Tabs)
+function selectTab(tipo) {
+    const tabComprados = document.getElementById('tab-comprados');
+    const tabGuardados = document.getElementById('tab-guardados');
+    const contentComprados = document.getElementById('content-comprados');
+    const contentGuardados = document.getElementById('content-guardados');
+
+    if (tipo === 'comprados') {
+        // Estilos Tab
+        tabComprados.classList.add('border-indigo-600', 'text-indigo-600');
+        tabGuardados.classList.remove('border-indigo-600', 'text-indigo-600');
+        tabGuardados.classList.add('border-transparent', 'text-gray-500');
+        // Visibilidad contenido
+        contentComprados.classList.remove('hidden');
+        contentGuardados.classList.add('hidden');
+    } else {
+        // Estilos Tab
+        tabGuardados.classList.add('border-indigo-600', 'text-indigo-600');
+        tabComprados.classList.remove('border-indigo-600', 'text-indigo-600');
+        tabComprados.classList.add('border-transparent', 'text-gray-500');
+        // Visibilidad contenido
+        contentGuardados.classList.remove('hidden');
+        contentComprados.classList.add('hidden');
+    }
+}
+
+// Función para abrir y cerrar el QR (RF 4.08)
+function showQrModal(codigo = "#XP-3209R") {
+    document.getElementById('qr-modal').classList.remove('hidden');
+}
+
+// Lógica del Modal QR
+function showQrModal() {
+    document.getElementById('qr-modal').classList.remove('hidden');
+}
+
+
+// --- NÚCLEO: CARGAR AGENDA (RF 4.05 a 4.13) ---
+function cargarAgenda() {
+    const listaComprados = document.getElementById('lista-comprados');
+    const listaGuardados = document.getElementById('lista-guardados');
+    
+    // 1. Filtrar y Ordenar Comprados (RF 4.06 y 4.10)
+    const comprados = eventsData
+        .filter(ev => ev.RESERVADO > 0)
+        .sort((a, b) => new Date(a.FECHA_EVENTO) - new Date(b.FECHA_EVENTO));
+
+    // 2. Filtrar Guardados (RF 4.11)
+    const guardados = eventsData.filter(ev => ev.FAVORITO === 1);
+
+    // 3. Actualizar Recuento de Items (RF 4.05)
+    document.getElementById('tab-comprados').innerText = `Comprados (${comprados.length})`;
+    document.getElementById('tab-guardados').innerText = `Guardados (${guardados.length})`;
+
+    // 4. Renderizar Comprados (RF 4.07)
+    listaComprados.innerHTML = comprados.length === 0 
+        ? '<p class="text-gray-400 text-center py-10">No tienes entradas aún.</p>' 
+        : comprados.map(ev => `
+            <div class="bg-white rounded-xl shadow-lg border border-indigo-100 p-4">
+                <div class="flex justify-between items-start mb-3 border-b pb-3">
+                    <div>
+                        <span class="text-[10px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full uppercase tracking-widest">CONFIRMADO</span>
+                        <h3 class="text-xl font-extrabold text-gray-900 mt-1">${ev.TITULO}</h3>
+                        <p class="text-sm text-gray-500">${ev.UBICACION_CIUDAD} • ${ev.FECHA_EVENTO}</p>
+                    </div>
+                    <button class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition">
+                        <i data-lucide="share-2" class="h-5 w-5"></i>
+                    </button>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-gray-600">${ev.RESERVADO} entrada(s) reservada(s)</span>
+                    <button onclick="showQrModal()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg transition shadow-md flex items-center space-x-2">
+                        <i data-lucide="qr-code" class="h-5 w-5"></i>
+                        <span>Ver QR</span>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+    // 5. Renderizar Guardados (RF 4.12)
+    listaGuardados.innerHTML = guardados.length === 0 
+        ? '<p class="text-gray-400 text-center py-10 col-span-full">Tu lista está vacía.</p>' 
+        : guardados.map(ev => `
+            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col">
+                <div class="relative h-28">
+                    <img src="${ev.URL_IMAGEN}" class="w-full h-full object-cover">
+                    <span class="absolute top-2 left-2 bg-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase">${ev.CATEGORIA}</span>
+                </div>
+                <div class="p-4 flex-grow flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-gray-900 mb-1 truncate">${ev.TITULO}</h3>
+                        <p class="text-xs text-gray-500 flex items-center mb-2">
+                            <i data-lucide="map-pin" class="h-3 w-3 mr-1"></i>${ev.UBICACION_CIUDAD}
+                        </p>
+                    </div>
+                    <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
+                        <button onclick="mostrarPantalla2(${ev.ID_EVENTO})" class="text-indigo-600 hover:text-indigo-800 font-bold text-xs">
+                            Ver Detalles
+                        </button>
+                        <button onclick="toggleFavoritoAgenda(${ev.ID_EVENTO})" class="text-red-400 hover:text-red-600 transition">
+                            <i data-lucide="trash-2" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+    // Reiniciar iconos de Lucide
+    if (window.lucide) lucide.createIcons();
+}
+
+// Función especial para eliminar de favoritos desde la agenda y refrescarla
+function toggleFavoritoAgenda(id) {
+    const evento = eventsData.find(e => e.ID_EVENTO === id);
+    if(evento) {
+        evento.FAVORITO = 0;
+        cargarAgenda(); // Refresca la vista inmediatamente
+    }
+}
+
+
+
+
+
 /**---FIN---- */
+
+
+
+
+
 // --- DISPARADOR DE INICIO ---
 window.onload = function() {
     console.log("Página cargada. Iniciando sistemasadfasdfasdfasdfasdfasdfasdfasdf...");

@@ -452,49 +452,8 @@
                 <h2 class="text-xl font-bold text-gray-700 mt-4 mb-2">Eventos con Entrada</h2>
 
                 <!-- Tarjeta de Evento Comprado (EJEMPLO 1: Concierto Rock) -->
-                <div class="bg-white rounded-xl shadow-lg border border-indigo-100 p-4">
-                    <div class="flex justify-between items-start mb-3 border-b pb-3">
-                        <div>
-                            <span class="text-xs font-medium text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">CONFIRMADO</span>
-                            <h3 class="text-xl font-extrabold text-gray-900 mt-1">Concierto Rock</h3>
-                            <p class="text-sm text-gray-500">Madrid, 15 NOV • 20:00 h</p>
-                        </div>
-                        <!-- Botón de Compartir -->
-                        <button class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition duration-200">
-                            <i data-lucide="share-2" class="h-5 w-5"></i>
-                        </button>
-                        </div>
-
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-gray-600">Entrada: #XP-3209R</span>
-                            <button onclick="showQrModal()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-md flex items-center space-x-2">
-                            <i data-lucide="qr-code" class="h-5 w-5"></i>
-                            <span>Ver QR</span>
-                            </button>
-                        </div>
-                    </div>
-
-            <!-- Tarjeta de Evento Comprado (EJEMPLO 2: Taller Creativo) -->
-            <div class="bg-white rounded-xl shadow-lg border border-indigo-100 p-4">
-                <div class="flex justify-between items-start mb-3 border-b pb-3">
-                    <div>
-                        <span class="text-xs font-medium text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">CONFIRMADO</span>
-                        <h3 class="text-xl font-extrabold text-gray-900 mt-1">Taller Creativo</h3>
-                        <p class="text-sm text-gray-500">Valencia, 25 NOV • 19:30 h</p>
-                    </div>
-                        <!-- Botón de Compartir -->
-                        <button class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition duration-200">
-                            <i data-lucide="share-2" class="h-5 w-5"></i>
-                        </button>
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Entrada: #QR-9937D</span>
-                        <button onclick="showQrModal()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-md flex items-center space-x-2">
-                            <i data-lucide="qr-code" class="h-5 w-5"></i>
-                            <span>Ver QR</span>
-                        </button>
-                    </div>
+                <div id="lista-comprados" class="space-y-4">
+                    <!--V12 Hemos dejado vacía para rellenar con JS, pero en el mockup estaban las tarjetas-->
                 </div>
 
             </div>
@@ -506,51 +465,8 @@
                 <h2 class="text-xl font-bold text-gray-700 mt-4 mb-2">Mi Lista de Deseados</h2>
 
                 <!-- Tarjeta de Evento Guardado (EJEMPLO 1: Arte Moderno) -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                    <div class="relative h-24">
-                        <img src="https://placehold.co/600x400/06B6D4/ffffff?text=ARTE+MODERNO" alt="[Image of Modern Art]" class="w-full h-full object-cover">
-                        <span class="absolute top-2 left-2 bg-cyan-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Exposición</span>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Arte Moderno</h3>
-                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                        <i data-lucide="map-pin" class="h-4 w-4"></i>
-                        <span>Madrid, 18 NOV • Todo el día (Gratis)</span>
-                        </p>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <button onclick="mostrarPantalla2()" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition duration-300">
-                                Ver Detalles
-                            </button>
-                            <button class="text-red-500 hover:text-red-700 text-sm font-semibold flex items-center space-x-1 transition duration-300">
-                                <i data-lucide="trash-2" class="h-4 w-4"></i>
-                                <span>Eliminar</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tarjeta de Evento Guardado (EJEMPLO 2: Maratón Solidaria) -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                    <div class="relative h-24">
-                        <img src="https://placehold.co/600x400/10B981/ffffff?text=MARATON+SOLIDARIA" alt="" class="w-full h-full object-cover">
-                        <span class="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Deporte</span>
-                    </div>
-                    <div class="p-4">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Maratón Solidaria</h3>
-                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                        <i data-lucide="map-pin" class="h-4 w-4"></i>
-                        <span>Barcelona, 20 NOV • 08:00 am (10.00 €)</span>
-                        </p>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                            <button onclick="mostrarPantalla2()" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition duration-300">
-                            Ver Detalles
-                            </button>
-                            <button class="text-red-500 hover:text-red-700 text-sm font-semibold flex items-center space-x-1 transition duration-300">
-                            <i data-lucide="trash-2" class="h-4 w-4"></i>
-                            <span>Eliminar</span>
-                            </button>
-                        </div>
-                    </div>
+                <div id="lista-guardados" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <!-- V12 Hemos dejado vacía para rellenar con JS, pero en el mockup estaban las tarjetas-->
                 </div>
             </div>
 
@@ -580,7 +496,7 @@
     <!-- EXTRA: PANTALLA 2: PANEL DE COMPRA DE ENTRADAS
     <!-- ---------------------------------------------------- -->
     <div id="purchase-panel-overlay" class="fixed inset-0 bg-black/50 z-50 hidden backdrop-blur-sm transition-opacity duration-300 opacity-0">
-        
+
     </div>
 
         <div id="purchase-panel" class="fixed top-0 right-0 h-full w-full max-w-md bg-white z-[60] shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
