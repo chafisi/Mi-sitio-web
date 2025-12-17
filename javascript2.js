@@ -2,7 +2,7 @@
     <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
     <!-- ---------------------------------------------------- -->*/
     
-alert("v13.2");
+alert("v13.1");
 console.log("Prueba de consola");
 
     // Inicializar Iconos Lucide
@@ -660,7 +660,7 @@ function aplicarFiltros() {
         // Filtro Fecha (Simulación simple por ahora)
         const fechaFiltro = document.getElementById('f-fecha').value;
 
-        // --- CÁLCULO DINÁMICO DE HOY ---
+    // --- CÁLCULO DINÁMICO DE HOY ---
         const ahora = new Date(); 
         // Normalizamos 'hoy' a las 00:00:00 para comparar solo fechas
         const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
@@ -706,8 +706,8 @@ function aplicarFiltros() {
                 }
             }
 
-        return cumpleCategoria && cumplePrecio && cumpleDistancia && cumpleFecha;
-    });
+            return cumpleCategoria && cumplePrecio && cumpleDistancia && cumpleFecha;
+        });
 
     // 3. Ejecutar el cambio visual
     // Llamamos a tu función de carga con los nuevos datos
