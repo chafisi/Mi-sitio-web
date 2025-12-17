@@ -98,7 +98,7 @@
     <!-- ###################################################################### -->
     <main id="pan1-main-content" class="p-4 mx-auto max-w-xl lg:max-w-7xl">
         
-        <h2 id="list-title" class="text-2xl font-bold text-gray-800 mb-4">Próximos Eventos 17</h2>
+        <h2 id="list-title" class="text-2xl font-bold text-gray-800 mb-4">Próximos Eventos</h2>
 
         <!-- Contenedor del Listado de Eventos -->
         <div id="events-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -120,37 +120,8 @@
     <!-- ###################################################################### -->
     <!-- CONTENIDO PRINCIPAL (PANEL 2: DETALLE DEL EVENTO) -->
     <!-- ###################################################################### -->
-    <section id="pan3-filters" class="hidden p-4 max-w-xl mx-auto mb-20">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Filtros</h2>
-            <button onclick="resetFilters()" class="text-cyan-600 font-semibold text-sm">Limpiar todo</button>
-        </div>
-
-        <div class="mb-8">
-            <label class="block text-gray-700 font-bold mb-3">Categoría</label>
-            <div id="category-chips" class="flex flex-wrap gap-2">
-                </div>
-        </div>
-
-        <div class="mb-8">
-            <div class="flex justify-between items-center mb-3">
-                <label class="block text-gray-700 font-bold">Precio Máximo</label>
-                <span id="price-display" class="text-cyan-600 font-bold text-lg">150 €</span>
-            </div>
-            <input type="range" id="filter-price" min="0" max="200" step="5" value="150" 
-                oninput="updatePriceLabel(this.value)"
-                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-cyan-600">
-            <div class="flex justify-between text-xs text-gray-500 mt-2">
-                <span>0 €</span>
-                <span>200+ €</span>
-            </div>
-        </div>
-
-        <div class="fixed bottom-0 left-0 w-full p-4 bg-white border-t border-gray-200 lg:static lg:border-none lg:p-0">
-            <button onclick="applyAdvancedFilters()" class="w-full bg-cyan-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-cyan-700 transition">
-                Aplicar Filtros
-            </button>
-        </div>
+    <section id="pan2-detail" class="hidden p-4 max-w-xl mx-auto">
+        <!-- El contenido se inyecta dinámicamente -->
     </section>
 
     <!-- ###################################################################### -->
@@ -652,7 +623,7 @@
 
 
         // Manejo de la navegación entre pantallas (RF 1.04, 1.09, 1.12)
-        /*function handleNavigation(pan, eventId = null) {
+        function handleNavigation(pan, eventId = null) {
             if (pan === 'PAN2' && eventId) {
                 // Navegación a Detalle
                 renderEventDetail(eventId);
@@ -663,61 +634,15 @@
                 setView('PAN1');
             } else if (pan === 'PAN3') {
                 // RF 1.09: Navegación a filtros
-                //showMessage('Simulación: Navegando a Pantalla 3 (Filtros Avanzados)', 'error');
-                // Cambiar vista a Filtros
-                document.getElementById('pan1-main-content').classList.add('hidden');
-                document.getElementById('pan2-detail').classList.add('hidden');
-                document.getElementById('pan3-filters').classList.remove('hidden');
-                document.getElementById('main-navbar').classList.add('hidden'); // Ocultar footer en filtros
-                renderCategoryChips();
+                showMessage('Simulación: Navegando a Pantalla 3 (Filtros Avanzados)', 'error');
             } else if (pan === 'PAN_CARRITO' || pan === 'perfil') {
                 // RF 1.12: Navegación a Perfil/Agenda
                 showMessage('Simulación: Navegando a Pantalla 4 (Mi Agenda/Perfil - Reservas)', 'error');
             } else {
                 showMessage(`Acción o vista no implementada: ${pan}`, 'error');
             }
-        }*/
+        }
         
-        // Manejo de la navegación entre pantallas (RF 1.04, 1.09, 1.12)
-        // Actualización de la función handleNavigation
-        function handleNavigation(pan, eventId = null) {
-            // Ocultar todas las secciones principales primero
-            document.getElementById('pan1-main-content').classList.add('hidden');
-            document.getElementById('pan2-detail').classList.add('hidden');
-            document.getElementById('pan3-filters').classList.add('hidden');
-            
-            // Gestión del Header y Navbar
-            const mainHeader = document.getElementById('pan1-header');
-            const mainNavbar = document.getElementById('main-navbar');
-
-            if (pan === 'PAN1') {
-                document.getElementById('pan1-main-content').classList.remove('hidden');
-                mainHeader.classList.remove('hidden');
-                mainNavbar.classList.remove('hidden');
-                document.body.classList.remove('body-pan2');
-                applyFiltersAndRender(false);
-            } 
-            else if (pan === 'PAN2' && eventId) {
-                renderEventDetail(eventId);
-                document.getElementById('pan2-detail').classList.remove('hidden');
-                document.getElementById('pan2-header').classList.remove('hidden');
-                mainHeader.classList.add('hidden');
-                mainNavbar.classList.add('hidden');
-                document.body.classList.add('body-pan2');
-                window.scrollTo(0, 0);
-            } 
-            else if (pan === 'PAN3') {
-                // RF 1.09: Navegación a filtros
-                document.getElementById('pan3-filters').classList.remove('hidden');
-                mainHeader.classList.add('hidden'); // Ocultamos el header de búsqueda
-                mainNavbar.classList.add('hidden'); // Ocultamos el footer
-                renderCategoryChips(); // Dibujamos los filtros de categoría
-            } 
-            else {
-                showMessage(`Vista no implementada: ${pan}`, 'error');
-            }
-        }    
-
         // Cambia la pestaña activa (RF 1.10, 1.11, 1.13)
         function setActiveTab(tabName) {
             if (currentView !== 'PAN1') return; // Solo funciona en la vista principal
@@ -761,60 +686,6 @@
             applyFiltersAndRender();
         }
 
-        // #################################################################
-        // LÓGICA DE FILTRADO AVANZADO (PANTALLA 3)
-        // #################################################################
-        // Estado de los filtros
-        let selectedCategory = 'Todas';
-
-        // 1. Generar los botones de categoría (Chips)
-        function renderCategoryChips() {
-            const categories = ['Todas', ...new Set(eventsData.map(e => e.CATEGORIA))];
-            const container = document.getElementById('category-chips');
-            
-            container.innerHTML = categories.map(cat => `
-                <button onclick="selectCategory('${cat}')" 
-                        id="chip-${cat}"
-                        class="px-4 py-2 rounded-full border ${selectedCategory === cat ? 'bg-cyan-600 text-white border-cyan-600' : 'bg-white text-gray-600 border-gray-300'} text-sm font-medium transition">
-                    ${cat}
-                </button>
-            `).join('');
-        }
-
-        function selectCategory(cat) {
-            selectedCategory = cat;
-            renderCategoryChips();
-        }
-
-        function updatePriceLabel(val) {
-            document.getElementById('price-display').textContent = val + ' €';
-        }
-
-        function resetFilters() {
-            selectedCategory = 'Todas';
-            document.getElementById('filter-price').value = 150;
-            updatePriceLabel(150);
-            renderCategoryChips();
-        }
-
-        // 2. Lógica de filtrado avanzado (Cruza búsqueda + filtros de PAN3)
-        function applyAdvancedFilters() {
-            const maxPrice = parseFloat(document.getElementById('filter-price').value);
-            
-            filteredEvents = eventsData.filter(event => {
-                const matchesCategory = selectedCategory === 'Todas' || event.CATEGORIA === selectedCategory;
-                const matchesPrice = event.PRECIO_MIN <= maxPrice;
-                // Mantiene el filtro de búsqueda de la barra superior
-                const query = document.getElementById('search-input').value.toLowerCase();
-                const matchesSearch = event.TITULO.toLowerCase().includes(query) || 
-                                    event.UBICACION_CIUDAD.toLowerCase().includes(query);
-
-                return matchesCategory && matchesPrice && matchesSearch;
-            });
-
-            handleNavigation('PAN1'); // Vuelve al home para ver resultados
-            appendEventsToDOM(filteredEvents, true);
-        }        
     </script>
 </body>
 </html>
