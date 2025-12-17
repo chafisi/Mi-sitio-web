@@ -2,7 +2,7 @@
     <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
     <!-- ---------------------------------------------------- -->*/
     
-alert("v12");
+alert("v12.1");
 console.log("Prueba de consola");
 
     // Inicializar Iconos Lucide
@@ -20,43 +20,46 @@ let currentEvent = null; // Almacena el evento actual en PAN2
 // Oculta todas las pantallas excepto la especificada y gestiona el estado del TabBar
 function mostrarPantalla(pantallaId) {
     const pantallas = ['pantalla1', 'pantalla2', 'pantalla3', 'pantalla4'];
+    
+    // --- NUEVO: Si la pantalla es la 4, cargamos la agenda antes de mostrar ---
+    if (pantallaId === 'pantalla4') {
+        if (typeof cargarAgenda === "function") {
+            cargarAgenda(); 
+        }
+    }
+
     pantallas.forEach(id => {
         const screen = document.getElementById(id);
         if (screen) {
             if (id === pantallaId) {
-                    screen.classList.remove('hidden');
-                } else {
-                    screen.classList.add('hidden');
-                }
+                screen.classList.remove('hidden');
+            } else {
+                screen.classList.add('hidden');
             }
+        }
     });
-    window.scrollTo(0, 0); // Ir al inicio de la página al cambiar de pantalla
+
+    window.scrollTo(0, 0);
 
     // --- Lógica de la TabBar ---
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
-        // Limpiar clases de activo
         item.classList.remove('nav-item-active', 'text-cyan-500', 'transform', 'scale-110', '-translate-y-2');
-        // Restaurar clases de inactivo por defecto
         item.classList.add('text-gray-500', 'hover:text-indigo-600', 'group');
     });
 
-    // Activar el item correspondiente a la pantalla
     let activeItemId = null;
     if (pantallaId === 'pantalla1' || pantallaId === 'pantalla2' || pantallaId === 'pantalla3') {
-        // Por defecto, al volver a la pantalla principal, se destaca 'Valorados' (el centro)
         activeItemId = 'nav-valorados';
-        } else if (pantallaId === 'pantalla4') {
-            activeItemId = 'nav-perfil';
+    } else if (pantallaId === 'pantalla4') {
+        activeItemId = 'nav-perfil';
     }
 
     if (activeItemId) {
-    const activeItem = document.getElementById(activeItemId);
-    if (activeItem) {
-        // Remover clases de inactivo
-        activeItem.classList.remove('text-gray-500', 'hover:text-indigo-600', 'group');
-        // Añadir clases de activo
-        activeItem.classList.add('nav-item-active', 'text-cyan-500', 'transform', 'scale-110', '-translate-y-2');
+        const activeItem = document.getElementById(activeItemId);
+        if (activeItem) {
+            activeItem.classList.remove('text-gray-500', 'hover:text-indigo-600', 'group');
+            activeItem.classList.add('nav-item-active', 'text-cyan-500', 'transform', 'scale-110', '-translate-y-2');
         }
     }
 }
