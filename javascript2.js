@@ -2,7 +2,7 @@
     <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
     <!-- ---------------------------------------------------- -->*/
     
-alert("v12.1");
+alert("v12.2");
 console.log("Prueba de consola");
 
     // Inicializar Iconos Lucide
@@ -530,10 +530,12 @@ function selectTab(tipo) {
 function showQrModal(codigo = "#XP-3209R") {
     document.getElementById('qr-modal').classList.remove('hidden');
 }
-
 // Lógica del Modal QR
 function showQrModal() {
     document.getElementById('qr-modal').classList.remove('hidden');
+}
+function closeQrModal() {
+    document.getElementById('qr-modal').classList.add('hidden');
 }
 
 
