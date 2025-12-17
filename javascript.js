@@ -1,511 +1,537 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, writeBatch, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<!-- ###################################################################### -->
+    <!-- LÓGICA JAVASCRIPT -->
+    <!-- ###################################################################### -->
 
-// -----------------------------------------------------------------------------
-// VARIABLES GLOBALES (Configuración del entorno Canvas)
-// -----------------------------------------------------------------------------
-// El ID de la aplicación para aislar los datos en Firestore
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-ocioplus-app-id';
-// Configuración de Firebase
-const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-// Token de autenticación inicial
-const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+// Placeholder para la URL de la API de Google Apps Script
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwlFtiPHwIAImM1uDQLudy8geqqR00LEWU2VOT_XFZLqIXlipmsDMy2V6l2Xgvw88H7/exec"; // ¡REEMPLAZAR CON LA URL REAL!
 
-let app, db, auth;
-let currentUserId = 'N/A';
-let isAuthenticated = false;
-let currentView = 'all'; // 'all' o 'agenda'
-let allEventsCache = [];
-let userAgendaCache = {}; // { eventId: true/false }
+let eventsData = []; // Almacena todos los datos de la hoja de cálculo
+let filteredEvents = []; // Eventos después de aplicar filtros y búsqueda
+let currentPage = 0;
+const eventsPerPage = 6;
+let activeTab = 'valorados'; // RF 1.11: Valorados es el default
+let currentView = 'PAN1';
+let currentEvent = null; // Almacena el evento actual en PAN2
 
-// -----------------------------------------------------------------------------
-// DATOS DE EJEMPLO PARA INICIALIZAR LA BBDD
-// -----------------------------------------------------------------------------
-const MOCK_EVENTS = [
-    {
-        name: "Concierto Rock 'La Última Ronda'",
-        date: "2025-05-18",
-        time: "21:00",
-        city: "Madrid",
-        description: "Un tributo épico a las leyendas del rock español de los 80 y 90.",
-        image: "https://placehold.co/400x200/4f46e5/ffffff?text=CONCIERTO+ROCK",
-        price: 25.00
-    },
-    {
-        name: "Festival de Tapas y Cerveza Artesana",
-        date: "2025-06-01",
-        time: "12:00",
-        city: "Alicante",
-        description: "Prueba las mejores tapas gourmet maridadas con cervezas locales.",
-        image: "https://placehold.co/400x200/10b981/ffffff?text=FESTIVAL+TAPAS",
-        price: 10.00
-    },
-    {
-        name: "Taller de Robótica para Niños",
-        date: "2025-05-25",
-        time: "17:30",
-        city: "Ibi",
-        description: "Aprende a construir y programar tu propio robot en un ambiente divertido.",
-        image: "https://placehold.co/400x200/f59e0b/ffffff?text=ROBOTICA",
-        price: 45.00
-    },
-    {
-        name: "Exposición de Arte Moderno 'Contrastes'",
-        date: "2025-07-10",
-        time: "10:00",
-        city: "Elche",
-        description: "Una colección que explora la dualidad de la vida contemporánea a través del color.",
-        image: "https://placehold.co/400x200/ef4444/ffffff?text=ARTE+MODERNO",
-        price: 8.50
-    },
-    {
-        name: "Clase Abierta de Yoga al Amanecer",
-        date: "2025-05-19",
-        time: "07:00",
-        city: "Madrid",
-        description: "Comienza el día con energía y paz en este retiro urbano de yoga.",
-        image: "https://placehold.co/400x200/6366f1/ffffff?text=YOGA+MADRID",
-        price: 15.00
-    }
-];
+// #################################################################
+// UTILITIES
+// #################################################################
 
-// -----------------------------------------------------------------------------
-// REFERENCIAS Y UTILIDADES DEL DOM
-// -----------------------------------------------------------------------------
-const dom = {
-    authStatusBtn: document.getElementById('auth-status-btn'),
-    userIdDisplay: document.getElementById('user-id-display'),
-    firestoreStatus: document.getElementById('firestore-status'),
-    eventsGrid: document.getElementById('events-grid'),
-    loadingMessage: document.getElementById('loading-message'),
-    seedDataBtn: document.getElementById('seed-data-btn'),
-    viewAllBtn: document.getElementById('view-all-btn'),
-    viewAgendaBtn: document.getElementById('view-agenda-btn'),
-    cityFilter: document.getElementById('city-filter'),
-    darkModeToggle: document.getElementById('dark-mode-toggle'),
-    screenWidthDisplay: document.getElementById('screen-width-display'),
-    modalContainer: document.getElementById('modal-container'),
-    modalTitle: document.getElementById('modal-title'),
-    modalBody: document.getElementById('modal-body'),
-    modalCloseBtn: document.getElementById('modal-close-btn')
-};
-
-/**
- * Muestra un modal de mensaje al usuario (sustituto de alert()).
- * @param {string} title Título del mensaje.
- * @param {string} body Contenido del mensaje.
- * @param {boolean} isError Si es true, el modal se muestra con un estilo de error.
- */
-function showModal(title, body, isError = false) {
-    dom.modalTitle.textContent = title;
-    dom.modalBody.textContent = body;
-    
-    // Aplicar estilos de error si es necesario
-    if (isError) {
-        dom.modalTitle.classList.remove('text-indigo-600');
-        dom.modalTitle.classList.add('text-red-600');
-        dom.modalCloseBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-        dom.modalCloseBtn.classList.add('bg-red-600', 'hover:bg-red-700');
-    } else {
-        dom.modalTitle.classList.remove('text-red-600');
-        dom.modalTitle.classList.add('text-indigo-600');
-        dom.modalCloseBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-        dom.modalCloseBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
-    }
-
-    dom.modalContainer.classList.remove('hidden');
-    dom.modalContainer.classList.add('flex');
-}
-
-// Oculta el modal al hacer clic en el botón de cerrar
-dom.modalCloseBtn.addEventListener('click', () => {
-    dom.modalContainer.classList.remove('flex');
-    dom.modalContainer.classList.add('hidden');
+// Inicializa los iconos de Lucide
+document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+    loadEvents();
+    // Inicializa el contador del carrito al cargar
+    updateCartCounter();
 });
 
-// -----------------------------------------------------------------------------
-// FUNCIONES DE FIREBASE Y AUTHENTICATION
-// -----------------------------------------------------------------------------
-
 /**
- * Inicializa Firebase y configura la autenticación del usuario.
+ * Ajusta el parámetro 'sz' de una URL de thumbnail de Google Drive.
+ * @param {string} url La URL original de la imagen.
+ * @param {string} size El tamaño deseado (ej: 'w80', 'w800').
+ * @returns {string} La URL optimizada.
  */
-async function initializeFirebase() {
-    try {
-        // Establecer el nivel de log a Debug (útil para el desarrollo en canvas)
-        setLogLevel('Debug');
-
-        app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        auth = getAuth(app);
-        
-        // Usar persistencia de sesión para mantener el estado de autenticación
-        await setPersistence(auth, browserSessionPersistence);
-
-        // Actualizar el estado de la conexión a Firestore en la UI
-        dom.firestoreStatus.innerHTML = '<i class="fas fa-database mr-1"></i> Estado: Conectado';
-
-        // Intentar iniciar sesión con el token personalizado o anónimamente
-        await authenticateUser();
-
-        // Configurar el listener de autenticación
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUserId = user.uid;
-                isAuthenticated = true;
-                updateAuthUI();
-                
-                // Una vez autenticado, comenzamos a escuchar los datos
-                startFirestoreListeners();
-
-            } else {
-                currentUserId = 'N/A';
-                isAuthenticated = false;
-                updateAuthUI();
-                // Limpiar la interfaz si no hay usuario
-                dom.eventsGrid.innerHTML = '';
-                dom.loadingMessage.textContent = 'Inicia sesión para ver tu agenda.';
-                dom.loadingMessage.classList.remove('hidden');
-            }
-            dom.loadingMessage.classList.add('hidden');
-        });
-
-    } catch (error) {
-        console.error("Error al inicializar Firebase:", error);
-        dom.firestoreStatus.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> Error de Conexión';
-        showModal("Error de Inicialización", "No se pudo conectar a Firebase. Revisa la consola para más detalles.", true);
+function getOptimizedImageUrl(url, size) {
+    if (!url || typeof url !== 'string') {
+        // Fallback si la URL es inválida
+        return 'https://placehold.co/800x400/94a3b8/FFFFFF?text=IMG+Error';
     }
-}
 
-/**
- * Maneja el proceso de autenticación.
- */
-async function authenticateUser() {
-    try {
-        if (initialAuthToken) {
-            await signInWithCustomToken(auth, initialAuthToken);
-            console.log("Autenticación exitosa con token personalizado.");
-        } else {
-            // Si no hay token personalizado, usa el inicio de sesión anónimo
-            await signInAnonymously(auth);
-            console.log("Autenticación exitosa anónima.");
-        }
-    } catch (error) {
-        console.error("Error en la autenticación:", error);
-        showModal("Error de Autenticación", `No se pudo iniciar sesión: ${error.message}`, true);
-    }
-}
+    // Regex para encontrar '?sz=...' o '&sz=...' y lo que le siga
+    const sizeRegex = /([?&])sz=[^&]*/;
 
-/**
- * Actualiza la información de autenticación en la interfaz de usuario.
- */
-function updateAuthUI() {
-    dom.userIdDisplay.textContent = currentUserId;
-    if (isAuthenticated) {
-        dom.authStatusBtn.textContent = 'Sesión Activa';
-        dom.authStatusBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-        dom.authStatusBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+    if (url.match(sizeRegex)) {
+        // Reemplaza el parámetro 'sz' existente
+        return url.replace(sizeRegex, `$1sz=${size}`);
     } else {
-        dom.authStatusBtn.textContent = 'Sin Sesión';
-        dom.authStatusBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
-        dom.authStatusBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+        // Añade el parámetro 'sz' al final. Usa '?' si no hay, o '&' si ya hay parámetros
+        return url.includes('?') ? `${url}&sz=${size}` : `${url}?sz=${size}`;
     }
 }
 
-// -----------------------------------------------------------------------------
-// FIREBASE FIRESTORE LISTENERS
-// -----------------------------------------------------------------------------
-
-/**
- * Inicia los listeners de Firestore para Eventos Públicos y la Agenda Privada del Usuario.
- */
-function startFirestoreListeners() {
-    if (!isAuthenticated) return;
-
-    // 1. Listener para todos los eventos públicos
-    const eventsCollectionRef = collection(db, `artifacts/${appId}/public/data/events`);
-    onSnapshot(eventsCollectionRef, (snapshot) => {
-        allEventsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        // Si no hay eventos, mostrar el botón de seed data
-        if (allEventsCache.length === 0) {
-            dom.seedDataBtn.classList.remove('hidden');
-            dom.loadingMessage.textContent = 'No hay eventos disponibles. Por favor, inicializa los datos.';
-        } else {
-            dom.seedDataBtn.classList.add('hidden');
-            dom.loadingMessage.classList.add('hidden');
-        }
-
-        renderEvents();
-    }, (error) => {
-        console.error("Error al escuchar eventos públicos:", error);
-        showModal("Error de Datos", "No se pudieron cargar los eventos públicos. Revisa los permisos.", true);
-    });
-
-    // 2. Listener para la agenda privada del usuario
-    // La agenda se almacena en una colección privada bajo el ID del usuario:
-    // /artifacts/{appId}/users/{userId}/agenda
-    const agendaCollectionRef = collection(db, `artifacts/${appId}/users/${currentUserId}/agenda`);
-    onSnapshot(agendaCollectionRef, (snapshot) => {
-        userAgendaCache = {};
-        snapshot.docs.forEach(doc => {
-            // Solo necesitamos el ID del documento (que es el ID del evento)
-            userAgendaCache[doc.id] = true; 
-        });
-
-        console.log("Agenda actualizada:", Object.keys(userAgendaCache).length, "eventos.");
-        renderEvents(); // Re-renderizar para actualizar el estado de los botones
-    }, (error) => {
-        console.error("Error al escuchar la agenda del usuario:", error);
-        // Si el usuario no tiene permisos para su propia agenda, esto fallará.
-        showModal("Error de Agenda", "No se pudo cargar tu agenda privada. Revisa los permisos de Firestore.", true);
-    });
-}
-
-// -----------------------------------------------------------------------------
-// GESTIÓN DE LA AGENDA (Añadir/Eliminar Eventos)
-// -----------------------------------------------------------------------------
-
-/**
- * Añade o elimina un evento de la agenda privada del usuario.
- * @param {string} eventId ID del evento a modificar.
- * @param {boolean} isAdding True para añadir, false para eliminar.
- */
-async function toggleAgenda(eventId, isAdding) {
-    if (!isAuthenticated) {
-        showModal("Acceso Denegado", "Debes estar autenticado para añadir eventos a tu agenda.", false);
-        return;
-    }
-
-    const agendaDocRef = doc(db, `artifacts/${appId}/users/${currentUserId}/agenda`, eventId);
-
-    try {
-        if (isAdding) {
-            // Añadir el evento a la agenda. Usamos setDoc con el ID del evento para que sea fácil
-            // de buscar y eliminar. El contenido del documento puede estar vacío o replicar los datos esenciales.
-            await setDoc(agendaDocRef, { addedAt: new Date(), eventId: eventId });
-            showModal("¡Agregado!", "El evento se ha añadido a tu agenda de OcioPlus.", false);
-        } else {
-            // Eliminar el evento de la agenda
-            await deleteDoc(agendaDocRef);
-            showModal("Eliminado", "El evento se ha eliminado de tu agenda.", false);
-            
-            // Si estábamos en la vista 'agenda', forzar un re-render
-            if (currentView === 'agenda') {
-                 renderEvents();
-            }
-        }
-    } catch (error) {
-        console.error("Error al modificar la agenda:", error);
-        showModal("Error", `No se pudo ${isAdding ? 'añadir' : 'eliminar'} el evento de la agenda: ${error.message}`, true);
-    }
-}
-
-// -----------------------------------------------------------------------------
-// RENDERIZADO Y FILTRADO DE EVENTOS
-// -----------------------------------------------------------------------------
-
-/**
- * Renderiza todos los eventos en la cuadrícula, aplicando filtros y la vista actual.
- */
-function renderEvents() {
-    dom.eventsGrid.innerHTML = '';
-    dom.loadingMessage.classList.add('hidden');
-
-    const selectedCity = dom.cityFilter.value;
+// Función para simular el formato de estrellas (RF 1.02)
+function getStarRating(rating) {
+    const fullStar = '<i data-lucide="star" class="w-4 h-4 text-yellow-500 fill-yellow-400 inline"></i>';
+    const emptyStar = '<i data-lucide="star" class="w-4 h-4 text-gray-300 inline"></i>';
     
-    // Filtrar por la vista actual ('all' o 'agenda')
-    let filteredEvents = allEventsCache.filter(event => {
-        const isAgendaMatch = currentView === 'all' || userAgendaCache[event.id];
-        const isCityMatch = !selectedCity || event.city === selectedCity;
-        return isAgendaMatch && isCityMatch;
-    });
-
-    if (filteredEvents.length === 0) {
-        let message = 'No se encontraron eventos.';
-        if (currentView === 'agenda') {
-            message = 'Aún no tienes eventos en tu agenda.';
-        } else if (selectedCity) {
-            message = `No hay eventos en ${selectedCity}.`;
+    let starsHtml = '';
+    // Asegurarse de que el icono de estrella se actualice si es necesario
+    lucide.createIcons(); 
+    for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+            starsHtml += fullStar;
+        } else {
+            starsHtml += emptyStar;
         }
-        dom.eventsGrid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
-            <i class="fas fa-search-minus text-5xl mb-3"></i>
-            <p class="text-xl font-semibold">${message}</p>
-        </div>`;
-        return;
     }
-
-    // Generar el HTML de las tarjetas
-    filteredEvents.forEach(event => {
-        const isAdded = !!userAgendaCache[event.id];
-        dom.eventsGrid.appendChild(createEventCard(event, isAdded));
-    });
+    return starsHtml;
 }
 
-/**
- * Crea el elemento HTML de una tarjeta de evento.
- * @param {object} event Objeto del evento.
- * @param {boolean} isAdded Si el evento está en la agenda del usuario.
- * @returns {HTMLElement} El elemento div de la tarjeta.
- */
-function createEventCard(event, isAdded) {
-    const card = document.createElement('div');
-    card.className = 'card-container transition duration-300';
-    card.dataset.id = event.id;
+// Debounce para la búsqueda rápida (RF 1.08)
+let searchTimeout;
+function debounceSearch() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        applyFiltersAndRender();
+    }, 300); // 300ms de retardo
+}
 
-    const formattedDate = new Date(event.date).toLocaleDateString('es-ES', { 
-        year: 'numeric', month: 'short', day: 'numeric' 
-    });
-    
-    // Determinar estilo y texto del botón
-    const btnIcon = isAdded ? 'fas fa-check' : 'fas fa-calendar-plus';
-    const btnText = isAdded ? 'En Agenda' : 'Añadir a Agenda';
-    const btnClass = isAdded ? 'btn-agenda-added' : 'bg-indigo-600 hover:bg-indigo-700';
-
-    card.innerHTML = `
-        <!-- Imagen del Evento -->
-        <img src="${event.image}" onerror="this.onerror=null; this.src='https://placehold.co/400x200/cccccc/333333?text=NO+IMAGE';" class="card-image" alt="Imagen de ${event.name}">
-        
-        <div class="p-4 flex flex-col justify-between flex-grow">
-            <!-- Título y Descripción -->
-            <div>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">${event.name}</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">${event.description}</p>
-            </div>
-
-            <!-- Detalles -->
-            <div class="mt-4 space-y-2 text-sm">
-                <p class="flex items-center text-indigo-600 dark:text-indigo-400 font-semibold">
-                    <i class="fas fa-calendar-alt w-5 mr-2"></i> ${formattedDate} (${event.time})
-                </p>
-                <p class="flex items-center text-gray-600 dark:text-gray-300">
-                    <i class="fas fa-map-marker-alt w-5 mr-2"></i> ${event.city}
-                </p>
-                <p class="flex items-center text-emerald-600 dark:text-emerald-400 font-bold">
-                    <i class="fas fa-ticket-alt w-5 mr-2"></i> ${event.price === 0 ? 'Gratis' : `${event.price.toFixed(2)} €`}
-                </p>
-            </div>
-
-            <!-- Botón de Acción -->
-            <button data-event-id="${event.id}" data-is-added="${isAdded}" 
-                    class="mt-4 w-full px-4 py-2 text-white font-semibold rounded-lg shadow-md transition duration-150 ease-in-out ${btnClass}">
-                <i class="${btnIcon} mr-2"></i> ${btnText}
-            </button>
+// Función para simular un modal de éxito/error (Reemplaza a alert())
+function showMessage(message, type = 'success') {
+    const backgroundColor = type === 'success' ? 'bg-emerald-500' : 'bg-red-500';
+    const html = `
+        <div class="fixed top-20 left-1/2 transform -translate-x-1/2 ${backgroundColor} text-white px-4 py-2 rounded-lg shadow-xl z-50 transition-opacity duration-300" role="alert" style="max-width: 90%;">
+            ${message}
         </div>
     `;
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    document.body.appendChild(container);
 
-    // Añadir el listener al botón de acción
-    const actionButton = card.querySelector('button');
-    actionButton.addEventListener('click', (e) => {
-        e.stopPropagation(); // Evitar que el click se propague a la tarjeta si tuviera otro listener
-        const eventId = actionButton.dataset.eventId;
-        const currentlyAdded = actionButton.dataset.isAdded === 'true';
-        toggleAgenda(eventId, !currentlyAdded); // Invertir el estado
-    });
-
-    return card;
+    setTimeout(() => {
+        container.remove();
+    }, 3000);
 }
 
-// -----------------------------------------------------------------------------
-// INICIALIZACIÓN DE DATOS DE EJEMPLO
-// -----------------------------------------------------------------------------
+// #################################################################
+// RENDERIZADO Y VISTAS (PANEL 1)
+// #################################################################
 
-/**
- * Inserta datos de ejemplo en la colección pública de eventos.
- */
-async function seedInitialData() {
-    if (!isAuthenticated) {
-        showModal("Error", "Debes estar autenticado para inicializar la base de datos.", true);
+// Función para renderizar una única tarjeta de evento
+// Función para renderizar una única tarjeta de evento
+function renderEventCard(event) {
+    // Obtener la URL optimizada para la miniatura (usamos 800px para el nuevo diseño grande)
+    const thumbnailUrl = getOptimizedImageUrl(event.URL_IMAGEN, 'w800');
+
+    // Uso del símbolo del Euro (€)
+    const priceText = event.PRECIO_MIN > 0 ? `${event.PRECIO_MIN.toFixed(0)} €` : 'Gratis';
+    const priceColor = event.PRECIO_MIN > 0 ? 'text-green-600 font-bold' : 'text-cyan-600 font-bold';
+    const ratingHtml = getStarRating(event.RATING_ESTRELLAS);
+
+    // Nuevo diseño de tarjeta con imagen destacada (Estilo 4-2-1)
+    return `
+        <div onclick="handleNavigation('PAN2', ${event.ID_EVENTO})" class="bg-white rounded-xl shadow-lg card-effect cursor-pointer group overflow-hidden">
+            
+            <div class="h-48 overflow-hidden">
+                <img src="${thumbnailUrl}" 
+                        onerror="this.onerror=null; this.src='https://placehold.co/800x400/94a3b8/FFFFFF?text=IMG+Evento';" 
+                        alt="${event.TITULO}" 
+                        class="w-full h-full object-cover transition duration-300 group-hover:scale-105">
+            </div>
+
+            <div class="p-4">
+                <div class="flex items-start justify-between">
+                    <div class="min-w-0 pr-2">
+                        <h3 class="text-xl font-extrabold text-gray-900 truncate">${event.TITULO}</h3>
+                        <p class="text-sm text-gray-500 mt-1 truncate">
+                            ${event.UBICACION_CIUDAD}, ${new Date(event.FECHA_EVENTO).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })} • ${new Date(event.FECHA_EVENTO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                    </div>
+                    <span class="flex-shrink-0 bg-cyan-100 text-cyan-800 text-xs px-2 py-0.5 rounded-full font-semibold">${event.CATEGORIA}</span>
+                </div>
+                
+                <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
+                    <div class="flex items-center space-x-1">
+                        ${ratingHtml}
+                    </div>
+                    <span class="${priceColor} text-lg">${priceText}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Renderiza el lote actual de eventos en el DOM
+function appendEventsToDOM(events, isNewLoad = false) {
+    const listContainer = document.getElementById('events-list');
+    
+    if (isNewLoad) {
+        listContainer.innerHTML = '';
+    }
+    
+    const start = currentPage * eventsPerPage;
+    const end = start + eventsPerPage;
+    const eventsToRender = events.slice(start, end);
+
+    if (eventsToRender.length === 0 && isNewLoad) {
+        listContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 mt-10">No se encontraron eventos con los criterios actuales.</p>';
+        document.getElementById('load-more-container').classList.add('hidden');
+    } else {
+        eventsToRender.forEach(event => {
+            listContainer.innerHTML += renderEventCard(event);
+        });
+        // Vuelve a crear los iconos después de inyectar el HTML
+        lucide.createIcons();
+        
+        // Mostrar/Ocultar el botón "Cargar Más"
+        if (end < events.length) {
+            document.getElementById('load-more-container').classList.remove('hidden');
+        } else {
+            document.getElementById('load-more-container').classList.add('hidden');
+        }
+    }
+}
+
+// Carga más eventos al hacer clic en el botón (RF 1.03)
+function loadMoreEvents() {
+    currentPage++;
+    appendEventsToDOM(filteredEvents, false);
+}
+
+// #################################################################
+// RENDERIZADO Y VISTAS (PANEL 2: DETALLE)
+// #################################################################
+
+// Renderiza la vista de detalle para un evento
+function renderEventDetail(eventId) {
+    const event = eventsData.find(e => e.ID_EVENTO === eventId);
+    currentEvent = event;
+    const detailContainer = document.getElementById('pan2-detail');
+    
+    if (!event) {
+        detailContainer.innerHTML = '<p class="text-center text-red-500 mt-10">Evento no encontrado.</p>';
         return;
     }
 
-    dom.seedDataBtn.disabled = true;
-    dom.seedDataBtn.textContent = 'Insertando datos...';
-    
-    const batch = writeBatch(db);
-    const eventsCollectionRef = collection(db, `artifacts/${appId}/public/data/events`);
+    // Obtener la URL optimizada para el detalle (800px de ancho)
+    const detailImageUrl = getOptimizedImageUrl(event.URL_IMAGEN, 'w800');
 
+    // Actualizar el header
+    document.getElementById('pan2-title-header').textContent = event.TITULO.substring(0, 20) + '...';
+    updateFavoriteButton(event.FAVORITO);
+    
+    // Uso del símbolo del Euro (€)
+    const priceText = event.PRECIO_MIN > 0 ? `${event.PRECIO_MIN.toFixed(0)} €` : 'Gratis';
+    const priceStyle = event.PRECIO_MIN > 0 ? 'text-xl font-bold text-green-600' : 'text-xl font-bold text-cyan-600';
+    const ctaButtonText = event.RESERVADO > 0 ? `Compradas (${event.RESERVADO})` : 'Reservar Entrada';
+    const ctaButtonStyle = event.RESERVADO > 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600';
+    const ratingHtml = getStarRating(event.RATING_ESTRELLAS);
+
+    const detailHtml = `
+        <div class="bg-white rounded-xl shadow-2xl mb-6 p-5">
+            
+            <h2 class="text-3xl font-extrabold text-gray-900">${event.TITULO}</h2>
+            
+            <!-- Imagen colocada debajo del TITULO -->
+            <div class="mt-4 mb-5 rounded-lg overflow-hidden shadow-xl">
+                <img src="${detailImageUrl}" 
+                        onerror="this.onerror=null; this.src='https://placehold.co/800x400/94a3b8/FFFFFF?text=Imagen+del+Evento';" 
+                        alt="${event.TITULO}" 
+                        class="w-full h-auto object-cover max-h-80">
+            </div>
+            
+            <!-- Categoría y Valoración -->
+            <div class="flex flex-wrap items-center space-x-4 mt-2 mb-4 text-sm">
+                <span class="px-3 py-1 bg-cyan-100 text-cyan-800 rounded-full font-semibold">${event.CATEGORIA}</span>
+                <div class="flex items-center space-x-1 mt-1 sm:mt-0">
+                    ${ratingHtml}
+                    <span class="text-gray-600 font-medium ml-1">${event.RATING_ESTRELLAS.toFixed(1)} (${event.NUM_RESEÑAS})</span>
+                </div>
+            </div>
+
+            <!-- Info Rápida -->
+            <div class="grid grid-cols-2 gap-4 border-t pt-4">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="calendar" class="w-5 h-5 text-gray-500"></i>
+                    <span class="text-sm font-medium text-gray-700">${new Date(event.FECHA_EVENTO).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="clock" class="w-5 h-5 text-gray-500"></i>
+                    <span class="text-sm font-medium text-gray-700">${new Date(event.FECHA_EVENTO).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="map-pin" class="w-5 h-5 text-gray-500"></i>
+                    <span class="text-sm font-medium text-gray-700">${event.UBICACION_CIUDAD}</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="tag" class="w-5 h-5 text-gray-500"></i>
+                    <span class="${priceStyle}">${priceText}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Descripción Detallada -->
+        <div class="bg-white p-5 rounded-xl shadow-lg mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-3">Sobre el Evento</h3>
+            <p class="text-gray-600 whitespace-pre-wrap">${event.DESCRIPCION}</p>
+        </div>
+
+        <!-- Contacto y Enlace -->
+        <div class="bg-white p-5 rounded-xl shadow-lg mb-20">
+            <h3 class="text-xl font-bold text-gray-800 mb-3">Información Adicional</h3>
+            <div class="space-y-2">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="mail" class="w-5 h-5 text-gray-500"></i>
+                    <p class="text-gray-600">Contacto: <a href="mailto:${event.CONTACTO}" class="text-cyan-600 hover:text-cyan-800 underline">${event.CONTACTO}</a></p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="external-link" class="w-5 h-5 text-gray-500"></i>
+                    <p class="text-gray-600">Enlace de reserva: <a href="${event.ENLACE_DE_RESERVA}" target="_blank" class="text-cyan-600 hover:text-cyan-800 underline">${event.ENLACE_DE_RESERVA}</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de acción flotante (Fixed Bottom) -->
+        <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-20 p-4" id="pan2-cta-bar">
+            <div class="max-w-xl mx-auto flex justify-between items-center">
+                <span class="${priceStyle} text-2xl">${priceText}</span>
+                <button onclick="makeReservation(${event.ID_EVENTO}, ${event.RESERVADO})" class="px-6 py-3 text-white font-bold rounded-full transition shadow-lg ${ctaButtonStyle} flex items-center">
+                    <i data-lucide="${event.RESERVADO > 0 ? 'check-circle' : 'ticket'}" class="w-5 h-5 mr-2"></i>
+                    ${ctaButtonText}
+                </button>
+            </div>
+        </div>
+    `;
+    
+    detailContainer.innerHTML = detailHtml;
+    lucide.createIcons(); // Volver a crear iconos para el nuevo HTML inyectado
+}
+
+// Actualiza el icono de favorito en el header de PAN2
+function updateFavoriteButton(isFavorite) {
+    const favButton = document.getElementById('pan2-favorite-button');
+    favButton.innerHTML = `<i data-lucide="heart" class="w-6 h-6 ${isFavorite ? 'text-red-500 fill-red-400' : 'text-gray-700'}"></i>`;
+    lucide.createIcons();
+}
+
+// #################################################################
+// LÓGICA DE DATOS Y FILTRADO (PANEL 1)
+// #################################################################
+
+// Filtra y ordena los eventos según la pestaña activa y la búsqueda
+function applyFiltersAndRender(resetPage = true) {
+    if (resetPage) {
+        currentPage = 0;
+    }
+    
+    const query = document.getElementById('search-input').value.toLowerCase();
+    const listTitle = document.getElementById('list-title');
+
+    // 1. Filtrado por Búsqueda (RF 1.08)
+    let tempEvents = eventsData.filter(event => {
+        const searchMatch = event.TITULO.toLowerCase().includes(query) ||
+                            event.CATEGORIA.toLowerCase().includes(query) ||
+                            event.UBICACION_CIUDAD.toLowerCase().includes(query);
+        return searchMatch;
+    });
+    
+    // 2. Ordenación y Título según Tab Activa (RF 1.10, 1.11)
+    if (activeTab === 'valorados') {
+        // RF 1.11: Ordenar por RATING_ESTRELLAS
+        tempEvents.sort((a, b) => b.RATING_ESTRELLAS - a.RATING_ESTRELLAS);
+        listTitle.textContent = "Mejor Valorados";
+    } else if (activeTab === 'cercanos') {
+        // RF 1.10: Simulación de ordenación por Cercanía (usaremos ID_EVENTO como proxy)
+        tempEvents.sort((a, b) => a.ID_EVENTO - b.ID_EVENTO); 
+        listTitle.textContent = "Eventos Cercanos";
+    } else {
+            // Default: Próximos Eventos (Ordenado por fecha)
+            tempEvents.sort((a, b) => new Date(a.FECHA_EVENTO) - new Date(b.FECHA_EVENTO));
+            listTitle.textContent = "Próximos Eventos";
+    }
+
+    filteredEvents = tempEvents;
+    appendEventsToDOM(filteredEvents, true); // Renderiza desde la primera página
+}
+
+// Carga inicial de datos desde la API
+async function loadEvents() {
+    const spinner = document.getElementById('loading-spinner');
+    spinner.classList.remove('hidden');
+    document.getElementById('events-list').innerHTML = ''; // Limpia por si acaso
+
+    // SIMULACIÓN DE DATOS (Necesario para que el prototipo funcione sin la URL real)
     try {
-        MOCK_EVENTS.forEach(event => {
-            const newDocRef = doc(eventsCollectionRef); // Firestore genera un ID automáticamente
-            batch.set(newDocRef, event);
-        });
+        const response = await fetch(GAS_WEB_APP_URL);
+        const result = await response.json();
 
-        await batch.commit();
-        showModal("Éxito", "¡Datos de ejemplo inicializados correctamente en Firestore!", false);
-        dom.seedDataBtn.classList.add('hidden'); // Ocultar después de la inserción
+        if (result.status === 'success' && result.data) {
+            eventsData = result.data;
+        } else {
+                // Si falla, usa los datos mock
+            throw new Error(result.error || 'Respuesta inesperada de la API.');
+        }
     } catch (error) {
-        console.error("Error al inicializar datos:", error);
-        showModal("Error", `Falló la inserción de datos: ${error.message}`, true);
-    } finally {
-        dom.seedDataBtn.disabled = false;
-        dom.seedDataBtn.textContent = 'Inicializar Datos de Ejemplo (Solo la primera vez)';
+        console.warn("Fallo al conectar con la API o respuesta inválida. Usando datos simulados. Reemplace 'GAS_WEB_APP_URL' con la URL real.", error);
+        
+        // URLs de ejemplo con el formato drive.google.com/thumbnail
+        eventsData = [
+            { ID_EVENTO: 101, TITULO: "El Rey León, El Musical", CATEGORIA: "Musicales", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 542, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 35, FECHA_EVENTO: "2024-11-14 20:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1wL1MID8BLWZL0PvzkLqNh61jb4i4S1ey&sz=w500", DESCRIPCION: "Una experiencia teatral inolvidable que transporta al espectador a la sabana africana. Con impresionantes vestuarios y música icónica.", VISTO: 1, CONTACTO: "reyleon@gmail.com", ENLACE_DE_RESERVA: "https://example.com/rey-leon", RESERVADO: 1, FAVORITO: 0 },
+            { ID_EVENTO: 102, TITULO: "Monólogo de Raúl Antón2", CATEGORIA: "Monólogos", RATING_ESTRELLAS: 3, NUM_RESEÑAS: 187, UBICACION_CIUDAD: "Ibi", PRECIO_MIN: 28, FECHA_EVENTO: "2024-02-25 21:30", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1pC3oHgZ6WPcXGjxbrJdZzbbBiSlqvbmA&sz=w500", DESCRIPCION: "Noche de risas garantizadas con el humor irreverente y cercano de Raúl Antón. ¡No pararás de reír!", VISTO: 1, CONTACTO: "raulanton12@gmail.com", ENLACE_DE_RESERVA: "https://example.com/raul-anton", RESERVADO: 0, FAVORITO: 1 },
+            { ID_EVENTO: 103, TITULO: "Concierto de Nathy Peluso", CATEGORIA: "Musicales", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 310, UBICACION_CIUDAD: "Alicante", PRECIO_MIN: 45, FECHA_EVENTO: "2024-02-26 22:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1GxPncAi_Gmh6ZJJSVpY8UvF-b7EFlw2o&sz=w500", DESCRIPCION: "La artista argentina Nathy Peluso en vivo, presentando sus éxitos y nuevos temas con su inconfundible estilo.", VISTO: 0, CONTACTO: "eventime23@gmail.com", ENLACE_DE_RESERVA: "https://example.com/nathy-peluso", RESERVADO: 0, FAVORITO: 1 },
+            { ID_EVENTO: 104, TITULO: "Festival de Jazz de Madrid", CATEGORIA: "Festivales", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 250, UBICACION_CIUDAD: "Elche", PRECIO_MIN: 25, FECHA_EVENTO: "2024-03-10 19:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1swDqkti9GTl9tUlE3lvYJa_YaZTOkJkH&sz=w500", DESCRIPCION: "Una selección de los mejores talentos del jazz nacional e internacional en diferentes escenarios de la ciudad.", VISTO: 0, CONTACTO: "jazzmadrid@gmail.com", ENLACE_DE_RESERVA: "https://example.com/jazz-madrid", RESERVADO: 0, FAVORITO: 0 },
+            { ID_EVENTO: 106, TITULO: "Formula 1 Madrid Grand Prix", CATEGORIA: "Motor", RATING_ESTRELLAS: 5, NUM_RESEÑAS: 789, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 150, FECHA_EVENTO: "2025-05-18 15:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1PHrEk1X9SppVzf2Jnl1EAdOcTO7BYLFN&sz=w500", DESCRIPCION: "La emoción de la Fórmula 1 llega a Madrid con una carrera urbana espectacular. Vive la velocidad y la adrenalina en primera persona.", VISTO: 1, CONTACTO: "f1best@gmail.com", ENLACE_DE_RESERVA: "https://example.com/f1", RESERVADO: 0, FAVORITO: 0 },
+            { ID_EVENTO: 107, TITULO: "Exposición Maestros del Renacimiento", CATEGORIA: "Arte", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 120, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 15, FECHA_EVENTO: "2024-03-20 11:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1Fn1KKqiCYKu1iudHCE0W8_JEGPHDw8xN&sz=w500", DESCRIPCION: "Un viaje a través de las obras cumbre de los grandes artistas del Renacimiento europeo.", VISTO: 1, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/renacimiento", RESERVADO: 0, FAVORITO: 0 },
+            { ID_EVENTO: 108, TITULO: "Festival de Comedia Indie", CATEGORIA: "Comedia", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 65, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 18, FECHA_EVENTO: "2024-04-05 21:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=16YwfLSk9E_N9hxr2VS24bedOBiHvgbTg&sz=w500", DESCRIPCION: "Descubre nuevas voces del stand-up y monólogos emergentes en este festival innovador.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/comedia-indie", RESERVADO: 0, FAVORITO: 0 },
+            { ID_EVENTO: 109, TITULO: "Ópera: Carmen en el Real", CATEGORIA: "Ópera", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 450, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 70, FECHA_EVENTO: "2024-05-10 20:30", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1Dn2qJt1KykWpFRJKwYxsNoHIhlLVY8lK&sz=w500", DESCRIPCION: "La icónica ópera de Bizet, Carmen, interpretada por un elenco de talla mundial en el Teatro Real.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/opera-carmen", RESERVADO: 0, FAVORITO: 0 },
+            { ID_EVENTO: 110, TITULO: "Maratón de Madrid 2024", CATEGORIA: "Deportes", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 980, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 50, FECHA_EVENTO: "2024-04-28 08:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=158sxGzMliFIAze4ZAsiQ8TL56Yvtp7WN&sz=w500", DESCRIPCION: "Corre por las calles de Madrid en uno de los maratones más emblemáticos de España.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/maraton", RESERVADO: 0, FAVORITO: 0 },
+            { ID_EVENTO: 111, TITULO: "Conferencia 'El Futuro de la IA'", CATEGORIA: "Conferencias", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 75, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 25, FECHA_EVENTO: "2024-06-15 10:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1ioMt06JSFH0JPlwbGC6xStRVheWpRFr7&sz=w500", DESCRIPCION: "Expertos en inteligencia artificial debaten sobre los avances y el impacto de la IA en nuestra sociedad.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/ia-conferencia", RESERVADO: 0, FAVORITO: 0 }
+        ];
+    }
+
+    applyFiltersAndRender(true);
+    spinner.classList.add('hidden');
+    updateCartCounter();
+}
+
+// #################################################################
+// ACTUALIZACIÓN DE ESTADO (POST/PATCH SIMULADO)
+// #################################################################
+
+// Función para actualizar el estado FAVORITO
+async function toggleFavorite(eventId) {
+    if (!eventId) return;
+    const event = eventsData.find(e => e.ID_EVENTO === eventId);
+    if (!event) return showMessage('Error: Evento no encontrado para actualizar.', 'error');
+
+    const newFavoriteStatus = event.FAVORITO === 1 ? 0 : 1;
+    
+    // Simulación de la petición POST/PATCH a GAS
+    try {
+        // await fetch(GAS_WEB_APP_URL, { ... cuerpo de la petición ... });
+        
+        // Actualizar el estado localmente
+        event.FAVORITO = newFavoriteStatus;
+        updateFavoriteButton(newFavoriteStatus);
+        showMessage(newFavoriteStatus === 1 ? '¡Evento añadido a Favoritos!' : 'Evento eliminado de Favoritos.', 'success');
+        
+    } catch (error) {
+        console.error("Error al actualizar favorito:", error);
+        showMessage('Fallo en la conexión al servidor. Inténtelo de nuevo.', 'error');
     }
 }
 
-// -----------------------------------------------------------------------------
-// MANEJO DE EVENTOS DEL DOM
-// -----------------------------------------------------------------------------
-
-/**
- * Cambia la vista de eventos entre 'all' y 'agenda'.
- * @param {string} view 'all' o 'agenda'.
- */
-function changeView(view) {
-    if (currentView === view) return;
-    currentView = view;
+// Función para simular la reserva de una entrada (sólo se permite 1)
+async function makeReservation(eventId, currentReserved) {
+    if (currentReserved > 0) {
+        // Mostrar un mensaje más informativo para el usuario
+        return showMessage('Ya tienes una reserva para este evento. Consulta "Mi Agenda".', 'error');
+    }
     
-    // Actualizar estilos de los botones
-    dom.viewAllBtn.classList.remove('agenda-active');
-    dom.viewAgendaBtn.classList.remove('agenda-active');
+    const event = eventsData.find(e => e.ID_EVENTO === eventId);
+    if (!event) return showMessage('Error: Evento no encontrado para reservar.', 'error');
 
-    if (view === 'all') {
-        dom.viewAllBtn.classList.add('agenda-active');
+    const newReserved = 1; // Reservamos 1 entrada
+
+    // Simulación de la petición POST/PATCH a GAS
+    try {
+        // await fetch(GAS_WEB_APP_URL, { ... cuerpo de la petición ... });
+        
+        // Actualizar el estado localmente y recargar la vista de detalle
+        event.RESERVADO = newReserved;
+        renderEventDetail(eventId); // Recargar PAN2 para actualizar el botón
+        updateCartCounter();
+        showMessage('¡Reserva confirmada! 1 entrada añadida a tu Agenda.', 'success');
+        
+    } catch (error) {
+        console.error("Error al reservar:", error);
+        showMessage('Fallo en la conexión al servidor. Inténtelo de nuevo.', 'error');
+    }
+}
+
+// Actualiza el contador del carrito (RF 1.07)
+function updateCartCounter() {
+    const totalReservados = eventsData.reduce((sum, event) => sum + (event.RESERVADO || 0), 0);
+    document.getElementById('cart-counter').textContent = totalReservados;
+}
+
+
+// #################################################################
+// NAVEGACIÓN Y ESTADO DE LA UI
+// #################################################################
+
+// Muestra u oculta los contenedores principales y headers
+function setView(pan) {
+    currentView = pan;
+    const pan1Main = document.getElementById('pan1-main-content');
+    const pan2Detail = document.getElementById('pan2-detail');
+    const pan1Header = document.getElementById('pan1-header');
+    const pan2Header = document.getElementById('pan2-header');
+    const navBar = document.getElementById('main-navbar');
+    
+    // Gestiona el padding del body (quitamos el espacio del navbar en PAN2)
+    document.body.classList.remove('body-pan2');
+
+    if (pan === 'PAN1') {
+        pan1Main.classList.remove('hidden');
+        pan1Header.classList.remove('hidden');
+        navBar.classList.remove('hidden');
+        pan2Detail.classList.add('hidden');
+        pan2Header.classList.add('hidden');
+        currentEvent = null; // Limpiar evento actual
+        applyFiltersAndRender(false); // Refrescar la lista sin resetear la paginación/filtros
+    } else if (pan === 'PAN2') {
+        pan1Main.classList.add('hidden');
+        pan1Header.classList.add('hidden');
+        navBar.classList.add('hidden');
+        pan2Detail.classList.remove('hidden');
+        pan2Header.classList.remove('hidden');
+        document.body.classList.add('body-pan2');
+    }
+    // Las vistas PAN3 y PAN4 se implementarán después
+}
+
+
+// Manejo de la navegación entre pantallas (RF 1.04, 1.09, 1.12)
+function handleNavigation(pan, eventId = null) {
+    if (pan === 'PAN2' && eventId) {
+        // Navegación a Detalle
+        renderEventDetail(eventId);
+        setView('PAN2');
+        window.scrollTo(0, 0); // Ir al inicio de la página
+    } else if (pan === 'PAN1') {
+        // Volver al Home
+        setView('PAN1');
+    } else if (pan === 'PAN3') {
+        // RF 1.09: Navegación a filtros
+        showMessage('Simulación: Navegando a Pantalla 3 (Filtros Avanzados)', 'error');
+    } else if (pan === 'PAN_CARRITO' || pan === 'perfil') {
+        // RF 1.12: Navegación a Perfil/Agenda
+        showMessage('Simulación: Navegando a Pantalla 4 (Mi Agenda/Perfil - Reservas)', 'error');
     } else {
-        dom.viewAgendaBtn.classList.add('agenda-active');
-    }
-
-    renderEvents();
-}
-
-/**
- * Alterna el modo oscuro.
- */
-function toggleDarkMode() {
-    document.body.classList.toggle('dark:bg-gray-900');
-    document.body.classList.toggle('dark:text-gray-100');
-    document.documentElement.classList.toggle('dark');
-    
-    const isDark = document.documentElement.classList.contains('dark');
-    const icon = dom.darkModeToggle.querySelector('i');
-    
-    if (isDark) {
-        icon.classList.remove('fa-sun', 'text-gray-800');
-        icon.classList.add('fa-moon', 'text-gray-200');
-    } else {
-        icon.classList.remove('fa-moon', 'text-gray-200');
-        icon.classList.add('fa-sun', 'text-gray-800');
+        showMessage(`Acción o vista no implementada: ${pan}`, 'error');
     }
 }
 
-// Escuchadores de eventos
-dom.seedDataBtn.addEventListener('click', seedInitialData);
-dom.viewAllBtn.addEventListener('click', () => changeView('all'));
-dom.viewAgendaBtn.addEventListener('click', () => changeView('agenda'));
-dom.cityFilter.addEventListener('change', renderEvents);
-dom.darkModeToggle.addEventListener('click', toggleDarkMode);
+// Cambia la pestaña activa (RF 1.10, 1.11, 1.13)
+function setActiveTab(tabName) {
+    if (currentView !== 'PAN1') return; // Solo funciona en la vista principal
 
-// Función para mostrar el ancho de la pantalla (Ayuda con el responsive)
-function updateScreenWidth() {
-    dom.screenWidthDisplay.textContent = `Ancho: ${window.innerWidth}px`;
+    if (tabName === 'perfil') {
+        handleNavigation('perfil'); // RF 1.12
+        return;
+    }
+    
+    if (activeTab === tabName) return; // No hacer nada si ya está activa
+
+    activeTab = tabName;
+
+    // RF 1.13: Actualizar estilos visuales
+    const tabs = ['cercanos', 'valorados', 'perfil'];
+    tabs.forEach(tab => {
+        const button = document.getElementById(`tab-${tab}`);
+        const icon = button.querySelector('i');
+        const span = button.querySelector('span');
+
+        if (tab === activeTab) {
+            // Estilo Activo (RF 1.13)
+            button.classList.add('scale-110', 'shadow-lg', 'bg-cyan-50', 'text-cyan-600');
+            button.classList.remove('hover:scale-105');
+            icon.classList.add('text-cyan-600', 'fill-cyan-400');
+            icon.classList.remove('text-gray-400');
+            span.classList.add('font-bold', 'text-cyan-600');
+            span.classList.remove('text-gray-500', 'font-medium');
+        } else {
+            // Estilo Inactivo
+            button.classList.remove('scale-110', 'shadow-lg', 'bg-cyan-50', 'text-cyan-600');
+            button.classList.add('hover:scale-105');
+            icon.classList.remove('text-cyan-600', 'fill-cyan-400');
+            icon.classList.add('text-gray-400');
+            span.classList.remove('font-bold', 'text-cyan-600');
+            span.classList.add('text-gray-500', 'font-medium');
+        }
+    });
+    
+    // Re-renderizar con el nuevo filtro (RF 1.10, 1.11)
+    applyFiltersAndRender();
 }
-window.addEventListener('resize', updateScreenWidth);
-
-// -----------------------------------------------------------------------------
-// INICIO DE LA APLICACIÓN
-// -----------------------------------------------------------------------------
-window.onload = () => {
-    updateScreenWidth();
-    initializeFirebase();
-};
