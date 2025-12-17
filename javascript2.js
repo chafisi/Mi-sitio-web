@@ -146,19 +146,30 @@ async function cargarEventos() {
 
     cargarTarjetas();
 }
+/*************/
+/** PANTALLA 1  */
+/*************/
 
 /********FUNCIONES PARA LA PANTALLA 1******** */
-function cargarTarjetas(listaParaMostrar = eventsData) {
+function cargarTarjetas(datosAMostrar = filteredEvents) {
     const container = document.getElementById('events-list');
     if (!container) return;
 
     container.innerHTML = ''; 
 
-    // RF: Limitar por evensPerPage
-    const eventosLimitados = listaParaMostrar.slice(0, eventsPerPage);
+    const limite = datosAMostrar.slice(0, (currentPage + 1) * eventsPerPage);
 
-    eventosLimitados.forEach(evento => {
+    limite.forEach(evento => {
         const precioTexto = evento.PRECIO_MIN === 0 ? "Gratis" : `${evento.PRECIO_MIN.toFixed(2)} €`;
+        
+        // --- LÓGICA DE ESTRELLAS ---
+        // Generamos el HTML de las estrellas (ej: si es 4, pondrá 4 estrellas amarillas y 1 gris)
+        let estrellasHTML = '';
+        for (let i = 1; i <= 5; i++) {
+            const color = i <= evento.RATING_ESTRELLAS ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300';
+            estrellasHTML += `<i data-lucide="star" class="h-3 w-3 ${color}"></i>`;
+        }
+
         const card = document.createElement('div');
         card.className = "bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer";
         card.setAttribute('onclick', `mostrarPantalla2(${evento.ID_EVENTO})`);
@@ -171,7 +182,15 @@ function cargarTarjetas(listaParaMostrar = eventsData) {
                 </span>
             </div>
             <div class="p-4">
-                <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">${evento.TITULO}</h3>
+                <div class="flex items-center justify-between mb-1">
+                    <h3 class="text-xl font-bold text-gray-900 truncate">${evento.TITULO}</h3>
+                </div>
+                
+                <div class="flex items-center space-x-1 mb-2">
+                    <div class="flex">${estrellasHTML}</div>
+                    <span class="text-xs text-gray-400">(${evento.NUM_RESEÑAS})</span>
+                </div>
+
                 <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
                     <i data-lucide="map-pin" class="h-4 w-4"></i>
                     <span>${evento.UBICACION_CIUDAD} • ${evento.FECHA_EVENTO}</span>
