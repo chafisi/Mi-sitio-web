@@ -229,6 +229,14 @@
             <i data-lucide="chevron-left" class="h-6 w-6 text-gray-800"></i>
             </button>
         </div>
+         <!-- añadido en la V8 -->
+        </div>
+            <button onclick="mostrarCarrito()" class="p-2 rounded-full hover:bg-gray-100 relative">
+            <i data-lucide="shopping-cart" class="w-6 h-6 text-gray-700"></i>
+            <!-- RF 1.07: Contador de ítems en el carrito (simulado) -->
+            <span id="cart-counter" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">0</span>
+        </button>
+        
         <div class="absolute top-4 right-4">
             <!-- Botón de Guardar/Favorito -->
             <button class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
