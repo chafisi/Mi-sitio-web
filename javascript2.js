@@ -9,14 +9,14 @@ lucide.createIcons();
 function mostrarPantalla(pantallaId) {
     const pantallas = ['pantalla1', 'pantalla2', 'pantalla3', 'pantalla4'];
     pantallas.forEach(id => {
-            const screen = document.getElementById(id);
-            if (screen) {
-        if (id === pantallaId) {
-                screen.classList.remove('hidden');
-            } else {
-                screen.classList.add('hidden');
+        const screen = document.getElementById(id);
+        if (screen) {
+            if (id === pantallaId) {
+                    screen.classList.remove('hidden');
+                } else {
+                    screen.classList.add('hidden');
+                }
             }
-        }
     });
     window.scrollTo(0, 0); // Ir al inicio de la página al cambiar de pantalla
 
