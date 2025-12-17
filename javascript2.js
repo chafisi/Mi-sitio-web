@@ -114,6 +114,7 @@ let GAS_WEB_APP_URL = 'TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUI';
 
 // Carga inicial de datos desde la API
 async function cargarEventos() {
+    console.log("Iniciando cargarTarjetas..."); // LOG 1
     const spinner = document.getElementById('loading-spinner');
     spinner.classList.remove('hidden');
     document.getElementById('events-list').innerHTML = ''; // Limpia por si acaso
