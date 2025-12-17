@@ -181,33 +181,28 @@
         </main>
 
         <!-- 3. FOOTER FIJO (TAB BAR INFERIOR MODERNO) -->
-        <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-20 rounded-t-3xl border-t border-gray-100">
-            <nav class="max-w-4xl mx-auto flex justify-around items-end h-20 px-4">
+        <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-5px_20px_rgba(0,0,0,0,0.1)] z-20 rounded-t-3xl border-t border-gray-100">
+            <nav class="max-w-4xl mx-auto flex justify-around items-end h-20 pb-2 px-4">
 
-                <!-- Item: Cercanos (Vuelve a PAN1) -->
-                <!-- CORRECCIÓN: Agregada la función mostrarPantalla1() -->
-                <a href="javascript:setActiveTab('cercanos')" id="nav-cercanos" class="nav-item text-gray-500 hover:text-indigo-600 group" onclick="mostrarPantalla1()">
+                <a href="javascript:void(0)" id="nav-cercanos" class="nav-item flex flex-col items-center text-gray-500 hover:text-indigo-600 group" onclick="mostrarPantalla('pantalla1')">
                     <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
                         <i data-lucide="map-pin" class="h-6 w-6"></i>
                     </div>
-                    <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Cercanos</span>
-                    </a>
+                    <span class="text-[10px] mt-1 transition duration-300 group-hover:font-semibold">Cercanos</span>
+                </a>
 
-                    <!-- Item: Mejor Valorados (Vuelve a PAN1) -->
-                    <!-- CORRECCIÓN: Agregada la función mostrarPantalla1() -->
-                    <a href="javascript:setActiveTab('valorados')" id="nav-valorados" class="nav-item text-gray-500 hover:text-indigo-600 group" onclick="mostrarPantalla1()">
-                    <div class="icon-bg w-14 h-14 rounded-full transition duration-300 flex items-center justify-center">
+                <a href="javascript:void(0)" id="nav-valorados" class="nav-item flex flex-col items-center text-gray-500 group" onclick="mostrarPantalla('pantalla1')">
+                    <div class="icon-bg w-14 h-14 bg-indigo-600 rounded-full shadow-lg transform -translate-y-4 transition duration-300 flex items-center justify-center border-4 border-white">
                         <i data-lucide="star" class="h-8 w-8 text-white fill-white"></i>
                     </div>
-                    <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Valorados</span>
-                    </a>
+                    <span class="text-[10px] -mt-3 mb-1 transition duration-300 font-bold text-indigo-600">Valorados</span>
+                </a>
 
-                    <!-- Icono: Mi Perfil / Agenda (Acceso a PAN4) -->
-                    <a href="javascript:mostrarPantalla4()" id="nav-perfil" class="nav-item text-gray-500 hover:text-indigo-600 group" onclick="mostrarPantalla4()">
+                <a href="javascript:void(0)" id="nav-perfil" class="nav-item flex flex-col items-center text-gray-500 hover:text-indigo-600 group" onclick="mostrarPantalla('pantalla4')">
                     <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
                         <i data-lucide="user" class="h-6 w-6"></i>
                     </div>
-                    <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Perfil</span>
+                    <span class="text-[10px] mt-1 transition duration-300 group-hover:font-semibold">Perfil</span>
                 </a>
             </nav>
         </footer>
