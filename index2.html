@@ -97,32 +97,45 @@
     <div id="pantalla1" class="screen">
 
         <header id="main-header" class="header-fixed fixed top-0 left-0 w-full z-10 bg-white p-3">
-        <div id="pan1-header" class="max-w-xl mx-auto">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <button onclick="handleNavigation('PAN_MENU')" class="p-2 rounded-full hover:bg-gray-100">
-                        <i data-lucide="menu" class="w-6 h-6 text-gray-700"></i>
+            <div id="pan1-header" class="max-w-xl mx-auto">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <button onclick="handleNavigation('PAN_MENU')" class="p-2 rounded-full hover:bg-gray-100">
+                            <i data-lucide="menu" class="w-6 h-6 text-gray-700"></i>
+                        </button>
+                        <h1 class="text-2xl font-extrabold text-cyan-700">OcioPlus</h1>
+                    </div>
+                    <button onclick="handleNavigation('PAN_CARRITO')" class="p-2 rounded-full hover:bg-gray-100 relative">
+                        <i data-lucide="shopping-cart" class="w-6 h-6 text-gray-700"></i>
+                        <!-- RF 1.07: Contador de ítems en el carrito (simulado) -->
+                        <span id="cart-counter" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">0</span>
                     </button>
-                    <h1 class="text-2xl font-extrabold text-cyan-700">OcioPlus</h1>
                 </div>
-                <button onclick="handleNavigation('PAN_CARRITO')" class="p-2 rounded-full hover:bg-gray-100 relative">
-                    <i data-lucide="shopping-cart" class="w-6 h-6 text-gray-700"></i>
-                    <!-- RF 1.07: Contador de ítems en el carrito (simulado) -->
-                    <span id="cart-counter" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">0</span>
-                </button>
+                
+                <!-- Área de Búsqueda (RF 1.08, 1.09) -->
+                <div class="max-w-xl mx-auto mt-2 flex space-x-2">
+                    <div class="relative flex-grow">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                        <input type="text" id="search-input" oninput="debounceSearch()" placeholder="Buscar eventos..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-cyan-500 focus:border-cyan-500 shadow-sm transition">
+                    </div>
+                    <button onclick="handleNavigation('PAN3')" class="p-3 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition">
+                        <i data-lucide="sliders" class="w-5 h-5"></i>
+                    </button>
+                </div>
             </div>
             
-            <!-- Área de Búsqueda (RF 1.08, 1.09) -->
-            <div class="max-w-xl mx-auto mt-2 flex space-x-2">
-                <div class="relative flex-grow">
-                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
-                    <input type="text" id="search-input" oninput="debounceSearch()" placeholder="Buscar eventos..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-cyan-500 focus:border-cyan-500 shadow-sm transition">
-                </div>
-                <button onclick="handleNavigation('PAN3')" class="p-3 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition">
-                    <i data-lucide="sliders" class="w-5 h-5"></i>
+            <!-- Header de la Pantalla 2 (Detalle) - Inicialmente Oculto -->
+            <div id="pan2-header" class="hidden flex items-center justify-between max-w-xl mx-auto">
+                <button onclick="handleNavigation('PAN1')" class="p-2 rounded-full hover:bg-gray-100">
+                    <i data-lucide="arrow-left" class="w-6 h-6 text-gray-700"></i>
+                </button>
+                <h1 class="text-xl font-bold text-gray-800 truncate" id="pan2-title-header">Detalle del Evento</h1>
+                <button id="pan2-favorite-button" onclick="toggleFavorite(currentEvent ? currentEvent.ID_EVENTO : null)" class="p-2 rounded-full hover:bg-gray-100">
+                    <!-- Icono de Corazón se actualiza con JS -->
+                    <i data-lucide="heart" class="w-6 h-6 text-gray-700"></i> 
                 </button>
             </div>
-        </div>
+        </header>
 
         <!-- 2. BODY PRINCIPAL (LISTADO DE EVENTOS) -->
         <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
