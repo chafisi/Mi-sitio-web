@@ -328,23 +328,30 @@
         <header class="fixed top-0 left-0 right-0 bg-white shadow-md z-20">
             <div class="max-w-4xl mx-auto p-4 pb-2 flex flex-col">
 
-                <!-- Breadcrumb de Navegación (Inicio > Filtros) - NUEVO -->
+                <!-- Breadcrumb de Navegación (Inicio > Detalles Evento) -->
                 <div class="flex items-center text-sm mb-2 text-gray-500">
+                    <!-- Enlace a Inicio (PAN1) -->
                     <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200 font-medium">Inicio</a>
                     <i data-lucide="chevron-right" class="h-4 w-4 mx-1"></i>
-                    <span class="font-semibold text-gray-800">Filtros</span>
+                    <span class="font-semibold text-gray-800">Detalles evento</span>
                 </div>
+                <!-- Título y Botones de Control (Cerrar y Configuración) -->
+                <div class="flex items-center justify-between">
+                    <h1 class="text-2xl font-extrabold text-gray-800">Mi Agenda</h1>
 
-            <!-- Título y Botón de Cerrar -->
-            <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-bold text-gray-800">Filtros Avanzados</h1>
-
-                <!-- Botón de Cerrar (Retroceso a PAN1) - Mantenido -->
-                <button onclick="mostrarPantalla1()" class="text-gray-500 hover:text-gray-800 transition duration-200 p-1">
-                    <i data-lucide="x" class="h-6 w-6"></i>
-                </button>
+                    <!-- Contenedor de botones (Cerrar y Configuración) - MODIFICADO -->
+                    <div class="flex space-x-2">
+                        <!-- Botón de Cerrar (NUEVO) -->
+                        <button onclick="mostrarPantalla1()" class="p-2 text-gray-500 hover:text-gray-800 transition duration-200 rounded-full">
+                            <i data-lucide="x" class="h-6 w-6"></i>
+                        </button>
+                        <!-- Botón de Guardar Favorito -->
+                        <button id="btn-favorito-detalle" class="text-gray-400 hover:text-red-500 transition">
+                            <i data-lucide="bookmark" class="h-6 w-6"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
+                
         </header>
 
         <!-- 2. BODY PRINCIPAL (OPCIONES DE FILTRO) -->
