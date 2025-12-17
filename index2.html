@@ -224,20 +224,43 @@
                     <span id="detalles-breadcrumb-categoria" class="font-semibold text-indigo-600 uppercase tracking-wider">Categoría</span>
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <h1 id="detalles-titulo-header" class="text-xl font-bold text-gray-800 truncate mr-4">Detalles del Evento</h1>
-                    
-                    <div class="flex items-center space-x-3">
-                        <button id="btn-favorito-detalle" class="p-2 rounded-full hover:bg-gray-100 transition text-gray-400">
-                            <i data-lucide="bookmark" class="h-6 w-6"></i>
-                        </button>
-                        <button class="relative p-2 rounded-full hover:bg-gray-100 transition text-gray-700">
-                            <i data-lucide="shopping-cart" class="h-6 w-6"></i>
-                            <span class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 rounded-full">0</span>
-                        </button>
-                    </div>
+<<<<<<< HEAD
+        
+        <!-- 1. HEADER FIJO (NAV SUPERIOR PARA FILTROS) -->
+        <header class="fixed top-0 left-0 right-0 bg-white shadow-md z-20">
+            <div class="max-w-4xl mx-auto p-4 pb-2 flex flex-col">
+
+                <!-- Breadcrumb de Navegación (Inicio > Filtros) - NUEVO -->
+                <div class="flex items-center text-sm mb-2 text-gray-500">
+                    <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200 font-medium">Inicio</a>
+                    <i data-lucide="chevron-right" class="h-4 w-4 mx-1"></i>
+                    <span class="font-semibold text-gray-800">Detalles evento</span>
+                </div>
+
+            <!-- Título y Botón de Cerrar -->
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-800">Nombre del Evento</h1>
+
+                <!-- Botón de Cerrar (Retroceso a PAN1) - Mantenido -->
+                <button onclick="mostrarPantalla1()" class="text-gray-500 hover:text-gray-800 transition duration-200 p-1">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
                 </div>
             </div>
+            <div class="flex items-center space-x-3">
+                    <!-- Botón de Guardar/Favorito -->
+                    <button class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
+                        <i data-lucide="bookmark" class="h-6 w-6 text-gray-800"></i>
+                    </button>
+                    <!-- Botón de carrito de compras -->
+                    <button class="relative p-2 rounded-full hover:bg-gray-100 transition text-gray-700">
+                        <i data-lucide="shopping-cart" class="h-6 w-6"></i>
+                        <span class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 rounded-full">0</span>
+                    </button>
+                </div>
+            <!-- Imagen Principal -->
+            <img src="https://placehold.co/1000x500/3b82f6/ffffff?text=CONCIERTO+ROCK+DESTACADO" alt="" class="w-full h-full object-cover">
+
         </header>
 
         <main class="pt-24 max-w-4xl mx-auto px-4 pb-10">
@@ -295,6 +318,19 @@
         </main>
     </div>
 
+<<<<<<< HEAD
+    <!-- FOOTER (Barra de Acción Fija - CTA más grande) -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-20 p-4">
+        <div class="max-w-4xl mx-auto">
+        <!-- Botón con mayor padding vertical (py-4) y texto más grueso (font-black) -->
+        <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/50 text-lg">
+            Reservar ahora (25.00 €)
+        </button>
+        </div>
+    </footer>
+    </div>
+=======
+>>>>>>> 4b91cbf568d78fb6f9dd9ad0150f53ec17656474
 
     <!-- ---------------------------------------------------- -->
     <!-- PANTALLA 3: FILTROS (PAN3) -->
