@@ -2,7 +2,7 @@
     <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
     <!-- ---------------------------------------------------- -->*/
     
-alert("El archivo JS se ha cargado correctamente barra busqueda y titulo");
+alert("El archivo JS se ha cargado correctamente barra busqueda y titulo2");
 console.log("Prueba de consola");
 
     // Inicializar Iconos Lucide
@@ -236,10 +236,85 @@ function filtrarEventosInicio() {
     }
 
     filteredEvents = tempEvents;
-    appendEventsToDOM(filteredEvents, true); // Renderiza desde la primera página
+    agregarEventoDom(filteredEvents, true); // Renderiza desde la primera página
 }
 
 
+// Renderiza el lote actual de eventos en el DOM
+function agregarEventoDom(events, isNewLoad = false) {
+    const listContainer = document.getElementById('events-list');
+    
+    if (isNewLoad) {
+        listContainer.innerHTML = '';
+    }
+    
+    //const start = currentPage * eventsPerPage;
+    //const end = start + eventsPerPage;
+    const eventsToRender = events.slice(start, end);
+
+    if (eventsToRender.length === 0 && isNewLoad) {
+        listContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 mt-10">No se encontraron eventos con los criterios actuales.</p>';
+        document.getElementById('load-more-container').classList.add('hidden');
+    } else {
+        eventsToRender.forEach(event => {
+            listContainer.innerHTML += renderEventCard(event);
+        });
+        // Vuelve a crear los iconos después de inyectar el HTML
+        lucide.createIcons();
+        
+        // Mostrar/Ocultar el botón "Cargar Más"
+        if (end < events.length) {
+            document.getElementById('load-more-container').classList.remove('hidden');
+        } else {
+            document.getElementById('load-more-container').classList.add('hidden');
+        }
+    }
+}
+
+// Función para renderizar una única tarjeta de evento tras filtrar por búsqueda
+function renderEventCard(event) {
+    // Obtener la URL optimizada para la miniatura (usamos 800px para el nuevo diseño grande)
+    const thumbnailUrl = getOptimizedImageUrl(event.URL_IMAGEN, 'w800');
+
+    // Uso del símbolo del Euro (€)
+    const priceText = event.PRECIO_MIN > 0 ? `${event.PRECIO_MIN.toFixed(0)} €` : 'Gratis';
+    const priceColor = event.PRECIO_MIN > 0 ? 'text-green-600 font-bold' : 'text-cyan-600 font-bold';
+    const ratingHtml = getStarRating(event.RATING_ESTRELLAS);
+
+    // Nuevo diseño de tarjeta con imagen destacada (Estilo 4-2-1)
+    return `
+        // Formatear el precio (si es 0 poner Gratis)
+        const precioTexto = evento.PRECIO_MIN === 0 ? "Gratis" : `${evento.PRECIO_MIN.toFixed(2)} €`;
+        
+        // Crear el elemento div de la tarjeta
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer";
+        
+        // Al hacer clic, llamamos a mostrarPantalla2 pasando el ID del evento
+        card.setAttribute('onclick', `mostrarPantalla2(${evento.ID_EVENTO})`);
+
+
+        <div class="relative h-40">
+            <img src="${evento.URL_IMAGEN}" alt="${evento.TITULO}" class="w-full h-full object-cover">
+            <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                ${evento.CATEGORIA}
+            </span>
+        </div>
+        <div class="p-4">
+            <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">${evento.TITULO}</h3>
+            <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                <i data-lucide="map-pin" class="h-4 w-4"></i>
+                <span>${evento.UBICACION_CIUDAD} • ${evento.FECHA_EVENTO}</span>
+            </p>
+            <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                <span class="text-xl font-extrabold text-green-600">${precioTexto}</span>
+                <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                    Detalles
+                </button>
+            </div>
+        </div>
+    `;
+}
 
 /**---FIN---- */
 
