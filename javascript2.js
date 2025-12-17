@@ -114,7 +114,7 @@ let GAS_WEB_APP_URL = 'TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUI';
 
 // Carga inicial de datos desde la API
 async function cargarEventos() {
-    console.log("Iniciando cargarTarjetas..."); // LOG 1
+    //console.log("Iniciando cargarTarjetas..."); // LOG 1
     const spinner = document.getElementById('loading-spinner');
     spinner.classList.remove('hidden');
     document.getElementById('events-list').innerHTML = ''; // Limpia por si acaso
@@ -202,14 +202,15 @@ function cargarTarjetas() {
     }
 }
 
-//Nada más abrir la página cargamos los eventos
-// Espera a que el HTML esté cargado completamente
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Inicializa los iconos de la interfaz base
+// --- DISPARADOR DE INICIO ---
+window.onload = function() {
+    console.log("Página cargada. Iniciando sistema...");
+    
+    // 1. Dibujar iconos iniciales (Menú, perfil, etc.)
     if (window.lucide) {
         lucide.createIcons();
     }
 
-    // 2. Llama a la carga de datos
+    // 2. Ejecutar la carga de datos y tarjetas
     cargarEventos();
-});
+};
