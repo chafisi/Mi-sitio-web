@@ -141,26 +141,26 @@ async function cargarEventos() {
         { ID_EVENTO: 111, TITULO: "Conferencia 'El Futuro de la IA'", CATEGORIA: "Conferencias", RATING_ESTRELLAS: 4, NUM_RESEÑAS: 75, UBICACION_CIUDAD: "Madrid", PRECIO_MIN: 25, FECHA_EVENTO: "2024-06-15 10:00", URL_IMAGEN: "https://drive.google.com/thumbnail?id=1ioMt06JSFH0JPlwbGC6xStRVheWpRFr7&sz=w500", DESCRIPCION: "Expertos en inteligencia artificial debaten sobre los avances y el impacto de la IA en nuestra sociedad.", VISTO: 0, CONTACTO: "topeventos@gmail.com", ENLACE_DE_RESERVA: "https://example.com/ia-conferencia", RESERVADO: 0, FAVORITO: 0 }
     ];
 
+    // 2. Inicializamos filteredEvents con una copia de todos los eventos
+    filteredEvents = [...eventsData];
+
     cargarTarjetas();
 }
 
 /********FUNCIONES PARA LA PANTALLA 1******** */
-function cargarTarjetas() {
-    //Se definió la clase event-list que es el listado de eventos de PAN1 donde están las tarjetas y ahora las vamos a cargar conectando con el modelo de datos
+function cargarTarjetas(listaParaMostrar = eventsData) {
     const container = document.getElementById('events-list');
     if (!container) return;
 
-    container.innerHTML = ''; // Limpiar el grid antes de cargar los datos
+    container.innerHTML = ''; 
 
-    eventsData.forEach(evento => {
-        // Formatear el precio (si es 0 poner Gratis)
+    // RF: Limitar por evensPerPage
+    const eventosLimitados = listaParaMostrar.slice(0, eventsPerPage);
+
+    eventosLimitados.forEach(evento => {
         const precioTexto = evento.PRECIO_MIN === 0 ? "Gratis" : `${evento.PRECIO_MIN.toFixed(2)} €`;
-        
-        // Crear el elemento div de la tarjeta
         const card = document.createElement('div');
         card.className = "bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer";
-        
-        // Al hacer clic, llamamos a mostrarPantalla2 pasando el ID del evento
         card.setAttribute('onclick', `mostrarPantalla2(${evento.ID_EVENTO})`);
 
         card.innerHTML = `
@@ -184,14 +184,10 @@ function cargarTarjetas() {
                 </div>
             </div>
         `;
-
         container.appendChild(card);
     });
 
-    // Re-ejecutar Lucide para que los iconos (map-pin) se dibujen en las nuevas tarjetas
-    if (window.lucide) {
-        lucide.createIcons();
-    }
+    if (window.lucide) lucide.createIcons();
 }
 /*************/
 /** RF1.09  */
@@ -206,103 +202,25 @@ function activarEscritura() {
     }, 300); // 300ms de retardo
 }
 
-// Filtra y ordena los eventos según la pestaña activa y la búsqueda
 function filtrarEventosInicio() {
+    const textoBusqueda = document.getElementById('search-input').value.toLowerCase();
     
-    const query = document.getElementById('search-input').value.toLowerCase();
-    const listTitle = document.getElementById('list-title');
-
-    // 1. Filtrado por Búsqueda (RF 1.08)
-    let tempEvents = eventsData.filter(event => {
-        const searchMatch = event.TITULO.toLowerCase().includes(query) ||
-                            event.CATEGORIA.toLowerCase().includes(query) ||
-                            event.UBICACION_CIUDAD.toLowerCase().includes(query);
-        return searchMatch;
+    // Filtramos eventsData comparando título, categoría o ciudad
+    filteredEvents = eventsData.filter(evento => {
+        return (
+            evento.TITULO.toLowerCase().includes(textoBusqueda) ||
+            evento.CATEGORIA.toLowerCase().includes(textoBusqueda) ||
+            evento.UBICACION_CIUDAD.toLowerCase().includes(textoBusqueda)
+        );
     });
-    
-    // 2. Ordenación y Título según Tab Activa (RF 1.10, 1.11)
-    if (activeTab === 'valorados') {
-        // RF 1.11: Ordenar por RATING_ESTRELLAS
-        tempEvents.sort((a, b) => b.RATING_ESTRELLAS - a.RATING_ESTRELLAS);
-        listTitle.textContent = "Mejor Valorados";
-    } else if (activeTab === 'cercanos') {
-        // RF 1.10: Simulación de ordenación por Cercanía (usaremos ID_EVENTO como proxy)
-        tempEvents.sort((a, b) => a.ID_EVENTO - b.ID_EVENTO); 
-        listTitle.textContent = "Eventos Cercanos";
+
+    // Si el input está vacío, mostramos todos de nuevo (respetando el límite de página)
+    if (textoBusqueda === "") {
+        cargarTarjetas(eventsData);
     } else {
-            // Default: Próximos Eventos (Ordenado por fecha)
-            tempEvents.sort((a, b) => new Date(a.FECHA_EVENTO) - new Date(b.FECHA_EVENTO));
-            listTitle.textContent = "Próximos Eventos";
+        // Si hay búsqueda, mostramos los filtrados
+        cargarTarjetas(filteredEvents);
     }
-
-    filteredEvents = tempEvents;
-    agregarEventoDom(filteredEvents, true); // Renderiza desde la primera página
-}
-
-
-// Renderiza el lote actual de eventos en el DOM
-function agregarEventoDom(events, isNewLoad = false) {
-    const listContainer = document.getElementById('events-list');
-    
-    //Borramos los elementos
-    listContainer.innerHTML = '';
-    
-    
-    //const start = currentPage * eventsPerPage;
-    //const end = start + eventsPerPage;
-    //const eventsToRender = events.slice(start, end);
-
-    if (eventsToRender.length === 0 && isNewLoad) {
-        listContainer.innerHTML = '<p class="col-span-full text-center text-gray-500 mt-10">No se encontraron eventos con los criterios actuales.</p>';
-        document.getElementById('load-more-container').classList.add('hidden');
-    } else {
-        eventsToRender.forEach(event => {
-            listContainer.innerHTML += renderEventCard(event);
-        });
-        // Vuelve a crear los iconos después de inyectar el HTML
-        //lucide.createIcons();
-        
-        // Mostrar/Ocultar el botón "Cargar Más"
-        /*if (end < events.length) {
-            document.getElementById('load-more-container').classList.remove('hidden');
-        } else {
-            document.getElementById('load-more-container').classList.add('hidden');
-        }*/
-    }
-}
-
-// Función para renderizar una única tarjeta de evento tras filtrar por búsqueda
-function renderEventCard(event) {
-    // Obtener la URL optimizada para la miniatura (usamos 800px para el nuevo diseño grande)
-    const thumbnailUrl = getOptimizedImageUrl(event.URL_IMAGEN, 'w800');
-
-    // Uso del símbolo del Euro (€)
-    const priceText = event.PRECIO_MIN > 0 ? `${event.PRECIO_MIN.toFixed(0)} €` : 'Gratis';
-    const priceColor = event.PRECIO_MIN > 0 ? 'text-green-600 font-bold' : 'text-cyan-600 font-bold';
-    const ratingHtml = getStarRating(event.RATING_ESTRELLAS);
-
-    // Nuevo diseño de tarjeta con imagen destacada (Estilo 4-2-1)
-    return `
-        <div class="relative h-40">
-            <img src="${evento.URL_IMAGEN}" alt="${evento.TITULO}" class="w-full h-full object-cover">
-            <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
-                ${evento.CATEGORIA}
-            </span>
-        </div>
-        <div class="p-4">
-            <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">${evento.TITULO}</h3>
-            <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                <i data-lucide="map-pin" class="h-4 w-4"></i>
-                <span>${evento.UBICACION_CIUDAD} • ${evento.FECHA_EVENTO}</span>
-            </p>
-            <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                <span class="text-xl font-extrabold text-green-600">${precioTexto}</span>
-                <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                    Detalles
-                </button>
-            </div>
-        </div>
-    `;
 }
 
 /**---FIN---- */
