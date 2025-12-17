@@ -210,7 +210,7 @@ function renderEventDetail(eventId) {
     const detailHtml = `
         <div class="bg-white rounded-xl shadow-2xl mb-6 p-5">
             
-            <h2 class="text-3xl font-extrabold text-gray-900">${event.TITULO}</h2>
+            <h2 class="text-3xl font-extrabold text-gray-900">${event.TITULO} VERSION VUELTA</h2>
             
             <!-- Imagen colocada debajo del TITULO -->
             <div class="mt-4 mb-5 rounded-lg overflow-hidden shadow-xl">
