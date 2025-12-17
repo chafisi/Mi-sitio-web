@@ -12,7 +12,7 @@ function mostrarPantalla(pantallaId) {
             const screen = document.getElementById(id);
             if (screen) {
         if (id === pantallaId) {
-                en.classList.remove('hidden');
+                screen.classList.remove('hidden');
             } else {
                 screen.classList.add('hidden');
             }

@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OcioPlus - Eventos</title>
+    <!-- Incluir el CDN de Tailwind CSS y la fuente Inter -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap'); /* Añadido weight 900 */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB; /* Gray 50 */
+        }
+
+        /* Estilos generales para las pantallas */
+        .screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        /* Estilos específicos para la TabBar */
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        /* Estilo para el icono activo (gestionado ahora por JS para ser dinámico) */
+        .nav-item-active .icon-bg {
+            background-color: #06B6D4; /* Cyan 500 */
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+        }
+        .nav-item-active {
+            /* Estilos de elemento activo en el TabBar */
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+        }
+
+        /* Ajuste de padding para PAN1 (Listado) */
+        #pantalla1 main {
+            /* CORRECCIÓN: Aumentado de 100px a 140px para evitar que el header fijo tape el título */
+            padding-top: 140px;
+            padding-bottom: 80px; /* Espacio para el TabBar fijo */
+        }
+
+        /* Ajuste de padding para PAN2 (Detalle) para evitar que el contenido se solape con el CTA fijo) */
+        #pantalla2 main {
+            padding-bottom: 80px; /* Espacio para el CTA fijo */
+        }
+
+        /* Ajuste de padding para PAN3 (Filtros) */
+        #pantalla3 main {
+            /* CORRECCIÓN: Ajustado padding-top para el nuevo header con breadcrumb */
+            padding-top: 100px;
+            padding-bottom: 80px; /* Espacio para el Footer de Filtros */
+        }
+
+        /* Ajuste de padding para PAN4 (Agenda/Perfil) - Se ajusta con estilo inline en el main */
+
+        /* Estilos para el rango de precios */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4F46E5; /* Indigo 600 */
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #4F46E5; /* Indigo 600 */
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            border: none;
+        }
+
+    </style>
+        <!-- Iconos Lucide (simulando los del mockup) -->
+        <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen">
+
+    <!-- |---|---------------------------------------------------- -->
+    <!-- | 1 | PANTALLA 1: INICIO / LISTADO DE EVENTOS (PAN1) -->
+    <!-- |---| ---------------------------------------------------- -->
+    <div id="pantalla1" class="screen">
+
+        <!-- 1. HEADER FIJO (NAV SUPERIOR) -->
+        <header class="fixed top-0 left-0 right-0 bg-indigo-600 shadow-lg z-20">
+            <div class="max-w-4xl mx-auto p-4 flex items-center justify-between">
+
+                <!-- Logo y Menú -->
+                <div class="flex items-center space-x-3">
+                    <i data-lucide="menu" class="text-white h-6 w-6"></i>
+                    <h1 class="text-2xl font-extrabold text-white">OcioPlus</h1>
+                </div>
+
+                <!-- Icono Carrito -->
+                <div class="relative">
+                    <i data-lucide="shopping-cart" class="text-white h-6 w-6"></i>
+                    <span class="absolute -top-2 -right-2 text-xs bg-cyan-500 text-white rounded-full h-4 w-4 flex items-center justify-center font-bold">2</span>
+                </div>
+            </div>
+
+            <!-- BUSQUEDA Y FILTROS -->
+            <div class="max-w-4xl mx-auto p-4 pt-0 flex space-x-2">
+                <div class="relative flex-grow">
+                    <!-- Input de Búsqueda Rápida -->
+                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5"></i>
+                    <input type="text" placeholder="Buscar eventos..." class="w-full pl-10 pr-4 py-2 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:ring-0 text-gray-700 shadow-inner">
+                </div>
+                <!-- Botón de Filtros (Acceso a PAN3) -->
+                <button onclick="mostrarPantalla3()" class="bg-cyan-500 hover:bg-cyan-600 text-white p-3 rounded-xl transition duration-300 shadow-md flex-shrink-0">
+                    <i data-lucide="sliders" class="h-6 w-6"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 2. BODY PRINCIPAL (LISTADO DE EVENTOS) -->
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
+            <!-- El aumento del padding en CSS asegura que este título sea visible -->
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Próximos Eventos</h2>
+
+            <!-- Contenedor Grid Responsivo (Grid de 1, 2 o 3 columnas) -->
+            <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+
+                <!-- Las tarjetas ahora tienen un manejador de clic para ir a PAN2 -->
+                <!-- EJEMPLO 1: Concierto Rock -->
+                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                    <div class="relative h-40">
+                        <img src="https://placehold.co/600x400/3b82f6/ffffff?text=CONCIERTO+ROCK" alt="" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">Música</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Concierto Rock</h3>
+                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                            <i data-lucide="map-pin" class="h-4 w-4"></i>
+                            <span>Madrid, 15 NOV • 20:00 h</span>
+                        </p>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-xl font-extrabold text-green-600">25.00 €</span>
+                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                                Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EJEMPLO 2: Arte Moderno -->
+                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                    <div class="relative h-40">
+                        <img src="https://placehold.co/600x400/06B6D4/ffffff?text=ARTE+MODERNO" alt="[Image of Modern Art]" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-cyan-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Exposición</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Arte Moderno</h3>
+                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                            <i data-lucide="map-pin" class="h-4 w-4"></i>
+                            <span>Madrid, 18 NOV • Todo el día</span>
+                        </p>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-xl font-extrabold text-green-600">Gratis</span>
+                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                                Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EJEMPLO 3: Maratón Solidaria -->
+                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                    <div class="relative h-40">
+                        <img src="https://placehold.co/600x400/10B981/ffffff?text=MARATON+SOLIDARIA" alt="" class="w-full h-full object-cover">
+                            <span class="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Deporte</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Maratón Solidaria</h3>
+                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                            <i data-lucide="map-pin" class="h-4 w-4"></i>
+                            <span>Barcelona, 20 NOV • 08:00 am</span>
+                        </p>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-xl font-extrabold text-green-600">10.00 €</span>
+                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                                Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EJEMPLO 4: Taller Creativo -->
+                <div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                    <div class="relative h-40">
+                        <img src="https://placehold.co/600x400/F59E0B/ffffff?text=TALLER+CREATIVO" alt="" class="w-full h-full object-cover">
+                            <span class="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Formación</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Taller Creativo</h3>
+                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                            <i data-lucide="map-pin" class="h-4 w-4"></i>
+                            <span>Valencia, 25 NOV • 19:30 h</span>
+                        </p>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-xl font-extrabold text-green-600">50.00 €</span>
+                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                                Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón Cargar Más -->
+            <div class="flex justify-center my-8">
+                <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 shadow-sm">
+                Cargar más eventos
+                </button>
+            </div>
+
+        </main>
+
+        <!-- 3. FOOTER FIJO (TAB BAR INFERIOR MODERNO) -->
+        <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-2xl z-20 rounded-t-3xl border-t border-gray-100">
+            <nav class="max-w-4xl mx-auto flex justify-around items-end h-20 px-4">
+
+                <!-- Item: Cercanos (Vuelve a PAN1) -->
+                <!-- CORRECCIÓN: Agregada la función mostrarPantalla1() -->
+                <a href="javascript:void(0)" id="nav-cercanos" class="nav-item text-gray-500 hover:text-indigo-600 group" onclick="mostrarPantalla1()">
+                    <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
+                        <i data-lucide="map-pin" class="h-6 w-6"></i>
+                    </div>
+                    <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Cercanos</span>
+                    </a>
+
+                    <!-- Item: Mejor Valorados (Vuelve a PAN1) -->
+                    <!-- CORRECCIÓN: Agregada la función mostrarPantalla1() -->
+                    <a href="javascript:void(0)" id="nav-valorados" class="nav-item text-gray-500 hover:text-indigo-600 group" onclick="mostrarPantalla1()">
+                    <div class="icon-bg w-14 h-14 rounded-full transition duration-300 flex items-center justify-center">
+                        <i data-lucide="star" class="h-8 w-8 text-white fill-white"></i>
+                    </div>
+                    <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Valorados</span>
+                    </a>
+
+                    <!-- Icono: Mi Perfil / Agenda (Acceso a PAN4) -->
+                    <a href="javascript:void(0)" id="nav-perfil" class="nav-item text-gray-500 hover:text-indigo-600 group" onclick="mostrarPantalla4()">
+                    <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
+                        <i data-lucide="user" class="h-6 w-6"></i>
+                    </div>
+                    <span class="text-xs mt-1 transition duration-300 opacity-100 group-hover:font-semibold">Perfil</span>
+                </a>
+            </nav>
+        </footer>
+    </div>
+
+
+    <!-- ---------------------------------------------------- -->
+    <!-- PANTALLA 2: DETALLE DE EVENTO (PAN2) -->
+    <!-- ---------------------------------------------------- -->
+    <div id="pantalla2" class="screen hidden">
+
+        <!-- HEADER (Imagen de fondo y Controles) -->
+        <header class="relative h-80">
+        <!-- Imagen Principal -->
+        <img src="https://placehold.co/1000x500/3b82f6/ffffff?text=CONCIERTO+ROCK+DESTACADO" alt="" class="w-full h-full object-cover">
+
+        <!-- Botones de Control Flotantes -->
+        <div class="absolute top-4 left-4">
+            <!-- Botón de Retroceso a PAN1 (Se mantiene el botón simple, no el breadcrumb) -->
+            <button onclick="mostrarPantalla1()" class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
+            <i data-lucide="chevron-left" class="h-6 w-6 text-gray-800"></i>
+            </button>
+        </div>
+        <div class="absolute top-4 right-4">
+            <!-- Botón de Guardar/Favorito -->
+            <button class="bg-white/80 p-2 rounded-full shadow-lg hover:bg-white transition duration-200">
+            <i data-lucide="bookmark" class="h-6 w-6 text-gray-800"></i>
+            </button>
+        </div>
+        </header>
+
+        <!-- BODY (Contenido principal con efecto de superposición) -->
+        <main class="flex-grow max-w-4xl mx-auto -mt-10 z-10 relative px-4 sm:px-6 lg:px-8">
+        <div class="bg-white p-6 rounded-t-3xl shadow-xl">
+
+            <!-- Título -->
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-4">Concierto Rock "The Phantoms"</h1>
+
+            <!-- Metadatos Clave -->
+            <div class="space-y-3 mb-6 border-b pb-4">
+                <p class="text-lg text-gray-700 flex items-center space-x-3">
+                <i data-lucide="calendar" class="h-6 w-6 text-indigo-500"></i>
+                <span class="font-semibold">Fecha:</span> 15 de Noviembre, 2025
+                    </p>
+                    <p class="text-lg text-gray-700 flex items-center space-x-3">
+                    <i data-lucide="clock" class="h-6 w-6 text-indigo-500"></i>
+                <span class="font-semibold">Hora:</span> 20:00 h (Apertura de puertas 19:00 h)
+                    </p>
+                    <p class="text-lg text-gray-700 flex items-center space-x-3">
+                    <i data-lucide="map-pin" class="h-6 w-6 text-indigo-500"></i>
+                <span class="font-semibold">Ubicación:</span> Sala Apollo, Calle Príncipe de Vergara, Madrid.
+                </p>
+            </div>
+
+                <!-- Descripción Completa -->
+                <h2 class="text-2xl font-bold text-gray-800 mb-3">Sobre el Evento</h2>
+                <p class="text-gray-600 mb-6 leading-relaxed">
+                ¡Prepárate para una noche épica con "The Phantoms"! La banda de rock alternativo más aclamada de la escena nacional llega a Madrid para presentar su nuevo álbum, "Ecos de Medianoche". Con un sonido potente y un espectáculo de luces inmersivo, esta es una cita obligada para los amantes del buen rock.
+                <br><br>
+                Las entradas incluyen acceso a la zona VIP después del concierto para un encuentro exclusivo con los miembros de la banda. ¡No te lo pierdas!
+                </p>
+
+                <!-- Precio -->
+                <div class="text-center p-4 bg-green-50 rounded-xl">
+                    <span class="text-sm font-medium text-gray-600 block">Precio base por persona</span>
+                    <span class="text-4xl font-extrabold text-green-600">25.00 €</span>
+                </div>
+    </div>
+    </main>
+
+    <!-- FOOTER (Barra de Acción Fija - CTA más grande) -->
+    <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-20 p-4">
+    <div class="max-w-4xl mx-auto">
+    <!-- Botón con mayor padding vertical (py-4) y texto más grueso (font-black) -->
+    <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/50 text-lg">
+    Reservar ahora (25.00 €)
+    </button>
+    </div>
+    </footer>
+    </div>
+
+
+    <!-- ---------------------------------------------------- -->
+    <!-- PANTALLA 3: FILTROS (PAN3) -->
+    <!-- ---------------------------------------------------- -->
+    <div id="pantalla3" class="screen hidden bg-white">
+
+        <!-- 1. HEADER FIJO (NAV SUPERIOR PARA FILTROS) -->
+        <header class="fixed top-0 left-0 right-0 bg-white shadow-md z-20">
+            <div class="max-w-4xl mx-auto p-4 pb-2 flex flex-col">
+
+                <!-- Breadcrumb de Navegación (Inicio > Filtros) - NUEVO -->
+                <div class="flex items-center text-sm mb-2 text-gray-500">
+                    <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200 font-medium">Inicio</a>
+                    <i data-lucide="chevron-right" class="h-4 w-4 mx-1"></i>
+                    <span class="font-semibold text-gray-800">Filtros</span>
+                </div>
+
+            <!-- Título y Botón de Cerrar -->
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-800">Filtros Avanzados</h1>
+
+                <!-- Botón de Cerrar (Retroceso a PAN1) - Mantenido -->
+                <button onclick="mostrarPantalla1()" class="text-gray-500 hover:text-gray-800 transition duration-200 p-1">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 2. BODY PRINCIPAL (OPCIONES DE FILTRO) -->
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow overflow-y-auto">
+
+            <!-- CONTENEDOR DE FILTROS EN GRID DE 2 COLUMNAS (Para tablet/desktop) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+                <!-- FILTRO 1: Categoría -->
+                <section class="mb-4 sm:mb-0 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
+                        <i data-lucide="list-checks" class="h-5 w-5 text-cyan-500"></i>
+                        <span>Categoría</span>
+                    </h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- Opciones de Categoría -->
+                        <div class="flex items-center space-x-2 p-3 bg-cyan-50 rounded-lg border border-cyan-300">
+                            <input type="checkbox" id="cat-musica" checked class="form-checkbox h-5 w-5 text-cyan-600 rounded-lg border-gray-300 focus:ring-cyan-500">
+                            <label for="cat-musica" class="text-gray-800 font-semibold">Música</label>
+                        </div>
+                            <div class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition duration-200">
+                            <input type="checkbox" id="cat-deporte" class="form-checkbox h-5 w-5 text-cyan-600 rounded-lg border-gray-300 focus:ring-cyan-500">
+                        <label for="cat-deporte" class="text-gray-800">Deporte</label>
+                        </div>
+                        <div class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition duration-200">
+                            <input type="checkbox" id="cat-formacion" class="form-checkbox h-5 w-5 text-cyan-600 rounded-lg border-gray-300 focus:ring-cyan-500">
+                            <label for="cat-formacion" class="text-gray-800">Formación</label>
+                        </div>
+                        <div class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition duration-200">
+                            <input type="checkbox" id="cat-teatro" class="form-checkbox h-5 w-5 text-cyan-600 rounded-lg border-gray-300 focus:ring-cyan-500">
+                            <label for="cat-teatro" class="text-gray-800">Teatro</label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- FILTRO 2: Distancia -->
+                <section class="mb-4 sm:mb-0 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
+                        <i data-lucide="route" class="h-5 w-5 text-orange-500"></i>
+                        <span>Distancia desde mi ubicación</span>
+                    </h2>
+                    <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <option selected>Sin límite</option>
+                        <option>10 km</option>
+                        <option>20 km</option>
+                        <option>50 km</option>
+                        <option>100 km</option>
+                        <option>200 km</option>
+                        <option>500 km</option>
+                        <option>Todo</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-2">Basado en la ubicación actual (simulada).</p>
+                </section>
+
+                <!-- FILTRO 3: Rango de Precios -->
+                <section class="mb-4 sm:mb-0 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center space-x-2">
+                        <i data-lucide="euro" class="h-5 w-5 text-indigo-500"></i>
+                        <span>Precio Máximo</span>
+                    </h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <span id="price-min" class="text-lg font-semibold text-gray-600">0 €</span>
+                        <span id="price-max" class="text-2xl font-extrabold text-indigo-600">50+ €</span>
+                    </div>
+
+                    <!-- Input de rango simulado con estilo personalizado -->
+                    <input type="range" min="0" max="100" value="50" class="w-full h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer range-lg">
+                </section>
+
+                <!-- FILTRO 4: Fecha -->
+                <section class="mb-4 sm:mb-0 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
+                        <i data-lucide="calendar-check" class="h-5 w-5 text-green-500"></i>
+                        <span>Fecha</span>
+                    </h2>
+                    <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        <option>Cualquier fecha</option>
+                        <option selected>Esta semana</option>
+                        <option>Este fin de semana</option>
+                        <option>Este mes</option>
+                    </select>
+                </section>
+
+            </div>
+        </main>
+
+        <!-- 3. FOOTER FIJO (BARRA DE ACCIÓN DE FILTROS) -->
+        <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-20 p-4">
+            <div class="max-w-4xl mx-auto flex space-x-4">
+                <button onclick="mostrarPantalla1()" class="w-1/3 border-2 border-red-500 text-red-500 font-bold py-3 rounded-xl transition duration-300 hover:bg-red-50">
+                    Limpiar
+                </button>
+                <button onclick="mostrarPantalla1()" class="w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl transition duration-300 shadow-lg shadow-indigo-500/50 text-lg">
+                    Aplicar Filtros
+                </button>
+            </div>
+        </footer>
+    </div>
+
+
+    <!-- ---------------------------------------------------- -->
+    <!-- PANTALLA 4: PERFIL / AGENDA (PAN4) -->
+    <!-- ---------------------------------------------------- -->
+    <div id="pantalla4" class="screen hidden bg-gray-50">
+
+        <!-- 1. HEADER FIJO (NAV SUPERIOR - Perfil) -->
+        <header class="fixed top-0 left-0 right-0 bg-white shadow-md z-20">
+            <div class="max-w-4xl mx-auto p-4 pb-2 flex flex-col">
+
+                <!-- Breadcrumb de Navegación (Inicio > Mi Agenda) -->
+                <div class="flex items-center text-sm mb-2 text-gray-500">
+                    <!-- Enlace a Inicio (PAN1) -->
+                    <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200 font-medium">Inicio</a>
+                    <i data-lucide="chevron-right" class="h-4 w-4 mx-1"></i>
+                    <span class="font-semibold text-gray-800">Mi Agenda</span>
+                </div>
+
+                <!-- Título y Botones de Control (Cerrar y Configuración) -->
+                <div class="flex items-center justify-between">
+                    <h1 class="text-2xl font-extrabold text-gray-800">Mi Agenda</h1>
+
+                    <!-- Contenedor de botones (Cerrar y Configuración) - MODIFICADO -->
+                    <div class="flex space-x-2">
+                        <!-- Botón de Cerrar (NUEVO) -->
+                        <button onclick="mostrarPantalla1()" class="p-2 text-gray-500 hover:text-gray-800 transition duration-200 rounded-full">
+                            <i data-lucide="x" class="h-6 w-6"></i>
+                        </button>
+                        <!-- Botón de Configuración/Perfil -->
+                        <button class="p-2 text-gray-500 hover:text-gray-800 transition duration-200 rounded-full">
+                            <i data-lucide="settings" class="h-6 w-6"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toggle Tabs (Comprados / Guardados) -->
+            <div class="max-w-4xl mx-auto px-4 flex border-b border-gray-200">
+                <button id="tab-comprados" onclick="selectTab('comprados')" class="py-3 px-4 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 transition duration-300 flex-grow">
+                    Comprados (2)
+                </button>
+                <button id="tab-guardados" onclick="selectTab('guardados')" class="py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition duration-300 flex-grow">
+                    Guardados (2)
+                </button>
+            </div>
+        </header>
+
+        <!-- 2. BODY PRINCIPAL (Contenido de las pestañas) -->
+        <!-- Se ha aumentado el padding-top del main para dejar espacio al nuevo header de perfil (incluyendo breadcrumb) -->
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow overflow-y-auto" style="padding-top: 155px; padding-bottom: 80px;">
+
+            <!--####EVENTOS COMPRADOS#####-->
+            <!-- Contenido: Eventos Comprados -->
+            <div id="content-comprados" class="space-y-6">
+
+                <h2 class="text-xl font-bold text-gray-700 mt-4 mb-2">Eventos con Entrada</h2>
+
+                <!-- Tarjeta de Evento Comprado (EJEMPLO 1: Concierto Rock) -->
+                <div class="bg-white rounded-xl shadow-lg border border-indigo-100 p-4">
+                    <div class="flex justify-between items-start mb-3 border-b pb-3">
+                        <div>
+                            <span class="text-xs font-medium text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">CONFIRMADO</span>
+                            <h3 class="text-xl font-extrabold text-gray-900 mt-1">Concierto Rock</h3>
+                            <p class="text-sm text-gray-500">Madrid, 15 NOV • 20:00 h</p>
+                        </div>
+                        <!-- Botón de Compartir -->
+                        <button class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition duration-200">
+                            <i data-lucide="share-2" class="h-5 w-5"></i>
+                        </button>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">Entrada: #XP-3209R</span>
+                            <button onclick="showQrModal()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-md flex items-center space-x-2">
+                            <i data-lucide="qr-code" class="h-5 w-5"></i>
+                            <span>Ver QR</span>
+                            </button>
+                        </div>
+                    </div>
+
+            <!-- Tarjeta de Evento Comprado (EJEMPLO 2: Taller Creativo) -->
+            <div class="bg-white rounded-xl shadow-lg border border-indigo-100 p-4">
+                <div class="flex justify-between items-start mb-3 border-b pb-3">
+                    <div>
+                        <span class="text-xs font-medium text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">CONFIRMADO</span>
+                        <h3 class="text-xl font-extrabold text-gray-900 mt-1">Taller Creativo</h3>
+                        <p class="text-sm text-gray-500">Valencia, 25 NOV • 19:30 h</p>
+                    </div>
+                        <!-- Botón de Compartir -->
+                        <button class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition duration-200">
+                            <i data-lucide="share-2" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Entrada: #QR-9937D</span>
+                        <button onclick="showQrModal()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 shadow-md flex items-center space-x-2">
+                            <i data-lucide="qr-code" class="h-5 w-5"></i>
+                            <span>Ver QR</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!--####EVENTOS GUARDADOS#####-->
+            <!-- Contenido: Eventos Guardados (Inicialmente oculto) -->
+            <div id="content-guardados" class="space-y-6 hidden">
+
+                <h2 class="text-xl font-bold text-gray-700 mt-4 mb-2">Mi Lista de Deseados</h2>
+
+                <!-- Tarjeta de Evento Guardado (EJEMPLO 1: Arte Moderno) -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                    <div class="relative h-24">
+                        <img src="https://placehold.co/600x400/06B6D4/ffffff?text=ARTE+MODERNO" alt="[Image of Modern Art]" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-cyan-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Exposición</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Arte Moderno</h3>
+                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                        <i data-lucide="map-pin" class="h-4 w-4"></i>
+                        <span>Madrid, 18 NOV • Todo el día (Gratis)</span>
+                        </p>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <button onclick="mostrarPantalla2()" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition duration-300">
+                                Ver Detalles
+                            </button>
+                            <button class="text-red-500 hover:text-red-700 text-sm font-semibold flex items-center space-x-1 transition duration-300">
+                                <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                <span>Eliminar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta de Evento Guardado (EJEMPLO 2: Maratón Solidaria) -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                    <div class="relative h-24">
+                        <img src="https://placehold.co/600x400/10B981/ffffff?text=MARATON+SOLIDARIA" alt="" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Deporte</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Maratón Solidaria</h3>
+                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                        <i data-lucide="map-pin" class="h-4 w-4"></i>
+                        <span>Barcelona, 20 NOV • 08:00 am (10.00 €)</span>
+                        </p>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <button onclick="mostrarPantalla2()" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm transition duration-300">
+                            Ver Detalles
+                            </button>
+                            <button class="text-red-500 hover:text-red-700 text-sm font-semibold flex items-center space-x-1 transition duration-300">
+                            <i data-lucide="trash-2" class="h-4 w-4"></i>
+                            <span>Eliminar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+    <!-- El footer de PAN4 es el mismo TabBar de PAN1, manejado globalmente. -->
+    </div>
+
+    <!-- MODAL DE VISUALIZACIÓN QR (Fuera de PAN4) -->
+    <div id="qr-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4" onclick="closeQrModal()">
+        <div class="bg-white rounded-xl p-8 max-w-sm w-full shadow-2xl" onclick="event.stopPropagation()">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">Tu Entrada</h3>
+            <p class="text-center text-sm text-gray-600 mb-4">Muestra este código al acceder al evento.</p>
+            <!-- Simulación de Código QR -->
+            <div class="bg-white p-4 border-8 border-gray-100 rounded-lg">
+                <img src="https://placehold.co/300x300/1F2937/F9FAFB?text=QR+CODE" alt="[Image of QR Code]" class="w-full h-auto rounded">
+            </div>
+            <p class="text-center text-xs font-mono mt-4 text-gray-800 break-all">#XP-3209R</p>
+            <button onclick="closeQrModal()" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition duration-300">
+                Cerrar
+            </button>
+        </div>
+    </div>
+
+<script src="javascript2.js"></script>
+
+</body>
+</html>
