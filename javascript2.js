@@ -2,11 +2,20 @@
     <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
     <!-- ---------------------------------------------------- -->*/
     
-alert("El archivo JS se ha cargado correctamente barra busqueda");
+alert("El archivo JS se ha cargado correctamente barra busqueda y titulo");
 console.log("Prueba de consola");
 
     // Inicializar Iconos Lucide
 lucide.createIcons();
+
+//VARIABLES GLOBALES PARA TRABAJAR CON EL DOM
+let eventsData = []; // Almacena todos los datos de la hoja de cálculo
+let filteredEvents = []; // Eventos después de aplicar filtros y búsqueda
+let currentPage = 0;
+const eventsPerPage = 6;
+let activeTab = 'valorados'; // RF 1.11: Valorados es el default
+let currentView = 'PAN1';
+let currentEvent = null; // Almacena el evento actual en PAN2
 
 // Oculta todas las pantallas excepto la especificada y gestiona el estado del TabBar
 function mostrarPantalla(pantallaId) {
@@ -112,7 +121,7 @@ selectTab('comprados');
 
 //*****************FUNCIONES PARA CARGAR LOS DATOS DESDE GOOGLE SHEETS Y SI NO FUNCIONA LO HACEMOS MANUALMENTE****************
 //************************************************************************************************************************** */
-let eventsData = []; // Aquí se guardarán los eventos (de Google o Mock)
+
 let GAS_WEB_APP_URL = 'TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUI';
 
 // Carga inicial de datos desde la API
@@ -201,7 +210,7 @@ function activarEscritura() {
 function filtrarEventosInicio() {
     
     const query = document.getElementById('search-input').value.toLowerCase();
-    //const listTitle = document.getElementById('list-title');
+    const listTitle = document.getElementById('list-title');
 
     // 1. Filtrado por Búsqueda (RF 1.08)
     let tempEvents = eventsData.filter(event => {
