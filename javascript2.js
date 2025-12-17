@@ -2,7 +2,7 @@
     <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
     <!-- ---------------------------------------------------- -->*/
     
-alert("v13");
+alert("v13.1");
 console.log("Prueba de consola");
 
     // Inicializar Iconos Lucide
