@@ -222,19 +222,16 @@
                 <div class="flex items-center text-sm mb-2 text-gray-500">
                     <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200 font-medium">Inicio</a>
                     <i data-lucide="chevron-right" class="h-4 w-4 mx-1"></i>
-                    <span id="detalles-breadcrumb-categoria" class="font-semibold text-gray-800 tracking-wide uppercase text-xs">Categoría</span>
+                    <span id="detalles-breadcrumb-categoria" class="font-semibold text-gray-800 tracking-wide uppercase text-xs">visualización de evento</span>
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <h1 id="detalles-header-titulo" class="text-xl font-bold text-gray-800 truncate mr-4">Detalles del Evento</h1>
                     <div class="flex items-center space-x-3">
+                        <!-- Botón de favorito -->
                         <button id="btn-favorito-detalle" class="text-gray-400 hover:text-red-500 transition">
                             <i data-lucide="bookmark" class="h-6 w-6"></i>
                         </button>
-                        <button class="text-gray-600 relative">
-                            <i data-lucide="shopping-cart" class="h-6 w-6"></i>
-                            <span class="absolute -top-2 -right-2 bg-indigo-600 text-white text-[10px] font-bold px-1.5 rounded-full">0</span>
-                        </button>
+                        <!-- Cerrar ventana -->
                         <button onclick="mostrarPantalla1()" class="text-gray-500 hover:text-gray-800 ml-2">
                             <i data-lucide="x" class="h-6 w-6"></i>
                         </button>
@@ -246,7 +243,9 @@
         <main class="pt-32 pb-24 max-w-4xl mx-auto px-4">
             
             <div class="bg-white rounded-xl shadow-2xl mb-6 p-5 border border-gray-100">
-                <h2 id="detalles-titulo-principal" class="text-3xl font-extrabold text-gray-900 leading-tight uppercase"></h2>
+                <h2 id="detalles-titulo-principal" class="text-3xl font-extrabold text-gray-900 leading-tight uppercase">
+                    Nombre del Evento
+                </h2>
                 
                 <div class="mt-4 mb-5 rounded-lg overflow-hidden shadow-xl border-4 border-white">
                     <img id="detalles-imagen" src="" 
