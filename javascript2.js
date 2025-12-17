@@ -2,7 +2,7 @@
     <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
     <!-- ---------------------------------------------------- -->*/
     
-alert("v13.1");
+alert("v13.3");
 console.log("Prueba de consola");
 
     // Inicializar Iconos Lucide
@@ -644,6 +644,11 @@ function aplicarFiltros() {
     const distanciaMaxima = parseFloat(document.getElementById('f-distancia').value);
     const fechaFiltro = document.getElementById('f-fecha').value;
 
+    // --- CÁLCULO DINÁMICO DE HOY ---
+    const ahora = new Date(); 
+    // Normalizamos 'hoy' a las 00:00:00 para comparar solo fechas
+    const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+
     // 2. Filtrar el array maestro eventsData
     const eventosFiltrados = eventsData.filter(evento => {
         
@@ -658,56 +663,46 @@ function aplicarFiltros() {
         const cumpleDistancia = (evento.DISTANCIA_KM || 0) <= distanciaMaxima;
 
         // Filtro Fecha (Simulación simple por ahora)
-        const fechaFiltro = document.getElementById('f-fecha').value;
+        let cumpleFecha = true;
 
-    // --- CÁLCULO DINÁMICO DE HOY ---
-        const ahora = new Date(); 
-        // Normalizamos 'hoy' a las 00:00:00 para comparar solo fechas
-        const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+        if (fechaFiltro !== 'todas') {
+            // Convertimos la fecha del evento a objeto Date
+            const fechaEventoObj = new Date(evento.FECHA_EVENTO.replace(" ", "T"));
+            // Normalizamos la fecha del evento para comparar solo el día
+            const fechaEventoSoloDia = new Date(fechaEventoObj.getFullYear(), fechaEventoObj.getMonth(), fechaEventoObj.getDate());
 
-        const eventosFiltrados = eventsData.filter(evento => {
-            // ... (filtros de categoría, precio y distancia) ...
+            if (fechaFiltro === 'hoy') {
+                cumpleFecha = fechaEventoSoloDia.getTime() === hoy.getTime();
+            } 
+            else if (fechaFiltro === 'semana') {
+                const limiteSemana = new Date(hoy);
+                limiteSemana.setDate(hoy.getDate() + 7);
+                // Incluye desde hoy hasta dentro de 7 días
+                cumpleFecha = fechaEventoSoloDia >= hoy && fechaEventoSoloDia <= limiteSemana;
+            } 
+            else if (fechaFiltro === 'finsemana') {
+                // Calculamos el sábado y domingo de la semana actual
+                const diaSemanaActual = hoy.getDay(); // 0: Dom, 1: Lun, ..., 6: Sab
+                
+                const diasHastaSabado = (6 - diaSemanaActual + 7) % 7;
+                const sabado = new Date(hoy);
+                sabado.setDate(hoy.getDate() + diasHastaSabado);
+                
+                const domingo = new Date(sabado);
+                domingo.setDate(sabado.getDate() + 1);
 
-            let cumpleFecha = true;
-
-            if (fechaFiltro !== 'todas') {
-                // Convertimos la fecha del evento a objeto Date
-                const fechaEventoObj = new Date(evento.FECHA_EVENTO.replace(" ", "T"));
-                // Normalizamos la fecha del evento para comparar solo el día
-                const fechaEventoSoloDia = new Date(fechaEventoObj.getFullYear(), fechaEventoObj.getMonth(), fechaEventoObj.getDate());
-
-                if (fechaFiltro === 'hoy') {
-                    cumpleFecha = fechaEventoSoloDia.getTime() === hoy.getTime();
-                } 
-                else if (fechaFiltro === 'semana') {
-                    const limiteSemana = new Date(hoy);
-                    limiteSemana.setDate(hoy.getDate() + 7);
-                    // Incluye desde hoy hasta dentro de 7 días
-                    cumpleFecha = fechaEventoSoloDia >= hoy && fechaEventoSoloDia <= limiteSemana;
-                } 
-                else if (fechaFiltro === 'finsemana') {
-                    // Calculamos el sábado y domingo de la semana actual
-                    const diaSemanaActual = hoy.getDay(); // 0: Dom, 1: Lun, ..., 6: Sab
-                    
-                    const diasHastaSabado = (6 - diaSemanaActual + 7) % 7;
-                    const sabado = new Date(hoy);
-                    sabado.setDate(hoy.getDate() + diasHastaSabado);
-                    
-                    const domingo = new Date(sabado);
-                    domingo.setDate(sabado.getDate() + 1);
-
-                    cumpleFecha = fechaEventoSoloDia.getTime() === sabado.getTime() || 
-                                fechaEventoSoloDia.getTime() === domingo.getTime();
-                } 
-                else if (fechaFiltro === 'mes') {
-                    // Comprobamos que el mes y el año coincidan con los actuales
-                    cumpleFecha = fechaEventoObj.getMonth() === hoy.getMonth() && 
-                                fechaEventoObj.getFullYear() === hoy.getFullYear();
-                }
+                cumpleFecha = fechaEventoSoloDia.getTime() === sabado.getTime() || 
+                              fechaEventoSoloDia.getTime() === domingo.getTime();
+            } 
+            else if (fechaFiltro === 'mes') {
+                // Comprobamos que el mes y el año coincidan con los actuales
+                cumpleFecha = fechaEventoObj.getMonth() === hoy.getMonth() && 
+                              fechaEventoObj.getFullYear() === hoy.getFullYear();
             }
+        }
 
-            return cumpleCategoria && cumplePrecio && cumpleDistancia && cumpleFecha;
-        });
+        return cumpleCategoria && cumplePrecio && cumpleDistancia && cumpleFecha;
+    });
 
     // 3. Ejecutar el cambio visual
     // Llamamos a tu función de carga con los nuevos datos
