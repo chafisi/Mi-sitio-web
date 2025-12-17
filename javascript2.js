@@ -157,56 +157,60 @@ function cargarTarjetas(datosAMostrar = filteredEvents) {
 
     container.innerHTML = ''; 
 
-    const limite = datosAMostrar.slice(0, (currentPage + 1) * eventsPerPage);
+    // Calculamos cuántos eventos mostrar: (0 hasta página_actual + 1 * eventos_por_página)
+    const maxEventos = (currentPage + 1) * eventsPerPage;
+    const limite = datosAMostrar.slice(0, maxEventos);
 
     limite.forEach(evento => {
-        const precioTexto = evento.PRECIO_MIN === 0 ? "Gratis" : `${evento.PRECIO_MIN.toFixed(2)} €`;
-        
-        // --- LÓGICA DE ESTRELLAS ---
-        // Generamos el HTML de las estrellas (ej: si es 4, pondrá 4 estrellas amarillas y 1 gris)
-        let estrellasHTML = '';
-        for (let i = 1; i <= 5; i++) {
-            const color = i <= evento.RATING_ESTRELLAS ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300';
-            estrellasHTML += `<i data-lucide="star" class="h-3 w-3 ${color}"></i>`;
-        }
-
-        const card = document.createElement('div');
-        card.className = "bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer";
-        card.setAttribute('onclick', `mostrarPantalla2(${evento.ID_EVENTO})`);
-
-        card.innerHTML = `
-            <div class="relative h-40">
-                <img src="${evento.URL_IMAGEN}" alt="${evento.TITULO}" class="w-full h-full object-cover">
-                <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
-                    ${evento.CATEGORIA}
-                </span>
+    // ... (Aquí va todo tu código anterior de generación de la tarjeta y estrellas) ...
+    // (Asegúrate de mantener el bloque de estrellasHTML y card.innerHTML que ya tenemos)
+    
+    // --- COPIA AQUÍ EL BLOQUE DE GENERACIÓN DE TARJETA QUE YA TENÍAS ---
+    const precioTexto = evento.PRECIO_MIN === 0 ? "Gratis" : `${evento.PRECIO_MIN.toFixed(2)} €`;
+    let estrellasHTML = '';
+    for (let i = 1; i <= 5; i++) {
+        const color = i <= evento.RATING_ESTRELLAS ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300';
+        estrellasHTML += `<i data-lucide="star" class="h-3 w-3 ${color}"></i>`;
+    }
+    const card = document.createElement('div');
+    card.className = "bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer";
+    card.setAttribute('onclick', `mostrarPantalla2(${evento.ID_EVENTO})`);
+    card.innerHTML = `
+        <div class="relative h-40">
+            <img src="${evento.URL_IMAGEN}" alt="${evento.TITULO}" class="w-full h-full object-cover">
+            <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">${evento.CATEGORIA}</span>
+        </div>
+        <div class="p-4">
+            <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">${evento.TITULO}</h3>
+            <div class="flex items-center space-x-1 mb-2">
+                <div class="flex">${estrellasHTML}</div>
+                <span class="text-xs text-gray-400">(${evento.NUM_RESEÑAS})</span>
             </div>
-            <div class="p-4">
-                <div class="flex items-center justify-between mb-1">
-                    <h3 class="text-xl font-bold text-gray-900 truncate">${evento.TITULO}</h3>
-                </div>
-                
-                <div class="flex items-center space-x-1 mb-2">
-                    <div class="flex">${estrellasHTML}</div>
-                    <span class="text-xs text-gray-400">(${evento.NUM_RESEÑAS})</span>
-                </div>
-
-                <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
-                    <i data-lucide="map-pin" class="h-4 w-4"></i>
-                    <span>${evento.UBICACION_CIUDAD} • ${evento.FECHA_EVENTO}</span>
-                </p>
-                <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                    <span class="text-xl font-extrabold text-green-600">${precioTexto}</span>
-                    <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
-                        Detalles
-                    </button>
-                </div>
+            <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                <i data-lucide="map-pin" class="h-4 w-4"></i>
+                <span>${evento.UBICACION_CIUDAD} • ${evento.FECHA_EVENTO}</span>
+            </p>
+            <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                <span class="text-xl font-extrabold text-green-600">${precioTexto}</span>
+                <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">Detalles</button>
             </div>
-        `;
-        container.appendChild(card);
-    });
+        </div>
+    `;
+    container.appendChild(card);
+});
 
-    if (window.lucide) lucide.createIcons();
+// --- LÓGICA PARA OCULTAR EL BOTÓN ---
+const btnCargarMas = document.getElementById('btn-cargar-mas');
+if (btnCargarMas) {
+    // Si los eventos mostrados son iguales o mayores al total de la lista, ocultamos botón
+    if (limite.length >= datosAMostrar.length) {
+        btnCargarMas.classList.add('hidden');
+    } else {
+        btnCargarMas.classList.remove('hidden');
+    }
+}
+
+if (window.lucide) lucide.createIcons();
 }
 /*************/
 /** RF1.09  */
@@ -241,6 +245,21 @@ function filtrarEventosInicio() {
         cargarTarjetas(filteredEvents);
     }
 }
+
+/*************/
+/** RF1.03  */
+/*CARGAR MAS EVENTOS*/
+/*************/
+function cargarMasEventos() {
+    // 1. Aumentamos la página actual
+    currentPage++;
+    
+    // 2. Volvemos a renderizar las tarjetas
+    // Como cargarTarjetas usa slice(0, (currentPage + 1) * eventsPerPage),
+    // ahora mostrará más elementos.
+    cargarTarjetas();
+}
+
 
 /**---FIN---- */
 
