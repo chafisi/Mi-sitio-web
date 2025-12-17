@@ -274,137 +274,137 @@
     <!-- ---------------------------------------------------- -->
     <div id="pantalla3" class="screen hidden bg-white">
 
-        <header class="fixed top-0 left-0 right-0 bg-white shadow-md z-20">
-            <div class="max-w-4xl mx-auto p-4 pb-2 flex flex-col">
-                <div class="flex items-center text-sm mb-2 text-gray-500">
-                    <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200 font-medium">Inicio</a>
-                    <i data-lucide="chevron-right" class="h-4 w-4 mx-1"></i>
-                    <span class="font-semibold text-gray-800">Filtros</span>
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <h1 class="text-2xl font-bold text-gray-800">Filtros Avanzados</h1>
-                    <button onclick="mostrarPantalla1()" class="text-gray-500 hover:text-gray-800 transition duration-200 p-1">
-                        <i data-lucide="x" class="h-6 w-6"></i>
-                    </button>
-                </div>
+    <header class="fixed top-0 left-0 right-0 bg-white shadow-md z-20">
+        <div class="max-w-4xl mx-auto p-4 pb-2 flex flex-col">
+            <div class="flex items-center text-sm mb-2 text-gray-500">
+                <a href="javascript:void(0)" onclick="mostrarPantalla1()" class="hover:text-indigo-600 transition duration-200 font-medium">Inicio</a>
+                <i data-lucide="chevron-right" class="h-4 w-4 mx-1"></i>
+                <span class="font-semibold text-gray-800">Filtros</span>
             </div>
-        </header>
 
-        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow overflow-y-auto" style="padding-top: 100px; padding-bottom: 100px;">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                <section class="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2 border-b pb-2">
-                        <i data-lucide="list-checks" class="h-5 w-5 text-cyan-500"></i>
-                        <span>Categorías</span>
-                    </h2>
-                    <div id="filter-categories-container" class="grid grid-cols-2 gap-2">
-                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" name="f-categoria" value="Música" class="w-4 h-4 text-indigo-600 rounded">
-                            <span class="text-sm">Música</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" name="f-categoria" value="Monólogos" class="w-4 h-4 text-indigo-600 rounded">
-                            <span class="text-sm">Monólogos</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" name="f-categoria" value="Musicales" class="w-4 h-4 text-indigo-600 rounded">
-                            <span class="text-sm">Musicales</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" name="f-categoria" value="Festivales" class="w-4 h-4 text-indigo-600 rounded">
-                            <span class="text-sm">Festivales</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" name="f-categoria" value="Motor" class="w-4 h-4 text-indigo-600 rounded">
-                            <span class="text-sm">Motor</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" name="f-categoria" value="Arte" class="w-4 h-4 text-indigo-600 rounded">
-                            <span class="text-sm">Arte</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" name="f-categoria" value="Comedia" class="w-4 h-4 text-indigo-600 rounded">
-                            <span class="text-sm">Comedia</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" name="f-categoria" value="Ópera" class="w-4 h-4 text-indigo-600 rounded">
-                            <span class="text-sm">Ópera</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" name="f-categoria" value="Deportes" class="w-4 h-4 text-indigo-600 rounded">
-                            <span class="text-sm">Deportes</span>
-                        </label>
-                        <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
-                            <input type="checkbox" name="f-categoria" value="Conferencias" class="w-4 h-4 text-indigo-600 rounded">
-                            <span class="text-sm">Conferencias</span>
-                        </label>
-                    </div>
-                </section>
-
-                <section class="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2 border-b pb-2">
-                        <i data-lucide="route" class="h-5 w-5 text-orange-500"></i>
-                        <span>Distancia Máxima</span>
-                    </h2>
-                    <select id="f-distancia" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <option value="9999" selected>Sin límite</option>
-                        <option value="10">10 km</option>
-                        <option value="20">20 km</option>
-                        <option value="50">50 km</option>
-                        <option value="100">100 km</option>
-                        <option value="200">200 km</option>
-                        <option value="500">500 km</option>
-                    </select>
-                    <p class="text-[10px] text-gray-400 mt-2 italic">* La distancia se calcula desde tu posición GPS actual.</p>
-                </section>
-
-                <section class="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center space-x-2 border-b pb-2">
-                        <i data-lucide="euro" class="h-5 w-5 text-indigo-500"></i>
-                        <span>Presupuesto Máximo</span>
-                    </h2>
-                    <div class="flex justify-between items-center mb-4 px-2">
-                        <span class="text-sm font-bold text-gray-400 uppercase">0 €</span>
-                        <div class="bg-indigo-100 px-4 py-1 rounded-full">
-                            <span id="f-precio-valor" class="text-xl font-black text-indigo-600">50 €</span>
-                        </div>
-                    </div>
-                    <input type="range" id="f-precio-range" min="0" max="200" step="5" value="50" 
-                        oninput="document.getElementById('f-precio-valor').innerText = this.value + ' €'"
-                        class="w-full h-2 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600">
-                </section>
-
-                <section class="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2 border-b pb-2">
-                        <i data-lucide="calendar-check" class="h-5 w-5 text-green-500"></i>
-                        <span>¿Cuándo?</span>
-                    </h2>
-                    <select id="f-fecha" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <option value="todas" selected>Cualquier fecha</option>
-                        <option value="hoy">Hoy</option>
-                        <option value="semana">Esta semana</option>
-                        <option value="finsemana">Este fin de semana</option>
-                        <option value="mes">Este mes</option>
-                    </select>
-                </section>
-
-            </div>
-        </main>
-
-        <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-20 p-4">
-            <div class="max-w-4xl mx-auto flex space-x-4">
-                <button onclick="limpiarFiltros()" class="w-1/3 border-2 border-gray-200 text-gray-500 font-bold py-3 rounded-xl transition hover:bg-gray-50">
-                    Limpiar
-                </button>
-                <button onclick="aplicarFiltros()" class="w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl transition shadow-lg shadow-indigo-500/50 text-lg">
-                    Ver resultados
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-gray-800">Filtros Avanzados</h1>
+                <button onclick="mostrarPantalla1()" class="text-gray-500 hover:text-gray-800 transition duration-200 p-1">
+                    <i data-lucide="x" class="h-6 w-6"></i>
                 </button>
             </div>
-        </footer>
-    </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow overflow-y-auto" style="padding-top: 100px; padding-bottom: 100px;">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <section class="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2 border-b pb-2">
+                    <i data-lucide="list-checks" class="h-5 w-5 text-cyan-500"></i>
+                    <span>Categorías</span>
+                </h2>
+                <div id="filter-categories-container" class="grid grid-cols-2 gap-2">
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="f-categoria" value="Música" class="w-4 h-4 text-indigo-600 rounded">
+                        <span class="text-sm">Música</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="f-categoria" value="Monólogos" class="w-4 h-4 text-indigo-600 rounded">
+                        <span class="text-sm">Monólogos</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="f-categoria" value="Musicales" class="w-4 h-4 text-indigo-600 rounded">
+                        <span class="text-sm">Musicales</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="f-categoria" value="Festivales" class="w-4 h-4 text-indigo-600 rounded">
+                        <span class="text-sm">Festivales</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="f-categoria" value="Motor" class="w-4 h-4 text-indigo-600 rounded">
+                        <span class="text-sm">Motor</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="f-categoria" value="Arte" class="w-4 h-4 text-indigo-600 rounded">
+                        <span class="text-sm">Arte</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="f-categoria" value="Comedia" class="w-4 h-4 text-indigo-600 rounded">
+                        <span class="text-sm">Comedia</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="f-categoria" value="Ópera" class="w-4 h-4 text-indigo-600 rounded">
+                        <span class="text-sm">Ópera</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="f-categoria" value="Deportes" class="w-4 h-4 text-indigo-600 rounded">
+                        <span class="text-sm">Deportes</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="f-categoria" value="Conferencias" class="w-4 h-4 text-indigo-600 rounded">
+                        <span class="text-sm">Conferencias</span>
+                    </label>
+                </div>
+            </section>
+
+            <section class="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2 border-b pb-2">
+                    <i data-lucide="route" class="h-5 w-5 text-orange-500"></i>
+                    <span>Distancia Máxima</span>
+                </h2>
+                <select id="f-distancia" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="9999" selected>Sin límite</option>
+                    <option value="10">10 km</option>
+                    <option value="20">20 km</option>
+                    <option value="50">50 km</option>
+                    <option value="100">100 km</option>
+                    <option value="200">200 km</option>
+                    <option value="500">500 km</option>
+                </select>
+                <p class="text-[10px] text-gray-400 mt-2 italic">* La distancia se calcula desde tu posición GPS actual.</p>
+            </section>
+
+            <section class="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center space-x-2 border-b pb-2">
+                    <i data-lucide="euro" class="h-5 w-5 text-indigo-500"></i>
+                    <span>Presupuesto Máximo</span>
+                </h2>
+                <div class="flex justify-between items-center mb-4 px-2">
+                    <span class="text-sm font-bold text-gray-400 uppercase">0 €</span>
+                    <div class="bg-indigo-100 px-4 py-1 rounded-full">
+                        <span id="f-precio-valor" class="text-xl font-black text-indigo-600">50 €</span>
+                    </div>
+                </div>
+                <input type="range" id="f-precio-range" min="0" max="200" step="5" value="50" 
+                    oninput="document.getElementById('f-precio-valor').innerText = this.value + ' €'"
+                    class="w-full h-2 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+            </section>
+
+            <section class="p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2 border-b pb-2">
+                    <i data-lucide="calendar-check" class="h-5 w-5 text-green-500"></i>
+                    <span>¿Cuándo?</span>
+                </h2>
+                <select id="f-fecha" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="todas" selected>Cualquier fecha</option>
+                    <option value="hoy">Hoy</option>
+                    <option value="semana">Esta semana</option>
+                    <option value="finsemana">Este fin de semana</option>
+                    <option value="mes">Este mes</option>
+                </select>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl z-20 p-4">
+        <div class="max-w-4xl mx-auto flex space-x-4">
+            <button onclick="limpiarFiltros()" class="w-1/3 border-2 border-gray-200 text-gray-500 font-bold py-3 rounded-xl transition hover:bg-gray-50">
+                Limpiar
+            </button>
+            <button onclick="aplicarFiltros()" class="w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl transition shadow-lg shadow-indigo-500/50 text-lg">
+                Ver resultados
+            </button>
+        </div>
+    </footer>
+</div>
 
 
     <!-- ---------------------------------------------------- -->

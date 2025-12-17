@@ -2,7 +2,7 @@
     <!-- LÓGICA DE NAVEGACIÓN (JAVASCRIPT) -->
     <!-- ---------------------------------------------------- -->*/
     
-alert("v12.2");
+alert("v13");
 console.log("Prueba de consola");
 
     // Inicializar Iconos Lucide
@@ -155,6 +155,15 @@ function cargarTarjetas(datosAMostrar = filteredEvents) {
     if (!container) return;
 
     container.innerHTML = ''; 
+
+    //V13 mostrar si no hay resultados
+    if (datosAMostrar.length === 0) {
+        contenedor.innerHTML = `
+            <div class="col-span-full py-12 text-center">
+                <p class="text-gray-400">No se han encontrado eventos con esos filtros.</p>
+            </div>`;
+        return;
+    }
 
     // Calculamos cuántos eventos mostrar: (0 hasta página_actual + 1 * eventos_por_página)
     const maxEventos = (currentPage + 1) * eventsPerPage;
@@ -622,8 +631,64 @@ function toggleFavoritoAgenda(id) {
     }
 }
 
+/**************************/
+/** PANTALLA 3 - FILTROS  */
+/*************************/
+/****RF 3.05 a 3.09 FILTRADO Y APLICAR A PANTALLA 1****/
+function aplicarFiltros() {
+    // 1. Recoger valores de los inputs de la Pantalla 3
+    const categoriasSeleccionadas = Array.from(document.querySelectorAll('input[name="f-categoria"]:checked'))
+                                         .map(cb => cb.value);
+    
+    const precioMaximo = parseFloat(document.getElementById('f-precio-range').value);
+    const distanciaMaxima = parseFloat(document.getElementById('f-distancia').value);
+    const fechaFiltro = document.getElementById('f-fecha').value;
 
+    // 2. Filtrar el array maestro eventsData
+    const eventosFiltrados = eventsData.filter(evento => {
+        
+        // Filtro Categoría: Si no hay nada marcado, pasan todos. Si hay, debe coincidir.
+        const cumpleCategoria = categoriasSeleccionadas.length === 0 || 
+                                categoriasSeleccionadas.includes(evento.CATEGORIA);
 
+        // Filtro Precio: El precio mínimo del evento debe ser menor o igual al elegido
+        const cumplePrecio = evento.PRECIO_MIN <= precioMaximo;
+
+        // Filtro Distancia: Comprobamos contra la columna DISTANCIA_KM (asegúrate que existe en tus datos)
+        const cumpleDistancia = (evento.DISTANCIA_KM || 0) <= distanciaMaxima;
+
+        // Filtro Fecha (Simulación simple por ahora)
+        let cumpleFecha = true;
+        // Aquí podrías añadir lógica real comparando fechas si lo necesitas
+
+        return cumpleCategoria && cumplePrecio && cumpleDistancia && cumpleFecha;
+    });
+
+    // 3. Ejecutar el cambio visual
+    // Llamamos a tu función de carga con los nuevos datos
+    cargarTarjetas(eventosFiltrados);
+
+    // 4. Volver a la pantalla principal
+    mostrarPantalla('pantalla1');
+    
+    // Feedback opcional en consola
+    console.log(`Filtros aplicados. Mostrando ${eventosFiltrados.length} eventos.`);
+}
+/****RF 3.04 LIMPIAR FILTROS****/
+function limpiarFiltros() {
+    // Resetear checkboxes
+    document.querySelectorAll('input[name="f-categoria"]').forEach(cb => cb.checked = false);
+    
+    // Resetear Selects e Inputs
+    document.getElementById('f-distancia').value = "9999";
+    document.getElementById('f-precio-range').value = "50";
+    document.getElementById('f-precio-valor').innerText = "50 €";
+    document.getElementById('f-fecha').value = "todas";
+
+    // Mostramos todos los eventos de nuevo
+    cargarTarjetas(eventsData);
+    mostrarPantalla('pantalla1');
+}
 
 
 /**---FIN---- */
