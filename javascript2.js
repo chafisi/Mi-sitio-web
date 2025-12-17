@@ -135,6 +135,7 @@ async function cargarEventos() {
     cargarTarjetas();
 }
 
+/********FUNCIONES PARA LA PANTALLA 1******** */
 function cargarTarjetas() {
     //Se definió la clase event-list que es el listado de eventos de PAN1 donde están las tarjetas y ahora las vamos a cargar conectando con el modelo de datos
     const container = document.getElementById('events-list');
@@ -183,6 +184,55 @@ function cargarTarjetas() {
         lucide.createIcons();
     }
 }
+/*************/
+/** RF1.09  */
+/*CAPTURAR LA ESCRITURA DEL INPUT Y DESPUES FILTRAR*/
+/*************/
+// Debounce para la búsqueda rápida (RF 1.08)
+let searchTimeout;
+function activarEscritura() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        filtrarEventosInicio();
+    }, 300); // 300ms de retardo
+}
+
+// Filtra y ordena los eventos según la pestaña activa y la búsqueda
+function filtrarEventosInicio() {
+    
+    const query = document.getElementById('search-input').value.toLowerCase();
+    //const listTitle = document.getElementById('list-title');
+
+    // 1. Filtrado por Búsqueda (RF 1.08)
+    let tempEvents = eventsData.filter(event => {
+        const searchMatch = event.TITULO.toLowerCase().includes(query) ||
+                            event.CATEGORIA.toLowerCase().includes(query) ||
+                            event.UBICACION_CIUDAD.toLowerCase().includes(query);
+        return searchMatch;
+    });
+    
+    // 2. Ordenación y Título según Tab Activa (RF 1.10, 1.11)
+    if (activeTab === 'valorados') {
+        // RF 1.11: Ordenar por RATING_ESTRELLAS
+        tempEvents.sort((a, b) => b.RATING_ESTRELLAS - a.RATING_ESTRELLAS);
+        listTitle.textContent = "Mejor Valorados";
+    } else if (activeTab === 'cercanos') {
+        // RF 1.10: Simulación de ordenación por Cercanía (usaremos ID_EVENTO como proxy)
+        tempEvents.sort((a, b) => a.ID_EVENTO - b.ID_EVENTO); 
+        listTitle.textContent = "Eventos Cercanos";
+    } else {
+            // Default: Próximos Eventos (Ordenado por fecha)
+            tempEvents.sort((a, b) => new Date(a.FECHA_EVENTO) - new Date(b.FECHA_EVENTO));
+            listTitle.textContent = "Próximos Eventos";
+    }
+
+    filteredEvents = tempEvents;
+    appendEventsToDOM(filteredEvents, true); // Renderiza desde la primera página
+}
+
+
+
+/**---FIN---- */
 
 // --- DISPARADOR DE INICIO ---
 window.onload = function() {
