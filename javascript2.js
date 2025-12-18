@@ -612,24 +612,62 @@ function cargarAgenda() {
 
     // 4. Renderizar Comprados (RF 4.07)
     listaComprados.innerHTML = comprados.length === 0 
-        ? '<p class="text-gray-400 text-center py-10">No tienes entradas aún.</p>' 
-        : comprados.map(ev => `
-            <div class="bg-white rounded-xl shadow-lg border border-indigo-100 p-4">
-                <div class="flex justify-between items-start mb-3 border-b pb-3">
-                    <div>
-                        <span class="text-[10px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full uppercase tracking-widest">CONFIRMADO</span>
-                        <h3 class="text-xl font-extrabold text-gray-900 mt-1">${ev.TITULO}</h3>
-                        <p class="text-sm text-gray-500">${ev.UBICACION_CIUDAD} • ${ev.FECHA_EVENTO}</p>
+        ? '<div class="col-span-full py-20 text-center"><p class="text-gray-400">No tienes entradas aún.</p></div>' 
+            : comprados.map(ev => `
+            <div class="relative bg-white rounded-2xl shadow-xl border border-gray-100 flex flex-col md:flex-row overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 mb-6">
+                
+                <div class="absolute left-[-10px] top-1/2 -translate-y-1/2 w-5 h-5 bg-gray-50 rounded-full border-r border-gray-200 hidden md:block"></div>
+                <div class="absolute right-[-10px] top-1/2 -translate-y-1/2 w-5 h-5 bg-gray-50 rounded-full border-l border-gray-200 hidden md:block"></div>
+
+                <div class="flex-grow p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-tighter w-fit mb-2">
+                                Ticket Confirmado • #${ev.ID_EVENTO}
+                            </span>
+                            <h3 class="text-2xl font-black text-slate-900 leading-tight">${ev.TITULO}</h3>
+                        </div>
+                        <button class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors">
+                            <i data-lucide="share-2" class="h-5 w-5"></i>
+                        </button>
                     </div>
-                    <button class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition">
-                        <i data-lucide="share-2" class="h-5 w-5"></i>
-                    </button>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                        <div class="flex items-center text-slate-600">
+                            <div class="p-2 bg-slate-50 rounded-lg mr-3">
+                                <i data-lucide="calendar" class="h-4 w-4 text-indigo-500"></i>
+                            </div>
+                            <span class="text-sm font-bold">${ev.FECHA_EVENTO}</span>
+                        </div>
+                        <div class="flex items-center text-slate-600">
+                            <div class="p-2 bg-slate-50 rounded-lg mr-3">
+                                <i data-lucide="map-pin" class="h-4 w-4 text-indigo-500"></i>
+                            </div>
+                            <span class="text-sm font-bold truncate">${ev.UBICACION_CIUDAD}</span>
+                        </div>
+                    </div>
+                    
+                    <p class="mt-4 text-xs font-medium text-slate-400 italic">
+                        * Presenta el código QR en el acceso al recinto.
+                    </p>
                 </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium text-gray-600">${ev.RESERVADO} entrada(s) reservada(s)</span>
-                    <button onclick="showQrModal()" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg transition shadow-md flex items-center space-x-2">
+
+                <div class="hidden md:flex flex-col justify-between py-4">
+                    <div class="w-[2px] h-full border-l-2 border-dashed border-slate-200 ml-[-1px]"></div>
+                </div>
+
+                <div class="bg-slate-900 p-6 flex flex-col items-center justify-center md:min-w-[220px] text-white">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">${ev.RESERVADO} ENTRADA(S)</span>
+                    
+                    <div class="flex items-end gap-[2px] h-10 mb-4 opacity-80 group-hover:opacity-100 transition-opacity">
+                        ${Array(20).fill(0).map((_, i) => `
+                            <div class="bg-white w-[${i % 3 === 0 ? '3px' : '1px'}] h-${(i % 2 === 0 ? 'full' : '3/4')}"></div>
+                        `).join('')}
+                    </div>
+
+                    <button onclick="showQrModal()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-black py-3 px-6 rounded-xl transition-all shadow-lg flex items-center justify-center space-x-2 transform active:scale-95">
                         <i data-lucide="qr-code" class="h-5 w-5"></i>
-                        <span>Ver QR</span>
+                        <span>ACCEDER</span>
                     </button>
                 </div>
             </div>

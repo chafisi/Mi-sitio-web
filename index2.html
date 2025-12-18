@@ -87,6 +87,29 @@
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
             border: none;
         }
+        /*V18 Crear los estilos para las entradas*/
+        /* Efecto de recorte lateral en la entrada */
+        .ticket-cut {
+            position: relative;
+        }
+        .ticket-cut::before, .ticket-cut::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #f3f4f6; /* Color del fondo de la pantalla */
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+        .ticket-cut::before { left: -10px; } /* Muesca izquierda */
+        .ticket-cut::after { right: -10px; } /* Muesca derecha */
+
+        /* Línea punteada de recorte */
+        .ticket-line {
+            border-left: 2px dashed #e5e7eb;
+        }
 
     </style>
         <!-- Iconos Lucide (simulando los del mockup) -->
