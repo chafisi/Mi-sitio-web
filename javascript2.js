@@ -813,29 +813,6 @@ function limpiarFiltros() {
     mostrarPantalla('pantalla1');
 }
 
-/*V19 MODO OSCURO LÓGICA*/
-function toggleDarkMode() {
-    const html = document.documentElement;
-    
-    if (html.classList.contains('dark')) {
-        html.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-    } else {
-        html.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-    }
-    // Refrescar iconos de Lucide para el cambio de sol/luna
-    if (window.lucide) lucide.createIcons();
-}
-
-// Al cargar la página, aplicar el tema guardado
-(function aplicarTemaAlInicio() {
-    const temaGuardado = localStorage.getItem('theme');
-    if (temaGuardado === 'dark') {
-        document.documentElement.classList.add('dark');
-    }
-})();
-
 
 /**---FIN---- */
 
