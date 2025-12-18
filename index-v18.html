@@ -115,68 +115,53 @@
         <!-- Iconos Lucide (simulando los del mockup) -->
         <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-
-<body class="min-h-screen bg-gray-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+<body class="min-h-screen">
     <!-- |---|---------------------------------------------------- -->
     <!-- | 0 | MENU HAMBURGUESA V14 -->
     <!-- |---| ---------------------------------------------------- -->
     <div id="menu-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity duration-300 opacity-0" onclick="cerrarMenuHamburguesa()"></div>
 
-        <div id="side-menu" class="fixed top-0 left-0 h-full w-72 bg-white dark:bg-slate-900 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-2xl flex flex-col">
+        <div id="side-menu" class="fixed top-0 left-0 h-full w-72 bg-white z-50 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-2xl flex flex-col">
             
-            <div class="p-6 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-slate-900 text-white">
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between bg-slate-900 text-white">
                 <div class="flex items-center space-x-3">
+
                     <div>
                         <h2 class="text-xl font-black tracking-tight">Ocio<span class="text-cyan-400">Plus</span></h2>
                         <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Menú Principal</p>
                     </div>
                 </div>
-                <button onclick="toggleDarkMode()" class="flex items-center space-x-3 p-3 w-full rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                    <div id="dark-mode-icon-container">
-                        <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
-                        <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
-                    </div>
-                    <span class="font-medium">Modo <span class="dark:hidden">Oscuro</span><span class="hidden dark:inline">Claro</span></span>
-                </button>
                 <button onclick="cerrarMenuHamburguesa()" class="p-2 hover:bg-slate-800 rounded-full transition duration-200">
                     <i data-lucide="x" class="w-6 h-6 text-slate-400"></i>
                 </button>
             </div>
 
             <nav class="flex-grow p-4 space-y-2">
-                <button onclick="toggleDarkMode()" class="flex items-center space-x-3 p-3 w-full rounded-xl text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition group">
-                    <i data-lucide="moon" class="w-5 h-5 dark:hidden"></i>
-                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-yellow-400"></i>
-                    <span class="font-semibold">Cambiar aspecto</span>
-                </button>
-
-                <div class="border-t border-gray-100 dark:border-slate-800 my-4"></div>
-
-                <a href="javascript:void(0)" onclick="navegarDesdeMenu('pantalla1')" class="flex items-center space-x-3 p-3 rounded-xl text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition group">
+                <a href="javascript:void(0)" onclick="navegarDesdeMenu('pantalla1')" class="flex items-center space-x-3 p-3 rounded-xl text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition group">
                     <i data-lucide="home" class="w-5 h-5 group-hover:scale-110 transition"></i>
                     <span class="font-semibold">Inicio</span>
                 </a>
                 
-                <a href="javascript:void(0)" onclick="navegarDesdeMenu('pantalla3')" class="flex items-center space-x-3 p-3 rounded-xl text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition group">
+                <a href="javascript:void(0)" onclick="navegarDesdeMenu('pantalla3')" class="flex items-center space-x-3 p-3 rounded-xl text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition group">
                     <i data-lucide="search" class="w-5 h-5 group-hover:scale-110 transition"></i>
                     <span class="font-semibold">Búsqueda por filtros</span>
                 </a>
 
-                <a href="javascript:void(0)" onclick="navegarDesdeMenu('pantalla4')" class="flex items-center space-x-3 p-3 rounded-xl text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition group">
+                <a href="javascript:void(0)" onclick="navegarDesdeMenu('pantalla4')" class="flex items-center space-x-3 p-3 rounded-xl text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition group">
                     <i data-lucide="user" class="w-5 h-5 group-hover:scale-110 transition"></i>
                     <span class="font-semibold">Perfil</span>
                 </a>
 
-                <div class="border-t border-gray-100 dark:border-slate-800 my-4"></div>
+                <div class="border-t border-gray-100 my-4"></div>
 
-                <a href="mailto:soporte@ocioplus.com" class="flex items-center space-x-3 p-3 rounded-xl text-gray-700 dark:text-slate-300 hover:bg-green-50 dark:hover:bg-green-900/30 hover:text-green-600 dark:hover:text-green-400 transition group">
+                <a href="mailto:soporte@ocioplus.com" class="flex items-center space-x-3 p-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-600 transition group">
                     <i data-lucide="mail" class="w-5 h-5 group-hover:scale-110 transition"></i>
                     <span class="font-semibold">Contacta con nosotros</span>
                 </a>
             </nav>
 
-            <div class="p-6 border-t border-gray-100 dark:border-slate-800 text-center">
-                <p class="text-xs text-gray-400 dark:text-slate-500">Versión 1.0.4 - 2025</p>
+            <div class="p-6 border-t border-gray-100 text-center">
+                <p class="text-xs text-gray-400">Versión 1.0.4 - 2025</p>
             </div>
     </div>
 
@@ -185,14 +170,14 @@
     <!-- |---| ---------------------------------------------------- -->
     <div id="pantalla1" class="screen">
 
-        <header id="main-header" class="header-fixed fixed top-0 left-0 w-full z-10 bg-white dark:bg-slate-900 p-3 border-b dark:border-slate-800">
+        <header id="main-header" class="header-fixed fixed top-0 left-0 w-full z-10 bg-white p-3">
             <div id="pan1-header" class="max-w-xl mx-auto">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2">
-                        <button onclick="mostrarMenuHamburguesa()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition">
-                            <i data-lucide="menu" class="w-6 h-6 text-gray-700 dark:text-slate-300"></i>
+                        <button onclick="mostrarMenuHamburguesa()" class="p-2 rounded-full hover:bg-gray-100">
+                            <i data-lucide="menu" class="w-6 h-6 text-gray-700"></i>
                         </button>
-                        <h1 class="text-2xl font-extrabold text-cyan-700 dark:text-cyan-500">
+                        <h1 class="text-2xl font-extrabold text-cyan-700">
                             OcioPlus
                         </h1>
                     <!--
@@ -207,30 +192,68 @@
                 <!-- Área de Búsqueda (RF 1.08, 1.09) -->
                 <div class="max-w-xl mx-auto mt-2 flex space-x-2">
                     <div class="relative flex-grow">
-                        <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500"></i>
-                        <input type="text" id="search-input" oninput="filtrarEventosInicio()" placeholder="Buscar eventos..." 
-                            class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-full focus:ring-cyan-500 focus:border-cyan-500 shadow-sm transition">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                        <input type="text" id="search-input" oninput="filtrarEventosInicio()" placeholder="Buscar eventos..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-cyan-500 focus:border-cyan-500 shadow-sm transition">
                     </div>
-                    <button onclick="mostrarPantalla3()" class="p-3 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition shadow-lg shadow-cyan-500/30">
+                    <button onclick="mostrarPantalla3()" class="p-3 bg-cyan-600 text-white rounded-full hover:bg-cyan-700 transition">
                         <i data-lucide="sliders" class="w-5 h-5"></i>
                     </button>
                 </div>
             </div>
             
+            <!-- Header de la Pantalla 2 (Detalle) - Inicialmente Oculto y actualmente sin uso-->
+            <div id="pan2-header" class="hidden flex items-center justify-between max-w-xl mx-auto">
+                <button onclick="handleNavigation('PAN1')" class="p-2 rounded-full hover:bg-gray-100">
+                    <i data-lucide="arrow-left" class="w-6 h-6 text-gray-700"></i>
+                </button>
+                <h1 class="text-xl font-bold text-gray-800 truncate" id="pan2-title-header">Detalle del Evento</h1>
+                <button id="pan2-favorite-button" onclick="toggleFavorite(currentEvent ? currentEvent.ID_EVENTO : null)" class="p-2 rounded-full hover:bg-gray-100">
+                    <!-- Icono de Corazón se actualiza con JS -->
+                    <i data-lucide="heart" class="w-6 h-6 text-gray-700"></i> 
+                </button>
+            </div>
         </header>
 
         <!-- 2. BODY PRINCIPAL (LISTADO DE EVENTOS) -->
-        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">            <!-- El aumento del padding en CSS asegura que este título sea visible -->
-            <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-6" id="list-title">Próximos Eventos</h2>
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
+            <!-- El aumento del padding en CSS asegura que este título sea visible -->
+            <h2 class="text-3xl font-bold text-gray-800 mb-6" id="list-title">Próximos Eventos</h2>
+
+            <!-- Contenedor Grid Responsivo (Grid de 1, 2 o 3 columnas) -->
             <div id="events-list" class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                </div>
-            <!-- aqui se cargan las tarjetas, antes estaban fijas -->
-        
+
+                
+                <!-- Las tarjetas ahora tienen un manejador de clic para ir a PAN2 -->
+                <!-- EJEMPLO 1: Concierto Rock -->
+                <!--<div onclick="mostrarPantalla2()" class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transform hover:scale-[1.02] transition duration-300 ease-out cursor-pointer">
+                    <div class="relative h-40">
+                        <img src="https://placehold.co/600x400/3b82f6/ffffff?text=CONCIERTO+ROCK" alt="" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full">Música</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">Concierto Rock</h3>
+                        <p class="text-sm text-gray-500 mb-2 flex items-center space-x-1">
+                            <i data-lucide="map-pin" class="h-4 w-4"></i>
+                            <span>Madrid, 15 NOV • 20:00 h</span>
+                        </p>
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                            <span class="text-xl font-extrabold text-green-600">25.00 €</span>
+                            <button class="bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-300">
+                                Detalles
+                            </button>
+                        </div>
+                    </div>
+                </div>-->
+
+                
+            </div>
+
+            <!-- Botón Cargar Más -->
             <div class="flex justify-center my-8">
                 <button 
                     id="btn-cargar-mas"
                     onclick="cargarMasEventos()"
-                    class="bg-gray-200 dark:bg-slate-800 hover:bg-gray-300 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 font-semibold py-2 px-6 rounded-full transition duration-300 shadow-sm">
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-full transition duration-300 shadow-sm">
                 Cargar más eventos
                 </button>
             </div>
@@ -238,25 +261,25 @@
         </main>
 
         <!-- 3. FOOTER FIJO (TAB BAR INFERIOR MODERNO) -->
-        <footer class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 shadow-[0_-5px_20px_rgba(0,0,0,0.1)] dark:shadow-[0_-5px_20px_rgba(0,0,0,0.5)] z-20 rounded-t-3xl border-t border-gray-100 dark:border-slate-800">
+        <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-5px_20px_rgba(0,0,0,0,0.1)] z-20 rounded-t-3xl border-t border-gray-100">
             <nav class="max-w-4xl mx-auto flex justify-around items-end h-20 pb-2 px-4">
 
-                <a href="javascript:void(0)" id="nav-cercanos" class="nav-item flex flex-col items-center text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-cyan-400 group" onclick="setActiveTab('cercanos'); mostrarPantalla1();">
-                    <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 dark:group-hover:bg-slate-800 transition duration-300 flex items-center justify-center">
+                <a href="javascript:void(0)" id="nav-cercanos" class="nav-item flex flex-col items-center text-gray-500 hover:text-indigo-600 group" onclick="setActiveTab('cercanos'); mostrarPantalla1();">
+                    <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
                         <i data-lucide="map-pin" class="h-6 w-6"></i>
                     </div>
                     <span class="text-[10px] mt-1 transition duration-300 group-hover:font-semibold">Cercanos</span>
                 </a>
 
-                <a href="javascript:void(0)" id="nav-valorados" class="nav-item flex flex-col items-center text-gray-500 dark:text-slate-400 group" onclick="setActiveTab('valorados'); mostrarPantalla1();">
-                    <div class="icon-bg w-14 h-14 bg-indigo-600 dark:bg-cyan-600 rounded-full shadow-lg transform -translate-y-4 transition duration-300 flex items-center justify-center border-4 border-white dark:border-slate-900">
+                <a href="javascript:void(0)" id="nav-valorados" class="nav-item flex flex-col items-center text-gray-500 group" onclick="setActiveTab('valorados'); mostrarPantalla1();">
+                    <div class="icon-bg w-14 h-14 bg-indigo-600 rounded-full shadow-lg transform -translate-y-4 transition duration-300 flex items-center justify-center border-4 border-white">
                         <i data-lucide="star" class="h-8 w-8 text-white fill-white"></i>
                     </div>
-                    <span class="text-[10px] -mt-3 mb-1 transition duration-300 font-bold text-indigo-600 dark:text-cyan-400">Valorados</span>
+                    <span class="text-[10px] -mt-3 mb-1 transition duration-300 font-bold text-indigo-600">Valorados</span>
                 </a>
 
-                <a href="javascript:void(0)" id="nav-perfil" class="nav-item flex flex-col items-center text-gray-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-cyan-400 group" onclick="mostrarPantalla('pantalla4')">
-                    <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 dark:group-hover:bg-slate-800 transition duration-300 flex items-center justify-center">
+                <a href="javascript:void(0)" id="nav-perfil" class="nav-item flex flex-col items-center text-gray-500 hover:text-indigo-600 group" onclick="mostrarPantalla('pantalla4')">
+                    <div class="icon-bg w-10 h-10 rounded-full group-hover:bg-gray-100 transition duration-300 flex items-center justify-center">
                         <i data-lucide="user" class="h-6 w-6"></i>
                     </div>
                     <span class="text-[10px] mt-1 transition duration-300 group-hover:font-semibold">Perfil</span>
