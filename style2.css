@@ -1,0 +1,106 @@
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap'); /* Añadido weight 900 */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB; /* Gray 50 */
+        }
+
+        /* Estilos generales para las pantallas */
+        .screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        /* Estilos específicos para la TabBar */
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        /* Estilo para el icono activo (gestionado ahora por JS para ser dinámico) */
+        .nav-item-active .icon-bg {
+            background-color: #06B6D4; /* Cyan 500 */
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+        }
+        .nav-item-active {
+            /* Estilos de elemento activo en el TabBar */
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+        }
+
+        /* Ajuste de padding para PAN1 (Listado) */
+        #pantalla1 main {
+            /* CORRECCIÓN: Aumentado de 100px a 140px para evitar que el header fijo tape el título */
+            padding-top: 140px;
+            padding-bottom: 80px; /* Espacio para el TabBar fijo */
+        }
+
+        /* Ajuste de padding para PAN2 (Detalle) para evitar que el contenido se solape con el CTA fijo) */
+        #pantalla2 main {
+            padding-bottom: 80px; /* Espacio para el CTA fijo */
+        }
+
+        /* Ajuste de padding para PAN3 (Filtros) */
+        #pantalla3 main {
+            /* CORRECCIÓN: Ajustado padding-top para el nuevo header con breadcrumb */
+            padding-top: 100px;
+            padding-bottom: 80px; /* Espacio para el Footer de Filtros */
+        }
+
+        #menu-overlay.opacity-100 {
+            opacity: 1;
+        }
+        /* Ajuste de padding para PAN4 (Agenda/Perfil) - Se ajusta con estilo inline en el main */
+
+        /* Estilos para el rango de precios */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4F46E5; /* Indigo 600 */
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #4F46E5; /* Indigo 600 */
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            border: none;
+        }
+        /*V18 Crear los estilos para las entradas*/
+        /* Efecto de recorte lateral en la entrada */
+        .ticket-cut {
+            position: relative;
+        }
+        .ticket-cut::before, .ticket-cut::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #f3f4f6; /* Color del fondo de la pantalla */
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+        .ticket-cut::before { left: -10px; } /* Muesca izquierda */
+        .ticket-cut::after { right: -10px; } /* Muesca derecha */
+
+        /* Línea punteada de recorte */
+        .ticket-line {
+            border-left: 2px dashed #e5e7eb;
+        }
+
+    </style>   
