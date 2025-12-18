@@ -76,6 +76,7 @@
                         <h1 class="text-2xl font-extrabold text-cyan-700">
                             OcioPlus
                         </h1>
+                    </div>
                 </div>
                 
                 <!-- Área de Búsqueda (RF 1.08, 1.09) -->
@@ -90,17 +91,6 @@
                 </div>
             </div>
             
-            <!-- Header de la Pantalla 2 (Detalle) - Inicialmente Oculto y actualmente sin uso-->
-            <div id="pan2-header" class="hidden flex items-center justify-between max-w-xl mx-auto">
-                <button onclick="handleNavigation('PAN1')" class="p-2 rounded-full hover:bg-gray-100">
-                    <i data-lucide="arrow-left" class="w-6 h-6 text-gray-700"></i>
-                </button>
-                <h1 class="text-xl font-bold text-gray-800 truncate" id="pan2-title-header">Detalle del Evento</h1>
-                <button id="pan2-favorite-button" onclick="toggleFavorite(currentEvent ? currentEvent.ID_EVENTO : null)" class="p-2 rounded-full hover:bg-gray-100">
-                    <!-- Icono de Corazón se actualiza con JS -->
-                    <i data-lucide="heart" class="w-6 h-6 text-gray-700"></i> 
-                </button>
-            </div>
         </header>
 
         <!-- 2. BODY PRINCIPAL (LISTADO DE EVENTOS) -->

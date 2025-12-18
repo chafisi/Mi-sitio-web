@@ -118,7 +118,9 @@ selectTab('comprados');
 //*****************FUNCIONES PARA CARGAR LOS DATOS DESDE GOOGLE SHEETS Y SI NO FUNCIONA LO HACEMOS MANUALMENTE****************
 //************************************************************************************************************************** */
 
-let GAS_WEB_APP_URL = 'TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUI';
+//No se ha implementado porque en la primera revisión no se enlazaba. Se posee el código pero
+//daba problemas por la autenticación de google
+let GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwlFtiPHwIAImM1uDQLudy8geqqR00LEWU2VOT_XFZLqIXlipmsDMy2V6l2Xgvw88H7/exec';
 
 // Carga inicial de datos desde la API
 async function cargarEventos() {
@@ -173,7 +175,7 @@ function cargarTarjetas(datosAMostrar = filteredEvents) {
     // ... (Aquí va todo tu código anterior de generación de la tarjeta y estrellas) ...
     // (Asegúrate de mantener el bloque de estrellasHTML y card.innerHTML que ya tenemos)
     
-    // --- COPIA AQUÍ EL BLOQUE DE GENERACIÓN DE TARJETA QUE YA TENÍAS ---
+    // --- AQUÍ PONEMOS LA TARJETA QUE YA CREAMOS EN PROTOTIPO 1 ---
     const precioTexto = evento.PRECIO_MIN === 0 ? "Gratis" : `${evento.PRECIO_MIN.toFixed(2)} €`;
     let estrellasHTML = '';
     for (let i = 1; i <= 5; i++) {
