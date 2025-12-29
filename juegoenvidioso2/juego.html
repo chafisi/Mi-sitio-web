@@ -19,13 +19,11 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .gift-card { background: var(--white); border-radius: 20px; padding: 15px; text-align: center; border: 3px solid transparent; position: relative; transition: all 0.3s; }
         .is-mine { border-color: var(--primary) !important; background: #fff5f5; }
-        .is-active-turn { border: 3px dashed #70a1ff; animation: pulse 1.5s infinite; }
+        .is-active-turn { border: 3px dashed #70a1ff; }
         .owner-tag { font-size: 10px; background: var(--secondary); color: white; padding: 3px 8px; border-radius: 10px; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 10; }
-        .gift-img { width: 100%; height: 100px; object-fit: cover; border-radius: 10px; margin-bottom: 5px; }
         button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; font-size: 12px; }
-        .btn-pass { background: #747d8c; margin-top: 20px; }
-        .steal-count { font-size: 10px; color: #888; display: block; margin-top: 4px; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        .btn-room { background: #70a1ff; margin: 5px 0; }
+        .summary-list { text-align: left; background: #f8f9fa; padding: 15px; border-radius: 15px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -33,22 +31,30 @@
 <div id="app">
     <div v-if="screen === 'setup'" class="setup-screen">
         <h1 style="text-align: center;">🎁 Regalo Envidioso</h1>
+        
+        <div class="card-panel" v-if="availableRooms.length > 0 && !isCreating">
+            <h3>Salas abiertas ahora:</h3>
+            <button v-for="room in availableRooms" @click="selectRoom(room)" class="btn-room">
+                Unirse a sala: {{ room }}
+            </button>
+            <button @click="isCreating = true" style="background:var(--secondary)">+ Crear nueva sala</button>
+        </div>
+
         <div class="card-panel">
             <input v-model="userName" placeholder="Tu nombre">
             <input v-model="giftContent" placeholder="Nombre real del regalo (Secreto)">
-            <input v-model="giftFakeDesc" placeholder="Descripción trampa (Visible al inicio)">
-            <input v-model="giftImgUrl" placeholder="URL de la foto (opcional)">
+            <input v-model="giftFakeDesc" placeholder="Descripción trampa (Ej: Caja que pesa)">
             
             <div v-if="!joining">
-                <label>Nº Participantes:</label><input type="number" v-model="numPlayers">
-                <label>Máx robos por persona:</label><input type="number" v-model="maxStealsPerUser">
+                <label>Participantes:</label><input type="number" v-model="numPlayers">
+                <label>Límite robos p/p:</label><input type="number" v-model="maxStealsPerUser">
                 <label>Tiempo turno (seg):</label><input type="number" v-model="maxTime">
                 <button @click="createRoom">Crear Sala</button>
-                <button @click="joining = true" style="background:#747d8c">Unirse a una sala</button>
+                <button @click="joining = true" style="background:#747d8c">Tengo un código</button>
             </div>
             <div v-else>
                 <input v-model="roomCodeInput" placeholder="CÓDIGO" maxlength="4">
-                <button @click="joinRoom">Unirse</button>
+                <button @click="joinRoom">Unirse ahora</button>
                 <button @click="joining = false" style="background:#747d8c">Volver</button>
             </div>
         </div>
@@ -56,48 +62,47 @@
 
     <div v-if="screen === 'lobby'" class="card-panel" style="text-align: center;">
         <h2>Sala: {{ roomId }}</h2>
-        <p>Jugadores unidos: {{ participants.length }} / {{ targetPlayers }}</p>
-        <button v-if="isHost && participants.length >= targetPlayers" @click="startGame">¡EMPEZAR JUEGO!</button>
-        <div v-else-if="!isHost">Esperando al anfitrión...</div>
+        <p>Jugadores: {{ participants.length }} / {{ targetPlayers }}</p>
+        <div v-for="p in participants">👤 {{ p.name }}</div>
+        <button v-if="isHost && participants.length >= targetPlayers" @click="startGame">¡EMPEZAR!</button>
     </div>
 
     <div v-if="screen === 'game'">
         <div class="game-header">
-            <div>Turno de: <strong>{{ currentTurnPlayer }}</strong></div>
-            <div v-if="timeLeft > 0" class="timer-badge">⏳ {{ timeLeft }}s</div>
-            <div style="font-size: 11px; margin-top: 5px;">{{ phaseText }}</div>
+            <div v-if="!gameEnded">Turno de: <strong>{{ currentTurnPlayer }}</strong></div>
+            <div v-else>🎉 ¡JUEGO TERMINADO! 🎉</div>
+            <div v-if="timeLeft > 0 && !gameEnded" class="timer-badge">⏳ {{ timeLeft }}s</div>
         </div>
 
-        <div class="grid">
-            <div v-for="gift in gifts" :key="gift.id" 
-                 class="gift-card" 
-                 :class="{ 'is-mine': gift.owner === userName, 'is-active-turn': isMyTurn }">
-                
-                <span v-if="gift.owner" class="owner-tag">👤 {{ gift.owner }}</span>
-                
-                <img v-if="gift.opened && gift.imageUrl" :src="gift.imageUrl" class="gift-img">
-                <span v-else style="font-size: 40px; display: block; margin: 10px 0;">{{ gift.opened ? '📦' : '🎁' }}</span>
-                
-                <div style="font-weight: bold; font-size: 13px;">
-                    {{ gift.opened ? gift.content : gift.fakeDesc }}
+        <div v-if="gameEnded" class="card-panel">
+            <h3>Reparto final:</h3>
+            <div class="summary-list">
+                <div v-for="gift in gifts" :key="gift.id" style="margin-bottom: 8px;">
+                    👤 <strong>{{ gift.owner }}</strong> se lleva: <br> 🎁 {{ gift.content }}
                 </div>
+            </div>
+            <button @click="location.reload()">Nueva Partida</button>
+        </div>
+
+        <div v-else class="grid">
+            <div v-for="gift in gifts" :key="gift.id" class="gift-card" :class="{ 'is-mine': gift.owner === userName, 'is-active-turn': isMyTurn }">
+                <span v-if="gift.owner" class="owner-tag">👤 {{ gift.owner }}</span>
+                <span style="font-size: 40px; display: block; margin: 10px 0;">{{ gift.opened ? '📦' : '🎁' }}</span>
+                <div style="font-weight: bold; font-size: 13px;">{{ gift.opened ? gift.content : gift.fakeDesc }}</div>
 
                 <div v-if="isMyTurn">
-                    <button v-if="!gift.opened" @click="openAndKeep(gift)">Abrir y Quedar</button>
+                    <button v-if="!gift.opened" @click="openAndKeep(gift)">Abrir</button>
                     <button v-if="gift.opened && gift.owner !== userName && canISteal" @click="stealGift(gift)">Robar</button>
                 </div>
             </div>
         </div>
-        
-        <div v-if="isMyTurn" style="text-align:center">
-            <span class="steal-count">Llevas {{ myStealsCount }} / {{ maxStealsPerUser }} robos</span>
-            <button class="btn-pass" @click="nextTurn">Pasar Turno</button>
-        </div>
+        <button v-if="isMyTurn && !gameEnded" @click="nextTurn" style="background:#747d8c">Pasar Turno</button>
+        <button v-if="isHost && !gameEnded" @click="endGameManually" style="background:var(--secondary); margin-top:20px">Finalizar Juego (Anfitrión)</button>
     </div>
 </div>
 
 <script>
-const { createApp, ref, computed } = Vue;
+const { createApp, ref, computed, onMounted } = Vue;
 
 const firebaseConfig = {
     apiKey: "AIzaSyDiyIfptSOxDeTmUK48SJ6HIDTjs3sI7zs",
@@ -118,7 +123,6 @@ createApp({
         const userName = ref('');
         const giftContent = ref('');
         const giftFakeDesc = ref('');
-        const giftImgUrl = ref('');
         const numPlayers = ref(2);
         const maxStealsPerUser = ref(2);
         const maxTime = ref(30);
@@ -126,6 +130,9 @@ createApp({
         const roomCodeInput = ref('');
         const isHost = ref(false);
         const joining = ref(false);
+        const isCreating = ref(false);
+        const availableRooms = ref([]);
+        const gameEnded = ref(false);
 
         const gifts = ref([]);
         const participants = ref([]);
@@ -133,36 +140,36 @@ createApp({
         const timeLeft = ref(0);
         const targetPlayers = ref(0);
 
+        onMounted(() => {
+            db.ref('rooms').on('value', snap => {
+                const rooms = snap.val();
+                if (rooms) {
+                    availableRooms.value = Object.keys(rooms).filter(k => rooms[k].gameStatus && !rooms[k].gameStatus.started);
+                }
+            });
+        });
+
         const currentTurnPlayer = computed(() => participants.value[currentTurnIndex.value]?.name || '');
         const isMyTurn = computed(() => currentTurnPlayer.value === userName.value);
-        
-        // Lógica de robos
         const myStealsCount = computed(() => {
             const me = participants.value.find(p => p.name === userName.value);
             return me ? (me.steals || 0) : 0;
         });
         const canISteal = computed(() => myStealsCount.value < maxStealsPerUser.value);
 
-        const phaseText = computed(() => {
-            const unopened = gifts.value.filter(g => !g.opened).length;
-            return unopened > 0 ? `Abriendo cajas (${unopened} restantes)` : '¡RONDA FINAL DE ROBOS!';
-        });
-
         const initListeners = (id) => {
             db.ref(`rooms/${id}/config`).on('value', snap => {
-                const conf = snap.val();
-                targetPlayers.value = conf.numPlayers;
-                maxStealsPerUser.value = conf.maxStealsPerUser;
-                maxTime.value = conf.maxTime;
+                const c = snap.val(); targetPlayers.value = c.numPlayers; maxStealsPerUser.value = c.maxStealsPerUser; maxTime.value = c.maxTime;
             });
             db.ref(`rooms/${id}/participants`).on('value', snap => participants.value = Object.values(snap.val() || {}));
             db.ref(`rooms/${id}/gifts`).on('value', snap => gifts.value = Object.values(snap.val() || {}));
             db.ref(`rooms/${id}/gameStatus`).on('value', snap => {
-                const status = snap.val();
-                if (status) {
-                    currentTurnIndex.value = status.turnIndex;
-                    if (status.started) screen.value = 'game';
-                    if (status.deadline) startLocalTimer(status.deadline);
+                const s = snap.val();
+                if (s) {
+                    currentTurnIndex.value = s.turnIndex;
+                    gameEnded.value = s.ended || false;
+                    if (s.started) screen.value = 'game';
+                    if (s.deadline) startLocalTimer(s.deadline);
                 }
             });
         };
@@ -172,15 +179,15 @@ createApp({
             roomId.value = id; isHost.value = true;
             db.ref(`rooms/${id}`).set({ 
                 config: { numPlayers: numPlayers.value, maxTime: maxTime.value, maxStealsPerUser: maxStealsPerUser.value },
-                gameStatus: { started: false, turnIndex: 0 }
+                gameStatus: { started: false, turnIndex: 0, ended: false }
             }).then(() => { registerInRoom(id); screen.value = 'lobby'; initListeners(id); });
         };
 
-        const joinRoom = () => {
-            const id = roomCodeInput.value.toUpperCase();
+        const joinRoom = () => selectRoom(roomCodeInput.value.toUpperCase());
+        const selectRoom = (id) => {
             db.ref(`rooms/${id}`).once('value', snap => {
                 if (snap.exists()) { roomId.value = id; registerInRoom(id); screen.value = 'lobby'; initListeners(id); }
-                else alert("Sala no encontrada");
+                else alert("No existe");
             });
         };
 
@@ -188,16 +195,12 @@ createApp({
             db.ref(`rooms/${id}/participants`).push({ name: userName.value, steals: 0 });
             db.ref(`rooms/${id}/gifts`).push({
                 id: Math.random().toString(36).substr(2, 9),
-                content: giftContent.value,
-                fakeDesc: giftFakeDesc.value || 'Caja misteriosa',
-                imageUrl: giftImgUrl.value,
-                opened: false, owner: ''
+                content: giftContent.value, fakeDesc: giftFakeDesc.value || 'Misterio', opened: false, owner: ''
             });
         };
 
         const startGame = () => {
             const shuffled = [...participants.value].sort(() => Math.random() - 0.5);
-            // Re-guardar participantes para obtener IDs de Firebase para actualizar robos
             db.ref(`rooms/${roomId.value}/participants`).set(null).then(() => {
                 shuffled.forEach(p => db.ref(`rooms/${roomId.value}/participants`).push(p));
                 updateTurn(0);
@@ -220,36 +223,26 @@ createApp({
 
         const stealGift = (gift) => {
             const victim = gift.owner;
-            db.ref(`rooms/${roomId.value}/gifts`).once('value', snapGift => {
-                db.ref(`rooms/${roomId.value}/participants`).once('value', snapPart => {
-                    const allGifts = snapGift.val();
-                    const allParts = snapPart.val();
-                    
-                    const myOldKey = Object.keys(allGifts).find(k => allGifts[k].owner === userName.value);
-                    const stolenKey = Object.keys(allGifts).find(k => allGifts[k].id === gift.id);
-                    const myPartKey = Object.keys(allParts).find(k => allParts[k].name === userName.value);
-
-                    // 1. Intercambio de regalos
+            db.ref(`rooms/${roomId.value}/gifts`).once('value', sg => {
+                db.ref(`rooms/${roomId.value}/participants`).once('value', sp => {
+                    const ag = sg.val(), ap = sp.val();
+                    const myOldKey = Object.keys(ag).find(k => ag[k].owner === userName.value);
+                    const stolenKey = Object.keys(ag).find(k => ag[k].id === gift.id);
+                    const myPartKey = Object.keys(ap).find(k => ap[k].name === userName.value);
                     if (myOldKey) db.ref(`rooms/${roomId.value}/gifts/${myOldKey}`).update({ owner: victim });
                     db.ref(`rooms/${roomId.value}/gifts/${stolenKey}`).update({ owner: userName.value });
-
-                    // 2. Incrementar mi contador de robos
-                    db.ref(`rooms/${roomId.value}/participants/${myPartKey}`).update({ 
-                        steals: (allParts[myPartKey].steals || 0) + 1 
-                    });
-
+                    db.ref(`rooms/${roomId.value}/participants/${myPartKey}`).update({ steals: (ap[myPartKey].steals || 0) + 1 });
                     nextTurn();
                 });
             });
         };
 
         const nextTurn = () => {
-            let nextIdx;
-            do {
-                nextIdx = Math.floor(Math.random() * participants.value.length);
-            } while (nextIdx === currentTurnIndex.value && participants.value.length > 1);
-            updateTurn(nextIdx);
+            let ni; do { ni = Math.floor(Math.random() * participants.value.length); } while (ni === currentTurnIndex.value && participants.value.length > 1);
+            updateTurn(ni);
         };
+
+        const endGameManually = () => db.ref(`rooms/${roomId.value}/gameStatus`).update({ ended: true });
 
         let timer;
         const startLocalTimer = (deadline) => {
@@ -261,7 +254,7 @@ createApp({
             }, 1000);
         };
 
-        return { screen, userName, giftContent, giftFakeDesc, giftImgUrl, numPlayers, maxStealsPerUser, maxTime, roomId, roomCodeInput, isHost, joining, participants, gifts, currentTurnPlayer, isMyTurn, timeLeft, targetPlayers, phaseText, myStealsCount, canISteal, createRoom, joinRoom, startGame, openAndKeep, stealGift, nextTurn };
+        return { screen, userName, giftContent, giftFakeDesc, numPlayers, maxStealsPerUser, maxTime, roomId, roomCodeInput, isHost, joining, isCreating, availableRooms, gameEnded, participants, gifts, currentTurnPlayer, isMyTurn, timeLeft, targetPlayers, myStealsCount, canISteal, createRoom, joinRoom, selectRoom, startGame, openAndKeep, stealGift, nextTurn, endGameManually };
     }
 }).mount('#app');
 </script>
