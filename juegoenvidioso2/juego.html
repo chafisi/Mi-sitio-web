@@ -29,40 +29,38 @@
 <body>
 
 <div id="app">
-    <div v-if="screen === 'setup'" class="setup-screen">
+    <div v-if="screen === 'setup'">
         <h1 style="text-align: center;">🎁 Regalo Envidioso</h1>
         
         <div class="card-panel" v-if="availableRooms.length > 0 && !isCreating">
-            <h3>Salas abiertas ahora:</h3>
-            <button v-for="room in availableRooms" @click="selectRoom(room)" class="btn-room">
-                Unirse a sala: {{ room }}
-            </button>
-            <button @click="isCreating = true" style="background:var(--secondary)">+ Crear nueva sala</button>
+            <h3>Salas disponibles:</h3>
+            <button v-for="room in availableRooms" @click="selectRoom(room)" class="btn-room">Unirse a: {{ room }}</button>
+            <button @click="isCreating = true" style="background:var(--secondary)">+ Crear nueva</button>
         </div>
 
         <div class="card-panel">
             <input v-model="userName" placeholder="Tu nombre">
             <input v-model="giftContent" placeholder="Nombre real del regalo (Secreto)">
-            <input v-model="giftFakeDesc" placeholder="Descripción trampa (Ej: Caja que pesa)">
+            <input v-model="giftFakeDesc" placeholder="Descripción trampa (Visible)">
             
             <div v-if="!joining">
                 <label>Participantes:</label><input type="number" v-model="numPlayers">
-                <label>Límite robos p/p:</label><input type="number" v-model="maxStealsPerUser">
-                <label>Tiempo turno (seg):</label><input type="number" v-model="maxTime">
-                <button @click="createRoom">Crear Sala</button>
-                <button @click="joining = true" style="background:#747d8c">Tengo un código</button>
+                <label>Límite robos:</label><input type="number" v-model="maxStealsPerUser">
+                <label>Tiempo (seg):</label><input type="number" v-model="maxTime">
+                <button @click="createRoom" :disabled="!userName || !giftContent">Crear Sala</button>
+                <button @click="joining = true" style="background:#747d8c">Código manual</button>
             </div>
             <div v-else>
-                <input v-model="roomCodeInput" placeholder="CÓDIGO" maxlength="4">
-                <button @click="joinRoom">Unirse ahora</button>
-                <button @click="joining = false" style="background:#747d8c">Volver</button>
+                <input v-model="roomCodeInput" placeholder="CÓDIGO">
+                <button @click="joinRoom">Entrar</button>
+                <button @click="joining = false" style="background:#747d8c">Atrás</button>
             </div>
         </div>
     </div>
 
     <div v-if="screen === 'lobby'" class="card-panel" style="text-align: center;">
         <h2>Sala: {{ roomId }}</h2>
-        <p>Jugadores: {{ participants.length }} / {{ targetPlayers }}</p>
+        <p>Participantes: {{ participants.length }} / {{ targetPlayers }}</p>
         <div v-for="p in participants">👤 {{ p.name }}</div>
         <button v-if="isHost && participants.length >= targetPlayers" @click="startGame">¡EMPEZAR!</button>
     </div>
@@ -70,18 +68,18 @@
     <div v-if="screen === 'game'">
         <div class="game-header">
             <div v-if="!gameEnded">Turno de: <strong>{{ currentTurnPlayer }}</strong></div>
-            <div v-else>🎉 ¡JUEGO TERMINADO! 🎉</div>
+            <div v-else>🏁 FIN DEL JUEGO</div>
             <div v-if="timeLeft > 0 && !gameEnded" class="timer-badge">⏳ {{ timeLeft }}s</div>
         </div>
 
         <div v-if="gameEnded" class="card-panel">
-            <h3>Reparto final:</h3>
+            <h3>Resultados:</h3>
             <div class="summary-list">
-                <div v-for="gift in gifts" :key="gift.id" style="margin-bottom: 8px;">
-                    👤 <strong>{{ gift.owner }}</strong> se lleva: <br> 🎁 {{ gift.content }}
+                <div v-for="gift in gifts" :key="gift.id" style="margin-bottom:8px">
+                    👤 <strong>{{ gift.owner || 'Nadie' }}</strong>: 🎁 {{ gift.content }}
                 </div>
             </div>
-            <button @click="location.reload()">Nueva Partida</button>
+            <button @click="location.reload()">Reiniciar</button>
         </div>
 
         <div v-else class="grid">
@@ -92,12 +90,12 @@
 
                 <div v-if="isMyTurn">
                     <button v-if="!gift.opened" @click="openAndKeep(gift)">Abrir</button>
-                    <button v-if="gift.opened && gift.owner !== userName && canISteal" @click="stealGift(gift)">Robar</button>
+                    <button v-if="gift.opened && gift.owner !== userName && canISteal" @click="stealGift(gift)">¡ROBAR!</button>
                 </div>
             </div>
         </div>
         <button v-if="isMyTurn && !gameEnded" @click="nextTurn" style="background:#747d8c">Pasar Turno</button>
-        <button v-if="isHost && !gameEnded" @click="endGameManually" style="background:var(--secondary); margin-top:20px">Finalizar Juego (Anfitrión)</button>
+        <button v-if="isHost && !gameEnded" @click="endGameManually" style="background:var(--secondary); margin-top:20px">Cerrar Partida</button>
     </div>
 </div>
 
@@ -119,33 +117,12 @@ const db = firebase.database();
 
 createApp({
     setup() {
-        const screen = ref('setup');
-        const userName = ref('');
-        const giftContent = ref('');
-        const giftFakeDesc = ref('');
-        const numPlayers = ref(2);
-        const maxStealsPerUser = ref(2);
-        const maxTime = ref(30);
-        const roomId = ref('');
-        const roomCodeInput = ref('');
-        const isHost = ref(false);
-        const joining = ref(false);
-        const isCreating = ref(false);
-        const availableRooms = ref([]);
-        const gameEnded = ref(false);
-
-        const gifts = ref([]);
-        const participants = ref([]);
-        const currentTurnIndex = ref(0);
-        const timeLeft = ref(0);
-        const targetPlayers = ref(0);
+        const screen = ref('setup'), userName = ref(''), giftContent = ref(''), giftFakeDesc = ref(''), numPlayers = ref(2), maxStealsPerUser = ref(2), maxTime = ref(30), roomId = ref(''), roomCodeInput = ref(''), isHost = ref(false), joining = ref(false), isCreating = ref(false), availableRooms = ref([]), gameEnded = ref(false), gifts = ref([]), participants = ref([]), currentTurnIndex = ref(0), timeLeft = ref(0), targetPlayers = ref(0);
 
         onMounted(() => {
             db.ref('rooms').on('value', snap => {
-                const rooms = snap.val();
-                if (rooms) {
-                    availableRooms.value = Object.keys(rooms).filter(k => rooms[k].gameStatus && !rooms[k].gameStatus.started);
-                }
+                const r = snap.val();
+                availableRooms.value = r ? Object.keys(r).filter(k => r[k].gameStatus && !r[k].gameStatus.started) : [];
             });
         });
 
@@ -161,8 +138,14 @@ createApp({
             db.ref(`rooms/${id}/config`).on('value', snap => {
                 const c = snap.val(); targetPlayers.value = c.numPlayers; maxStealsPerUser.value = c.maxStealsPerUser; maxTime.value = c.maxTime;
             });
-            db.ref(`rooms/${id}/participants`).on('value', snap => participants.value = Object.values(snap.val() || {}));
-            db.ref(`rooms/${id}/gifts`).on('value', snap => gifts.value = Object.values(snap.val() || {}));
+            db.ref(`rooms/${id}/participants`).on('value', snap => {
+                const val = snap.val();
+                participants.value = val ? Object.values(val) : [];
+            });
+            db.ref(`rooms/${id}/gifts`).on('value', snap => {
+                const val = snap.val();
+                gifts.value = val ? Object.values(val) : [];
+            });
             db.ref(`rooms/${id}/gameStatus`).on('value', snap => {
                 const s = snap.val();
                 if (s) {
@@ -183,11 +166,9 @@ createApp({
             }).then(() => { registerInRoom(id); screen.value = 'lobby'; initListeners(id); });
         };
 
-        const joinRoom = () => selectRoom(roomCodeInput.value.toUpperCase());
         const selectRoom = (id) => {
             db.ref(`rooms/${id}`).once('value', snap => {
                 if (snap.exists()) { roomId.value = id; registerInRoom(id); screen.value = 'lobby'; initListeners(id); }
-                else alert("No existe");
             });
         };
 
@@ -195,27 +176,28 @@ createApp({
             db.ref(`rooms/${id}/participants`).push({ name: userName.value, steals: 0 });
             db.ref(`rooms/${id}/gifts`).push({
                 id: Math.random().toString(36).substr(2, 9),
-                content: giftContent.value, fakeDesc: giftFakeDesc.value || 'Misterio', opened: false, owner: ''
+                content: giftContent.value, fakeDesc: giftFakeDesc.value || 'Sorpresa', opened: false, owner: ''
             });
         };
 
         const startGame = () => {
-            const shuffled = [...participants.value].sort(() => Math.random() - 0.5);
+            const shuff = [...participants.value].sort(() => Math.random() - 0.5);
             db.ref(`rooms/${roomId.value}/participants`).set(null).then(() => {
-                shuffled.forEach(p => db.ref(`rooms/${roomId.value}/participants`).push(p));
+                shuff.forEach(p => db.ref(`rooms/${roomId.value}/participants`).push(p));
                 updateTurn(0);
             });
         };
 
         const updateTurn = (idx) => {
-            const deadline = maxTime.value > 0 ? Date.now() + (maxTime.value * 1000) : null;
-            db.ref(`rooms/${roomId.value}/gameStatus`).update({ started: true, turnIndex: idx, deadline: deadline });
+            const dl = maxTime.value > 0 ? Date.now() + (maxTime.value * 1000) : null;
+            db.ref(`rooms/${roomId.value}/gameStatus`).update({ started: true, turnIndex: idx, deadline: dl });
         };
 
         const openAndKeep = (gift) => {
             db.ref(`rooms/${roomId.value}/gifts`).once('value', snap => {
-                const all = snap.val();
-                const key = Object.keys(all).find(k => all[k].id === gift.id);
+                const keys = snap.val();
+                const key = Object.keys(keys).find(k => keys[k].id === gift.id);
+                // Al abrir, se asigna el dueño inmediatamente para que sea robable
                 db.ref(`rooms/${roomId.value}/gifts/${key}`).update({ opened: true, owner: userName.value });
                 nextTurn();
             });
@@ -229,8 +211,12 @@ createApp({
                     const myOldKey = Object.keys(ag).find(k => ag[k].owner === userName.value);
                     const stolenKey = Object.keys(ag).find(k => ag[k].id === gift.id);
                     const myPartKey = Object.keys(ap).find(k => ap[k].name === userName.value);
+
+                    // Trueque
                     if (myOldKey) db.ref(`rooms/${roomId.value}/gifts/${myOldKey}`).update({ owner: victim });
                     db.ref(`rooms/${roomId.value}/gifts/${stolenKey}`).update({ owner: userName.value });
+                    
+                    // Conteo de robo
                     db.ref(`rooms/${roomId.value}/participants/${myPartKey}`).update({ steals: (ap[myPartKey].steals || 0) + 1 });
                     nextTurn();
                 });
@@ -254,7 +240,7 @@ createApp({
             }, 1000);
         };
 
-        return { screen, userName, giftContent, giftFakeDesc, numPlayers, maxStealsPerUser, maxTime, roomId, roomCodeInput, isHost, joining, isCreating, availableRooms, gameEnded, participants, gifts, currentTurnPlayer, isMyTurn, timeLeft, targetPlayers, myStealsCount, canISteal, createRoom, joinRoom, selectRoom, startGame, openAndKeep, stealGift, nextTurn, endGameManually };
+        return { screen, userName, giftContent, giftFakeDesc, numPlayers, maxStealsPerUser, maxTime, roomId, roomCodeInput, isHost, joining, isCreating, availableRooms, gameEnded, participants, gifts, currentTurnPlayer, isMyTurn, timeLeft, targetPlayers, canISteal, createRoom, joinRoom: () => selectRoom(roomCodeInput.value.toUpperCase()), selectRoom, startGame, openAndKeep, stealGift, nextTurn, endGameManually };
     }
 }).mount('#app');
 </script>
