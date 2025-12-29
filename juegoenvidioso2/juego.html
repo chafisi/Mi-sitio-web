@@ -24,6 +24,7 @@
         .owner-tag { font-size: 10px; background: var(--secondary); color: white; padding: 3px 8px; border-radius: 10px; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 10; }
         button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; font-size: 12px; }
         button:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-room { background: #70a1ff; margin: 5px 0; }
         .summary-list { text-align: left; background: #f8f9fa; padding: 15px; border-radius: 15px; margin: 15px 0; }
     </style>
 </head>
@@ -32,6 +33,15 @@
 <div id="app">
     <div v-if="screen === 'setup'">
         <h1 style="text-align: center;">🎁 Regalo Envidioso</h1>
+        
+        <div class="card-panel" v-if="availableRooms.length > 0 && !isCreating">
+            <h3>Salas abiertas:</h3>
+            <button v-for="room in availableRooms" @click="selectRoom(room)" class="btn-room">
+                Unirse a: {{ room }}
+            </button>
+            <button @click="isCreating = true" style="background:var(--secondary)">+ Crear nueva sala</button>
+        </div>
+
         <div class="card-panel">
             <input v-model="userName" placeholder="* Tu nombre">
             <input v-model="giftContent" placeholder="* Nombre real del regalo">
@@ -43,7 +53,7 @@
                 <label>Límite robos p/p:</label><input type="number" v-model="maxStealsPerUser">
                 <label>Tiempo turno (seg):</label><input type="number" v-model="maxTime">
                 <button @click="createRoom" :disabled="!isFormValid">Crear Sala</button>
-                <button @click="joining = true" style="background:#747d8c">Tengo código</button>
+                <button @click="joining = true" style="background:#747d8c">Código manual</button>
             </div>
             <div v-else>
                 <input v-model="roomCodeInput" placeholder="CÓDIGO">
@@ -58,6 +68,7 @@
         <p>Participantes: {{ participants.length }} / {{ targetPlayers }}</p>
         <div v-for="p in participants">👤 {{ p.name }}</div>
         <button v-if="isHost && participants.length >= targetPlayers" @click="startGame">¡EMPEZAR JUEGO!</button>
+        <p v-else-if="participants.length >= targetPlayers">Esperando al anfitrión...</p>
     </div>
 
     <div v-if="screen === 'game'">
@@ -67,18 +78,17 @@
                 TURNO: {{ currentTurnIndex + 1 }} / {{ participants.length }}
             </div>
             <div v-if="!gameEnded">Turno de:<br><strong>{{ currentTurnPlayer }}</strong></div>
-            <div v-else>🎉 RESULTADOS FINALES 🎉</div>
+            <div v-else>🏁 RESULTADOS FINALES</div>
             <div v-if="timeLeft > 0 && !gameEnded" class="timer-badge">⏳ {{ timeLeft }}s</div>
         </div>
 
         <div v-if="gameEnded" class="card-panel">
             <div class="summary-list">
                 <div v-for="gift in gifts" :key="gift.id" style="margin-bottom:8px">
-                    👤 <strong>{{ gift.owner }}</strong> se lleva: 🎁 {{ gift.content }}
+                    👤 <strong>{{ gift.owner }}</strong>: 🎁 {{ gift.content }}
                 </div>
             </div>
             <button v-if="isHost" @click="restartGame" style="background:var(--success)">🔄 REINICIAR PARTIDA</button>
-            <p v-else>Esperando a que el anfitrión reinicie...</p>
         </div>
 
         <div v-else class="grid">
@@ -119,10 +129,19 @@ createApp({
 
         const isFormValid = computed(() => userName.value && giftContent.value && giftFakeDesc.value);
 
+        // ESCANEO DE SALAS ACTIVAS
         onMounted(() => {
             db.ref('rooms').on('value', snap => {
                 const r = snap.val();
-                availableRooms.value = r ? Object.keys(r).filter(k => r[k].gameStatus && !r[k].gameStatus.started) : [];
+                if (r) {
+                    availableRooms.value = Object.keys(r).filter(k => 
+                        r[k].gameStatus && 
+                        !r[k].gameStatus.started && 
+                        Object.keys(r[k].participants || {}).length < r[k].config.numPlayers
+                    );
+                } else {
+                    availableRooms.value = [];
+                }
             });
         });
 
@@ -168,7 +187,8 @@ createApp({
         const selectRoom = (id) => {
             db.ref(`rooms/${id}`).once('value', snap => {
                 const room = snap.val();
-                if (Object.keys(room.participants || {}).length >= room.config.numPlayers) return alert("Sala llena");
+                const pCount = Object.keys(room.participants || {}).length;
+                if (pCount >= room.config.numPlayers) return alert("Sala llena");
                 roomId.value = id; registerInRoom(id); screen.value = 'lobby'; initListeners(id);
             });
         };
@@ -231,21 +251,14 @@ createApp({
         };
 
         const restartGame = () => {
-            // Resetear Regalos
             db.ref(`rooms/${roomId.value}/gifts`).once('value', snap => {
                 const giftsData = snap.val();
-                Object.keys(giftsData).forEach(key => {
-                    db.ref(`rooms/${roomId.value}/gifts/${key}`).update({ opened: false, owner: '' });
-                });
+                Object.keys(giftsData).forEach(key => db.ref(`rooms/${roomId.value}/gifts/${key}`).update({ opened: false, owner: '' }));
             });
-            // Resetear Robos de Participantes
             db.ref(`rooms/${roomId.value}/participants`).once('value', snap => {
                 const partsData = snap.val();
-                Object.keys(partsData).forEach(key => {
-                    db.ref(`rooms/${roomId.value}/participants/${key}`).update({ steals: 0 });
-                });
+                Object.keys(partsData).forEach(key => db.ref(`rooms/${roomId.value}/participants/${key}`).update({ steals: 0 }));
             });
-            // Reiniciar Rondas y Turnos
             updateTurn(0, 1);
         };
 
