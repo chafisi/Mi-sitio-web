@@ -16,16 +16,18 @@
         input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; }
         .game-header { background: var(--secondary); color: white; padding: 15px; border-radius: 20px; margin-bottom: 20px; position: relative; }
         .stats-badge { position: absolute; top: 15px; right: 15px; text-align: right; font-size: 11px; line-height: 1.3; }
-        .timer-badge { background: #ffa502; padding: 5px 12px; border-radius: 8px; font-weight: bold; display: inline-block; margin-top: 5px; }
+        .order-badge { background: var(--primary); color: white; padding: 10px; border-radius: 15px; font-size: 18px; font-weight: bold; margin-bottom: 15px; text-align: center; border: 2px solid white; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .gift-card { background: var(--white); border-radius: 20px; padding: 15px; text-align: center; border: 3px solid transparent; position: relative; transition: all 0.3s; }
         .is-mine { border-color: var(--primary) !important; background: #fff5f5; }
-        .is-active-turn { border: 3px dashed #70a1ff; }
+        .is-active-turn { border: 3px dashed #70a1ff; animation: pulse 1.5s infinite; }
         .owner-tag { font-size: 10px; background: var(--secondary); color: white; padding: 3px 8px; border-radius: 10px; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 10; }
         button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; font-size: 12px; }
         button:disabled { background: #ccc; cursor: not-allowed; }
-        .btn-room { background: #70a1ff; margin: 5px 0; }
-        .summary-list { text-align: left; background: #f8f9fa; padding: 15px; border-radius: 15px; margin: 15px 0; }
+        .user-list { background: #f8f9fa; border-radius: 15px; padding: 10px; margin-top: 10px; font-size: 13px; }
+        .user-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; }
+        .user-row.active { color: var(--primary); font-weight: bold; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -36,9 +38,7 @@
         
         <div class="card-panel" v-if="availableRooms.length > 0 && !isCreating">
             <h3>Salas abiertas:</h3>
-            <button v-for="room in availableRooms" @click="selectRoom(room)" class="btn-room">
-                Unirse a: {{ room }}
-            </button>
+            <button v-for="room in availableRooms" @click="selectRoom(room)" class="btn-room" style="background:#70a1ff; margin-bottom: 8px;">Unirse a: {{ room }}</button>
             <button @click="isCreating = true" style="background:var(--secondary)">+ Crear nueva sala</button>
         </div>
 
@@ -49,7 +49,7 @@
             
             <div v-if="!joining">
                 <label>Nº Participantes:</label><input type="number" v-model="numPlayers">
-                <label>Máximo Rondas:</label><input type="number" v-model="maxRounds">
+                <label>Nº Rondas de Robo:</label><input type="number" v-model="maxStealRounds">
                 <label>Límite robos p/p:</label><input type="number" v-model="maxStealsPerUser">
                 <label>Tiempo turno (seg):</label><input type="number" v-model="maxTime">
                 <button @click="createRoom" :disabled="!isFormValid">Crear Sala</button>
@@ -67,28 +67,39 @@
         <h2>Sala: {{ roomId }}</h2>
         <p>Participantes: {{ participants.length }} / {{ targetPlayers }}</p>
         <div v-for="p in participants">👤 {{ p.name }}</div>
-        <button v-if="isHost && participants.length >= targetPlayers" @click="startGame">¡EMPEZAR JUEGO!</button>
-        <p v-else-if="participants.length >= targetPlayers">Esperando al anfitrión...</p>
+        <button v-if="isHost && participants.length >= targetPlayers" @click="startGame">¡SORTEAR Y EMPEZAR!</button>
     </div>
 
     <div v-if="screen === 'game'">
+        <div class="order-badge" v-if="!gameEnded">
+            ESTÁS EN LA POSICIÓN: {{ myOrderPosition }}
+        </div>
+
         <div class="game-header">
             <div class="stats-badge" v-if="!gameEnded">
-                RONDA: {{ round }} / {{ maxRounds }}<br>
+                {{ round === 1 ? 'RONDA APERTURA' : 'RONDA ROBO ' + (round - 1) }}<br>
                 TURNO: {{ currentTurnIndex + 1 }} / {{ participants.length }}
             </div>
             <div v-if="!gameEnded">Turno de:<br><strong>{{ currentTurnPlayer }}</strong></div>
-            <div v-else>🏁 RESULTADOS FINALES</div>
-            <div v-if="timeLeft > 0 && !gameEnded" class="timer-badge">⏳ {{ timeLeft }}s</div>
+            <div v-else>🏁 FIN DEL JUEGO</div>
+        </div>
+
+        <div v-if="!gameEnded" class="card-panel" style="padding: 15px; margin-bottom: 20px;">
+            <div style="font-size: 12px; font-weight: bold; margin-bottom: 5px;">ORDEN DEL SORTEO:</div>
+            <div class="user-list">
+                <div v-for="(p, idx) in participants" :key="idx" class="user-row" :class="{ active: currentTurnIndex === idx }">
+                    <span>{{ idx + 1 }}. {{ p.name }}</span>
+                    <span>{{ currentTurnIndex === idx ? '⚡' : '' }}</span>
+                </div>
+            </div>
         </div>
 
         <div v-if="gameEnded" class="card-panel">
-            <div class="summary-list">
-                <div v-for="gift in gifts" :key="gift.id" style="margin-bottom:8px">
-                    👤 <strong>{{ gift.owner }}</strong>: 🎁 {{ gift.content }}
-                </div>
+            <h3>Resultados:</h3>
+            <div v-for="gift in gifts" :key="gift.id" style="margin-bottom:8px">
+                👤 <strong>{{ gift.owner }}</strong>: 🎁 {{ gift.content }}
             </div>
-            <button v-if="isHost" @click="restartGame" style="background:var(--success)">🔄 REINICIAR PARTIDA</button>
+            <button v-if="isHost" @click="restartGame" style="background:var(--success)">🔄 REINICIAR Y RE-SORTEAR</button>
         </div>
 
         <div v-else class="grid">
@@ -103,13 +114,14 @@
                 </div>
             </div>
         </div>
-        <button v-if="isMyTurn && !gameEnded" @click="nextTurn" style="background:#747d8c">Pasar Turno</button>
+        <button v-if="isMyTurn && !gameEnded && round > 1" @click="nextTurn" style="background:#747d8c">Pasar Turno</button>
     </div>
 </div>
 
 <script>
 const { createApp, ref, computed, onMounted } = Vue;
 
+// Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyDiyIfptSOxDeTmUK48SJ6HIDTjs3sI7zs",
     authDomain: "juegoenvidioso.firebaseapp.com",
@@ -125,23 +137,19 @@ const db = firebase.database();
 
 createApp({
     setup() {
-        const screen = ref('setup'), userName = ref(''), giftContent = ref(''), giftFakeDesc = ref(''), numPlayers = ref(2), maxStealsPerUser = ref(2), maxTime = ref(30), maxRounds = ref(2), roomId = ref(''), roomCodeInput = ref(''), isHost = ref(false), joining = ref(false), isCreating = ref(false), availableRooms = ref([]), gameEnded = ref(false), gifts = ref([]), participants = ref([]), currentTurnIndex = ref(0), timeLeft = ref(0), targetPlayers = ref(0), round = ref(1);
+        const screen = ref('setup'), userName = ref(''), giftContent = ref(''), giftFakeDesc = ref(''), numPlayers = ref(2), maxStealsPerUser = ref(2), maxTime = ref(30), maxStealRounds = ref(2), roomId = ref(''), roomCodeInput = ref(''), isHost = ref(false), joining = ref(false), isCreating = ref(false), availableRooms = ref([]), gameEnded = ref(false), gifts = ref([]), participants = ref([]), currentTurnIndex = ref(0), timeLeft = ref(0), targetPlayers = ref(0), round = ref(1);
 
         const isFormValid = computed(() => userName.value && giftContent.value && giftFakeDesc.value);
+        
+        const myOrderPosition = computed(() => {
+            const idx = participants.value.findIndex(p => p.name === userName.value);
+            return idx !== -1 ? idx + 1 : '?';
+        });
 
-        // ESCANEO DE SALAS ACTIVAS
         onMounted(() => {
             db.ref('rooms').on('value', snap => {
                 const r = snap.val();
-                if (r) {
-                    availableRooms.value = Object.keys(r).filter(k => 
-                        r[k].gameStatus && 
-                        !r[k].gameStatus.started && 
-                        Object.keys(r[k].participants || {}).length < r[k].config.numPlayers
-                    );
-                } else {
-                    availableRooms.value = [];
-                }
+                availableRooms.value = r ? Object.keys(r).filter(k => r[k].gameStatus && !r[k].gameStatus.started && Object.keys(r[k].participants || {}).length < r[k].config.numPlayers) : [];
             });
         });
 
@@ -159,7 +167,7 @@ createApp({
                 targetPlayers.value = c.numPlayers; 
                 maxStealsPerUser.value = c.maxStealsPerUser; 
                 maxTime.value = c.maxTime;
-                maxRounds.value = c.maxRounds;
+                maxStealRounds.value = c.maxStealRounds;
             });
             db.ref(`rooms/${id}/participants`).on('value', snap => participants.value = Object.values(snap.val() || {}));
             db.ref(`rooms/${id}/gifts`).on('value', snap => gifts.value = Object.values(snap.val() || {}));
@@ -170,7 +178,6 @@ createApp({
                     gameEnded.value = s.ended || false;
                     round.value = s.round || 1;
                     if (s.started) screen.value = 'game';
-                    if (s.deadline) startLocalTimer(s.deadline);
                 }
             });
         };
@@ -179,18 +186,9 @@ createApp({
             const id = Math.random().toString(36).substring(2, 6).toUpperCase();
             roomId.value = id; isHost.value = true;
             db.ref(`rooms/${id}`).set({ 
-                config: { numPlayers: numPlayers.value, maxTime: maxTime.value, maxStealsPerUser: maxStealsPerUser.value, maxRounds: maxRounds.value },
+                config: { numPlayers: numPlayers.value, maxTime: maxTime.value, maxStealsPerUser: maxStealsPerUser.value, maxStealRounds: maxStealRounds.value },
                 gameStatus: { started: false, turnIndex: 0, ended: false, round: 1 }
             }).then(() => { registerInRoom(id); screen.value = 'lobby'; initListeners(id); });
-        };
-
-        const selectRoom = (id) => {
-            db.ref(`rooms/${id}`).once('value', snap => {
-                const room = snap.val();
-                const pCount = Object.keys(room.participants || {}).length;
-                if (pCount >= room.config.numPlayers) return alert("Sala llena");
-                roomId.value = id; registerInRoom(id); screen.value = 'lobby'; initListeners(id);
-            });
         };
 
         const registerInRoom = (id) => {
@@ -210,12 +208,12 @@ createApp({
         };
 
         const updateTurn = (idx, r) => {
-            if (r > maxRounds.value) {
+            // Rondas totales = 1 (apertura) + maxStealRounds (robo)
+            if (r > (1 + parseInt(maxStealRounds.value))) {
                 db.ref(`rooms/${roomId.value}/gameStatus`).update({ ended: true });
                 return;
             }
-            const dl = maxTime.value > 0 ? Date.now() + (maxTime.value * 1000) : null;
-            db.ref(`rooms/${roomId.value}/gameStatus`).update({ started: true, turnIndex: idx, round: r, deadline: dl, ended: false });
+            db.ref(`rooms/${roomId.value}/gameStatus`).update({ started: true, turnIndex: idx, round: r, ended: false });
         };
 
         const openAndKeep = (gift) => {
@@ -251,28 +249,15 @@ createApp({
         };
 
         const restartGame = () => {
+            // Limpiar regalos y robos
             db.ref(`rooms/${roomId.value}/gifts`).once('value', snap => {
-                const giftsData = snap.val();
-                Object.keys(giftsData).forEach(key => db.ref(`rooms/${roomId.value}/gifts/${key}`).update({ opened: false, owner: '' }));
+                Object.keys(snap.val()).forEach(k => db.ref(`rooms/${roomId.value}/gifts/${k}`).update({ opened: false, owner: '' }));
             });
-            db.ref(`rooms/${roomId.value}/participants`).once('value', snap => {
-                const partsData = snap.val();
-                Object.keys(partsData).forEach(key => db.ref(`rooms/${roomId.value}/participants/${key}`).update({ steals: 0 }));
-            });
-            updateTurn(0, 1);
+            // Re-sortear y reiniciar
+            startGame();
         };
 
-        let timer;
-        const startLocalTimer = (deadline) => {
-            clearInterval(timer);
-            timer = setInterval(() => {
-                const d = Math.round((deadline - Date.now()) / 1000);
-                timeLeft.value = d > 0 ? d : 0;
-                if (d <= 0) { clearInterval(timer); if (isMyTurn.value) nextTurn(); }
-            }, 1000);
-        };
-
-        return { screen, userName, giftContent, giftFakeDesc, numPlayers, maxStealsPerUser, maxTime, maxRounds, roomId, roomCodeInput, isHost, joining, isCreating, availableRooms, gameEnded, participants, gifts, currentTurnPlayer, isMyTurn, timeLeft, targetPlayers, round, currentTurnIndex, isFormValid, canISteal, createRoom, joinRoom: () => selectRoom(roomCodeInput.value.toUpperCase()), selectRoom, startGame, openAndKeep, stealGift, nextTurn, restartGame };
+        return { screen, userName, giftContent, giftFakeDesc, numPlayers, maxStealsPerUser, maxTime, maxStealRounds, roomId, roomCodeInput, isHost, joining, isCreating, availableRooms, gameEnded, participants, gifts, currentTurnPlayer, isMyTurn, myOrderPosition, round, currentTurnIndex, isFormValid, canISteal, createRoom, joinRoom: () => db.ref(`rooms/${roomCodeInput.value.toUpperCase()}`).once('value', s => s.exists() ? (roomId.value = roomCodeInput.value.toUpperCase(), registerInRoom(roomId.value), screen.value = 'lobby', initListeners(roomId.value)) : alert("No existe")), selectRoom: (id) => (roomId.value = id, registerInRoom(id), screen.value = 'lobby', initListeners(id)), startGame, openAndKeep, stealGift, nextTurn, restartGame };
     }
 }).mount('#app');
 </script>
