@@ -4,17 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Regalo Envidioso 🎁</title>
+    
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
     <style>
         :root {
             --primary: #ff4757;
             --secondary: #2f3542;
             --success: #2ed573;
             --bg: #f1f2f6;
+            --white: #ffffff;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background-color: var(--bg);
             margin: 0;
             display: flex;
@@ -29,40 +34,51 @@
             box-sizing: border-box;
         }
 
-        /* --- PANTALLA REGISTRO --- */
-        .login-screen {
+        /* --- PANTALLA SETUP --- */
+        .setup-screen {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
         }
 
-        .login-card {
-            background: white;
+        .card-panel {
+            background: var(--white);
             padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
 
         input {
             width: 100%;
             padding: 15px;
             margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 10px;
+            border: 2px solid #eee;
+            border-radius: 15px;
             box-sizing: border-box;
             font-size: 16px;
+            transition: border-color 0.3s;
         }
+
+        input:focus { border-color: var(--primary); outline: none; }
 
         /* --- PANTALLA JUEGO --- */
         .game-header {
             background: var(--secondary);
             color: white;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
+            padding: 18px;
+            border-radius: 20px;
+            margin-bottom: 25px;
             text-align: center;
-            position: sticky;
-            top: 10px;
-            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .room-tag {
+            background: var(--primary);
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1.1em;
+            margin-left: 5px;
         }
 
         .grid {
@@ -72,53 +88,50 @@
         }
 
         .gift-card {
-            background: white;
-            border-radius: 15px;
+            background: var(--white);
+            border-radius: 20px;
             padding: 15px;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             border: 3px solid transparent;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
         }
 
-        .gift-card.is-opened {
-            border-color: var(--success);
-            background: #f0fff4;
-        }
-
-        .gift-card.is-mine {
-            border-color: var(--primary);
-            background: #fff5f5;
+        .gift-card.is-opened { border-color: var(--success); }
+        .gift-card.is-mine { 
+            border-color: var(--primary); 
+            background: #fff5f5; 
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(255, 71, 87, 0.2);
         }
 
         .owner-tag {
-            font-size: 12px;
+            font-size: 11px;
             background: var(--secondary);
             color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
+            padding: 4px 12px;
+            border-radius: 20px;
             position: absolute;
-            top: -10px;
+            top: -12px;
             left: 50%;
             transform: translateX(-50%);
             white-space: nowrap;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .gift-icon {
-            font-size: 40px;
-            margin: 10px 0;
-            display: block;
-        }
+        .gift-icon { font-size: 45px; margin: 10px 0; display: block; }
 
         .package-name {
             font-weight: bold;
             font-size: 14px;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             min-height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
+            line-height: 1.2;
         }
 
         /* --- BOTONES --- */
@@ -126,169 +139,213 @@
             background: var(--primary);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
+            padding: 14px 20px;
+            border-radius: 12px;
             font-weight: bold;
             cursor: pointer;
             width: 100%;
             font-size: 14px;
+            transition: all 0.2s;
         }
 
-        button:disabled {
-            background: #ccc;
-        }
+        button:active { transform: scale(0.96); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .btn-secondary { background: var(--secondary); margin-top: 12px; }
+        .btn-steal { background: var(--secondary); }
 
-        button.btn-steal {
-            background: var(--secondary);
-        }
-
-        .log {
-            margin-top: 20px;
-            font-size: 13px;
-            color: #666;
-            background: #fff;
-            padding: 10px;
-            border-radius: 10px;
-            max-height: 100px;
+        /* --- HISTORIAL --- */
+        .history-log {
+            margin-top: 30px;
+            background: var(--white);
+            padding: 20px;
+            border-radius: 20px;
+            max-height: 160px;
             overflow-y: auto;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
         }
+
+        .log-entry {
+            font-size: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateX(-15px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div v-if="screen === 'login'" class="login-screen">
+    <div v-if="screen === 'setup'" class="setup-screen">
         <h1>🎁 Regalo Envidioso</h1>
-        <div class="login-card">
-            <p>Introduce tus datos para participar</p>
-            <input v-model="user.name" type="text" placeholder="Tu nombre o apodo">
-            <input v-model="user.giftDesc" type="text" placeholder="Descripción del envoltorio">
-            <button @click="startGame" :disabled="!user.name || !user.giftDesc">Entrar al juego</button>
+        <div class="card-panel">
+            <input v-model="userName" type="text" placeholder="Tu nombre">
+            <input v-model="giftDesc" type="text" placeholder="Descripción de tu paquete">
+            
+            <div style="margin-top: 25px;">
+                <button @click="createRoom" :disabled="!userName || !giftDesc">
+                    Crear Nueva Sala
+                </button>
+                <p style="margin: 15px 0; font-size: 14px; color: #888;">— o únete a una existente —</p>
+                <input v-model="roomCodeInput" type="text" placeholder="Código de Sala">
+                <button class="btn-secondary" @click="joinRoom" :disabled="!userName || !giftDesc || !roomCodeInput">
+                    Entrar en Sala
+                </button>
+            </div>
         </div>
     </div>
 
     <div v-if="screen === 'game'">
         <div class="game-header">
-            <div>Jugador: <strong>{{ user.name }}</strong></div>
-            <small v-if="myGiftId">Llevas: {{ getGiftName(myGiftId) }}</small>
-            <small v-else>No tienes regalo todavía</small>
+            <div>SALA: <span class="room-tag">{{ roomId }}</span></div>
+            <div style="margin-top: 8px; font-size: 14px; opacity: 0.9;">
+                👤 Jugador: <strong>{{ userName }}</strong>
+            </div>
         </div>
 
         <div class="grid">
             <div v-for="gift in gifts" :key="gift.id" 
                  class="gift-card" 
-                 :class="{ 'is-opened': gift.opened, 'is-mine': gift.owner === user.name }">
+                 :class="{ 'is-opened': gift.opened, 'is-mine': gift.owner === userName }">
                 
                 <span v-if="gift.owner" class="owner-tag">👤 {{ gift.owner }}</span>
                 
                 <span class="gift-icon">{{ gift.opened ? '🤡' : '🎁' }}</span>
                 
                 <div class="package-name">
-                    {{ gift.opened ? gift.content : gift.description }}
+                    {{ gift.opened ? gift.content : gift.packageDesc }}
                 </div>
 
                 <button v-if="!gift.opened" @click="openGift(gift)">
                     Abrir paquete
                 </button>
 
-                <button v-if="gift.opened && gift.owner !== user.name" 
+                <button v-if="gift.opened && gift.owner !== userName" 
                         class="btn-steal" 
                         @click="stealGift(gift)">
-                    ¡Robar!
+                    ¡ROBAR!
                 </button>
             </div>
         </div>
 
-        <div class="log">
-            <strong>Últimos movimientos:</strong>
-            <div v-for="msg in history">{{ msg }}</div>
+        <div class="history-log">
+            <div style="font-weight: bold; margin-bottom: 10px; font-size: 14px;">📢 Últimos movimientos:</div>
+            <div v-for="(msg, index) in history" :key="index" class="log-entry">
+                {{ msg }}
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    const { createApp, ref, reactive } = Vue;
+    const { createApp, ref } = Vue;
+
+    // CONFIGURACIÓN CON TUS DATOS REALES
+    const firebaseConfig = {
+        apiKey: "AIzaSyDiyIfptSOxDeTmUK48SJ6HIDTjs3sI7zs",
+        authDomain: "juegoenvidioso.firebaseapp.com",
+        databaseURL: "https://juegoenvidioso-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "juegoenvidioso",
+        storageBucket: "juegoenvidioso.firebasestorage.app",
+        messagingSenderId: "891145514178",
+        appId: "1:891145514178:web:e25b23aa564ceee96c5f5b"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
     createApp({
         setup() {
-            const screen = ref('login');
-            const user = reactive({ name: '', giftDesc: '' });
+            const screen = ref('setup');
+            const userName = ref('');
+            const giftDesc = ref('');
+            const roomId = ref('');
+            const roomCodeInput = ref('');
+            const gifts = ref([]);
             const history = ref([]);
-            const myGiftId = ref(null);
 
-            // Simulamos 10 regalos (el tuyo + 9 generados)
-            const gifts = ref([
-                { id: 1, description: 'Caja rectangular roja', content: 'Gafas gigantes', opened: false, owner: null },
-                { id: 2, description: 'Sobre acolchado azul', content: 'Nariz de payaso', opened: false, owner: null },
-                { id: 3, description: 'Papel de periódico', content: 'Peluca fucsia', opened: false, owner: null },
-                { id: 4, description: 'Bolsa de cartón dorada', content: 'Antenas de alien', opened: false, owner: null },
-                { id: 5, description: 'Caja de zapatos', content: 'Bigote mexicano', opened: false, owner: null },
-                { id: 6, description: 'Envoltorio de burbujas', content: 'Sombrero de copa', opened: false, owner: null },
-                { id: 7, description: 'Lazo enorme verde', content: 'Capa de mago', opened: false, owner: null },
-                { id: 8, description: 'Paquete muy pequeño', content: 'Dientes de vampiro', opened: false, owner: null },
-                { id: 9, description: 'Caja circular plateada', content: 'Máscara de luchador', opened: false, owner: null }
-            ]);
-
-            const startGame = () => {
-                // Añadimos nuestro propio regalo a la lista
-                gifts.value.push({
-                    id: Date.now(),
-                    description: user.giftDesc,
-                    content: 'Pendiente de revelar...', // En el juego real esto lo pone el dueño
+            const connectToRoom = (id) => {
+                roomId.value = id.toUpperCase();
+                
+                // 1. Registrar mi regalo en la base de datos
+                const myGiftRef = db.ref(`rooms/${roomId.value}/gifts`).push();
+                myGiftRef.set({
+                    id: myGiftRef.key,
+                    packageDesc: giftDesc.value,
+                    content: 'Sorpresa...',
                     opened: false,
-                    owner: null
+                    owner: '',
+                    creator: userName.value
                 });
-                screen.ref = 'game';
+
+                // 2. Escuchar cambios de REGALOS
+                db.ref(`rooms/${roomId.value}/gifts`).on('value', (snap) => {
+                    const val = snap.val();
+                    gifts.value = val ? Object.values(val) : [];
+                });
+
+                // 3. Escuchar cambios de HISTORIAL
+                db.ref(`rooms/${roomId.value}/history`).limitToLast(10).on('value', (snap) => {
+                    const val = snap.val();
+                    if (val) {
+                        history.value = Object.values(val).reverse();
+                    }
+                });
+
                 screen.value = 'game';
             };
 
+            const createRoom = () => {
+                const id = Math.random().toString(36).substring(2, 6).toUpperCase();
+                connectToRoom(id);
+            };
+
+            const joinRoom = () => {
+                connectToRoom(roomCodeInput.value);
+            };
+
             const openGift = (gift) => {
-                // Si ya teníamos un regalo, este queda libre (o según vuestra regla)
-                if(myGiftId.value) {
-                    const oldGift = gifts.value.find(g => g.id === myGiftId.value);
-                    oldGift.owner = null;
-                }
+                const content = prompt("¿Qué complemento de risa hay dentro?");
+                if (!content) return;
 
-                gift.opened = true;
-                gift.owner = user.name;
-                myGiftId.value = gift.id;
-                
-                // Si es el regalo que nosotros mismos trajimos, pedimos que diga qué es
-                if(gift.description === user.giftDesc) {
-                    const realContent = prompt("¿Qué complemento de risa hay dentro?");
-                    gift.content = realContent || "Sorpresa de risa";
-                }
+                db.ref(`rooms/${roomId.value}/gifts/${gift.id}`).update({
+                    opened: true,
+                    content: content,
+                    owner: userName.value
+                });
 
-                history.value.unshift(`Abriste: ${gift.content}`);
+                db.ref(`rooms/${roomId.value}/history`).push(
+                    `${userName.value} abrió el regalo de ${gift.creator}: ¡${content}!`
+                );
             };
 
             const stealGift = (gift) => {
-                const victim = gift.owner;
-                
-                // El dueño anterior se queda sin regalo
-                if(myGiftId.value) {
-                    const myOldGift = gifts.value.find(g => g.id === myGiftId.value);
-                    myOldGift.owner = null;
-                }
+                const oldOwner = gift.owner;
 
-                gift.owner = user.name;
-                myGiftId.value = gift.id;
-                
-                history.value.unshift(`¡Le has robado a ${victim} su ${gift.content}!`);
-            };
+                // Liberar mis regalos anteriores
+                gifts.value.forEach(g => {
+                    if (g.owner === userName.value) {
+                        db.ref(`rooms/${roomId.value}/gifts/${g.id}`).update({ owner: '' });
+                    }
+                });
 
-            const getGiftName = (id) => {
-                const g = gifts.value.find(g => g.id === id);
-                return g ? (g.opened ? g.content : g.description) : '';
+                // Tomar el nuevo
+                db.ref(`rooms/${roomId.value}/gifts/${gift.id}`).update({ owner: userName.value });
+
+                db.ref(`rooms/${roomId.value}/history`).push(
+                    `¡${userName.value} le ROBÓ el/la ${gift.content} a ${oldOwner}!`
+                );
             };
 
             return {
-                screen, user, gifts, history, myGiftId,
-                startGame, openGift, stealGift, getGiftName
+                screen, userName, giftDesc, roomId, roomCodeInput, gifts, history,
+                createRoom, joinRoom, openGift, stealGift
             }
         }
-    }).mount('#app')
+    }).mount('#app');
 </script>
-
 </body>
 </html>
