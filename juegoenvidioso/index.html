@@ -1,1 +1,40 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regalo Envidioso 🎁</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <section v-if="screen === 'login'">
+            <h1>¡Únete al Juego!</h1>
+            <input type="text" v-model="userName" placeholder="Tu nombre">
+            <input type="text" v-model="giftDesc" placeholder="Descripción del paquete (ej: Caja roja)">
+            <button @click="joinGame">Entrar</button>
+        </section>
+
+        <section v-if="screen === 'game'">
+            <div class="status-bar">
+                <p>Turno de: <strong>{{ currentPlayer.name }}</strong></p>
+            </div>
+
+            <div class="gift-grid">
+                <div v-for="item in gifts" :key="item.id" class="gift-card" :class="{ opened: item.isOpened }">
+                    <span class="owner" v-if="item.isOpened">👤 {{ item.currentOwner }}</span>
+                    <div class="gift-box">🎁</div>
+                    <p>{{ item.isOpened ? item.content : item.packageDesc }}</p>
+                    
+                    <button v-if="myTurn && !item.isOpened" @click="openGift(item.id)">Abrir</button>
+                    <button v-if="myTurn && item.isOpened && item.currentOwner !== userName" @click="stealGift(item.id)">¡ROBAR!</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
