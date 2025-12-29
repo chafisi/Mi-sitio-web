@@ -43,18 +43,20 @@
         <h1 style="text-align: center;">🎁 Regalo Envidioso</h1>
         <div class="card-panel">
             <input v-model="userName" placeholder="Tu nombre">
-            <input v-model="giftDesc" placeholder="Descripción de tu regalo">
+            <input v-model="giftDesc" placeholder="Descripción de tu paquete">
             
             <div v-if="!joining">
+                <label>Número de participantes:</label>
+                <input type="number" v-model="numPlayers" min="2" placeholder="Ej: 10">
                 <label>Tiempo de apertura (segundos):</label>
                 <input type="number" v-model="maxTime" min="0" placeholder="0 = Sin tiempo">
-                <button @click="createRoom">Crear Sala</button>
+                <button @click="createRoom" :disabled="!userName || !giftDesc || !numPlayers">Crear Sala</button>
                 <button class="btn-secondary" style="background:#747d8c" @click="joining = true">Tengo un código</button>
             </div>
 
             <div v-else>
                 <input v-model="roomCodeInput" placeholder="CÓDIGO SALA" maxlength="4" style="text-transform: uppercase">
-                <button @click="joinRoom">Unirse a Sala</button>
+                <button @click="joinRoom" :disabled="!userName || !giftDesc || !roomCodeInput">Unirse a Sala</button>
                 <button class="btn-secondary" style="background:#747d8c" @click="joining = false">Volver</button>
             </div>
         </div>
@@ -62,21 +64,24 @@
 
     <div v-if="screen === 'lobby'" class="card-panel" style="text-align: center;">
         <h2>Sala: <span style="color:var(--primary)">{{ roomId }}</span></h2>
-        <p>Participantes actuales: <strong>{{ participants.length }}</strong></p>
+        <p>Participantes: <strong>{{ participants.length }} / {{ targetPlayers }}</strong></p>
         <ul style="list-style: none; padding: 0;">
             <li v-for="p in participants">👤 {{ p.name }}</li>
         </ul>
-        <button v-if="isHost" class="btn-start" @click="startGame">¡EMPEZAR JUEGO!</button>
+        <div v-if="isHost">
+            <button v-if="participants.length >= targetPlayers" class="btn-start" @click="startGame">¡EMPEZAR JUEGO!</button>
+            <p v-else style="color: #888;">Esperando a que se complete el grupo...</p>
+        </div>
         <p v-else>Esperando a que el creador inicie la partida...</p>
     </div>
 
     <div v-if="screen === 'game'">
         <div class="game-header">
-            <div v-if="currentTurnPlayer">Es el turno de: <h2 style="margin:5px">{{ currentTurnPlayer }}</h2></div>
+            <div v-if="currentTurnPlayer">Turno de: <h2 style="margin:5px">{{ currentTurnPlayer }}</h2></div>
             <div v-if="timeLeft > 0" class="timer-badge">⏳ {{ timeLeft }}s</div>
         </div>
 
-        <div v-if="isMyTurn" class="turn-overlay">🌟 ¡ES TU TURNO! Elige un regalo 🌟</div>
+        <div v-if="isMyTurn" class="turn-overlay">🌟 ¡ES TU TURNO! 🌟</div>
 
         <div class="grid">
             <div v-for="gift in gifts" :key="gift.id" 
@@ -95,7 +100,7 @@
 </div>
 
 <script>
-const { createApp, ref, computed, onMounted } = Vue;
+const { createApp, ref, computed } = Vue;
 
 const firebaseConfig = {
     apiKey: "AIzaSyDiyIfptSOxDeTmUK48SJ6HIDTjs3sI7zs",
@@ -117,47 +122,36 @@ createApp({
         const userName = ref('');
         const giftDesc = ref('');
         const maxTime = ref(30);
+        const numPlayers = ref(10);
         const roomId = ref('');
         const roomCodeInput = ref('');
         const isHost = ref(false);
+        const targetPlayers = ref(0);
         
         const gifts = ref([]);
         const participants = ref([]);
         const currentTurnIndex = ref(0);
-        const gameStarted = ref(false);
         const timeLeft = ref(0);
 
-        // Turno actual
-        const currentTurnPlayer = computed(() => {
-            return participants.value[currentTurnIndex.value]?.name || '';
-        });
-
+        const currentTurnPlayer = computed(() => participants.value[currentTurnIndex.value]?.name || '');
         const isMyTurn = computed(() => currentTurnPlayer.value === userName.value);
 
         const initListeners = (id) => {
-            // Escuchar participantes
+            db.ref(`rooms/${id}/config/numPlayers`).on('value', snap => { targetPlayers.value = snap.val() || 0; });
             db.ref(`rooms/${id}/participants`).on('value', snap => {
                 const val = snap.val();
                 participants.value = val ? Object.values(val) : [];
             });
-
-            // Escuchar regalos
             db.ref(`rooms/${id}/gifts`).on('value', snap => {
                 const val = snap.val();
                 gifts.value = val ? Object.values(val) : [];
             });
-
-            // Escuchar estado del juego y turnos
             db.ref(`rooms/${id}/gameStatus`).on('value', snap => {
                 const status = snap.val();
                 if (status) {
                     currentTurnIndex.value = status.turnIndex;
                     if (status.started) screen.value = 'game';
-                    
-                    // Lógica Temporizador
-                    if (status.deadline && status.deadline > Date.now()) {
-                        startLocalTimer(status.deadline);
-                    }
+                    if (status.deadline && status.deadline > Date.now()) startLocalTimer(status.deadline);
                 }
             });
         };
@@ -167,7 +161,7 @@ createApp({
             isHost.value = true;
             roomId.value = id;
             db.ref(`rooms/${id}`).set({ 
-                config: { maxTime: maxTime.value },
+                config: { maxTime: maxTime.value, numPlayers: numPlayers.value },
                 gameStatus: { started: false, turnIndex: 0 }
             }).then(() => {
                 registerUserInRoom(id);
@@ -189,9 +183,7 @@ createApp({
         };
 
         const registerUserInRoom = (id) => {
-            // Registrar participante
             db.ref(`rooms/${id}/participants`).push({ name: userName.value });
-            // Registrar regalo
             db.ref(`rooms/${id}/gifts`).push({
                 id: Math.random().toString(36).substr(2, 9),
                 packageDesc: giftDesc.value,
@@ -202,19 +194,15 @@ createApp({
         };
 
         const startGame = () => {
-            // Barajar turnos aleatoriamente
             const shuffled = [...participants.value].sort(() => Math.random() - 0.5);
-            db.ref(`rooms/${roomId.value}/participants`).set(shuffled);
-            
-            // Iniciar juego y poner primer temporizador
-            updateTurn(0);
+            db.ref(`rooms/${roomId.value}/participants`).set(shuffled).then(() => {
+                updateTurn(0);
+            });
         };
 
         const updateTurn = (newIndex) => {
             const updates = { 'started': true, 'turnIndex': newIndex };
-            if (maxTime.value > 0) {
-                updates['deadline'] = Date.now() + (maxTime.value * 1000);
-            }
+            if (maxTime.value > 0) updates['deadline'] = Date.now() + (maxTime.value * 1000);
             db.ref(`rooms/${roomId.value}/gameStatus`).update(updates);
         };
 
@@ -224,9 +212,7 @@ createApp({
             db.ref(`rooms/${roomId.value}/gifts`).once('value', snap => {
                 const allGifts = snap.val();
                 const key = Object.keys(allGifts).find(k => allGifts[k].id === gift.id);
-                db.ref(`rooms/${roomId.value}/gifts/${key}`).update({
-                    opened: true, content: content, owner: userName.value
-                });
+                db.ref(`rooms/${roomId.value}/gifts/${key}`).update({ opened: true, content: content, owner: userName.value });
                 nextTurn();
             });
         };
@@ -234,11 +220,9 @@ createApp({
         const stealGift = (gift) => {
             db.ref(`rooms/${roomId.value}/gifts`).once('value', snap => {
                 const allGifts = snap.val();
-                // Soltar el mío
                 Object.keys(allGifts).forEach(k => {
                     if (allGifts[k].owner === userName.value) db.ref(`rooms/${roomId.value}/gifts/${k}`).update({ owner: '' });
                 });
-                // Robar el nuevo
                 const key = Object.keys(allGifts).find(k => allGifts[k].id === gift.id);
                 db.ref(`rooms/${roomId.value}/gifts/${key}`).update({ owner: userName.value });
                 nextTurn();
@@ -246,10 +230,9 @@ createApp({
         };
 
         const nextTurn = () => {
-            const nextIdx = (currentTurnIndex.value + 1);
-            if (nextIdx < participants.value.length) {
-                updateTurn(nextIdx);
-            } else {
+            const nextIdx = currentTurnIndex.value + 1;
+            if (nextIdx < participants.value.length) updateTurn(nextIdx);
+            else {
                 alert("¡Juego terminado!");
                 db.ref(`rooms/${roomId.value}/gameStatus`).update({ started: false });
             }
@@ -259,20 +242,16 @@ createApp({
         const startLocalTimer = (deadline) => {
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
-                const now = Date.now();
-                const diff = Math.round((deadline - now) / 1000);
+                const diff = Math.round((deadline - Date.now()) / 1000);
                 timeLeft.value = diff > 0 ? diff : 0;
                 if (diff <= 0) {
                     clearInterval(timerInterval);
-                    if (isMyTurn.value) {
-                        alert("¡Se acabó el tiempo! Pasando turno...");
-                        nextTurn();
-                    }
+                    if (isMyTurn.value) { alert("¡Tiempo agotado!"); nextTurn(); }
                 }
             }, 1000);
         };
 
-        return { screen, joining, userName, giftDesc, maxTime, roomId, roomCodeInput, isHost, participants, gifts, currentTurnPlayer, isMyTurn, timeLeft, createRoom, joinRoom, startGame, openGift, stealGift };
+        return { screen, joining, userName, giftDesc, maxTime, numPlayers, roomId, roomCodeInput, isHost, participants, gifts, currentTurnPlayer, isMyTurn, timeLeft, targetPlayers, createRoom, joinRoom, startGame, openGift, stealGift };
     }
 }).mount('#app');
 </script>
