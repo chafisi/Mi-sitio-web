@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Regalo Envidioso PRO 🎁</title>
+    <title>Regalo Envidioso - Dinámica Real 🎁</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -12,28 +12,18 @@
         :root { --primary: #ff4757; --secondary: #2f3542; --success: #2ed573; --bg: #f1f2f6; --white: #ffffff; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; display: flex; justify-content: center; color: var(--secondary); }
         #app { width: 100%; max-width: 500px; padding: 15px; box-sizing: border-box; }
-        
         .card-panel { background: var(--white); padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-top: 20px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; font-size: 16px; }
-        
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; }
         .game-header { background: var(--secondary); color: white; padding: 15px; border-radius: 20px; margin-bottom: 20px; text-align: center; }
-        .timer-badge { background: #ffa502; padding: 5px 15px; border-radius: 10px; font-weight: bold; display: inline-block; margin-top: 10px; animation: pulse 1s infinite; }
-        
+        .timer-badge { background: #ffa502; padding: 5px 15px; border-radius: 10px; font-weight: bold; display: inline-block; margin-top: 10px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .gift-card { background: var(--white); border-radius: 20px; padding: 15px; text-align: center; border: 3px solid transparent; position: relative; transition: all 0.3s; opacity: 0.6; }
-        .gift-card.active-turn { opacity: 1; border-color: #70a1ff; }
-        .gift-card.is-mine { border-color: var(--primary); background: #fff5f5; opacity: 1; }
-        .gift-card.is-opened { border-color: var(--success); opacity: 1; }
-
+        .gift-card { background: var(--white); border-radius: 20px; padding: 15px; text-align: center; border: 3px solid transparent; position: relative; transition: all 0.3s; }
+        .is-mine { border-color: var(--primary) !important; background: #fff5f5; }
+        .is-active-turn { border: 3px dashed #70a1ff; animation: pulse 1.5s infinite; }
         .owner-tag { font-size: 10px; background: var(--secondary); color: white; padding: 3px 8px; border-radius: 10px; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); }
-        
-        button { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        .btn-start { background: var(--success); font-size: 1.2em; }
-        
-        .turn-overlay { background: rgba(255, 71, 87, 0.9); color: white; padding: 10px; border-radius: 10px; margin-bottom: 15px; text-align: center; font-weight: bold; }
-
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; font-size: 12px; }
+        .btn-pass { background: #747d8c; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -43,59 +33,53 @@
         <h1 style="text-align: center;">🎁 Regalo Envidioso</h1>
         <div class="card-panel">
             <input v-model="userName" placeholder="Tu nombre">
-            <input v-model="giftDesc" placeholder="Descripción de tu paquete">
-            
+            <input v-model="giftContent" placeholder="¿Qué regalo traes? (Secreto)">
             <div v-if="!joining">
-                <label>Número de participantes:</label>
-                <input type="number" v-model="numPlayers" min="2" placeholder="Ej: 10">
-                <label>Tiempo de apertura (segundos):</label>
-                <input type="number" v-model="maxTime" min="0" placeholder="0 = Sin tiempo">
-                <button @click="createRoom" :disabled="!userName || !giftDesc || !numPlayers">Crear Sala</button>
-                <button class="btn-secondary" style="background:#747d8c" @click="joining = true">Tengo un código</button>
+                <label>Participantes:</label><input type="number" v-model="numPlayers">
+                <label>Tiempo por turno (seg):</label><input type="number" v-model="maxTime">
+                <button @click="createRoom">Crear Sala</button>
+                <button @click="joining = true" style="background:#747d8c">Tengo un código</button>
             </div>
-
             <div v-else>
-                <input v-model="roomCodeInput" placeholder="CÓDIGO SALA" maxlength="4" style="text-transform: uppercase">
-                <button @click="joinRoom" :disabled="!userName || !giftDesc || !roomCodeInput">Unirse a Sala</button>
-                <button class="btn-secondary" style="background:#747d8c" @click="joining = false">Volver</button>
+                <input v-model="roomCodeInput" placeholder="CÓDIGO" maxlength="4">
+                <button @click="joinRoom">Unirse</button>
+                <button @click="joining = false" style="background:#747d8c">Volver</button>
             </div>
         </div>
     </div>
 
     <div v-if="screen === 'lobby'" class="card-panel" style="text-align: center;">
-        <h2>Sala: <span style="color:var(--primary)">{{ roomId }}</span></h2>
-        <p>Participantes: <strong>{{ participants.length }} / {{ targetPlayers }}</strong></p>
-        <ul style="list-style: none; padding: 0;">
-            <li v-for="p in participants">👤 {{ p.name }}</li>
-        </ul>
-        <div v-if="isHost">
-            <button v-if="participants.length >= targetPlayers" class="btn-start" @click="startGame">¡EMPEZAR JUEGO!</button>
-            <p v-else style="color: #888;">Esperando a que se complete el grupo...</p>
-        </div>
-        <p v-else>Esperando a que el creador inicie la partida...</p>
+        <h2>Sala: {{ roomId }}</h2>
+        <p>Jugadores: {{ participants.length }} / {{ targetPlayers }}</p>
+        <button v-if="isHost && participants.length >= targetPlayers" @click="startGame">¡EMPEZAR JUEGO!</button>
     </div>
 
     <div v-if="screen === 'game'">
         <div class="game-header">
-            <div v-if="currentTurnPlayer">Turno de: <h2 style="margin:5px">{{ currentTurnPlayer }}</h2></div>
+            <div>Turno de: <strong>{{ currentTurnPlayer }}</strong></div>
             <div v-if="timeLeft > 0" class="timer-badge">⏳ {{ timeLeft }}s</div>
+            <div style="font-size: 12px; margin-top: 5px;">{{ phaseText }}</div>
         </div>
-
-        <div v-if="isMyTurn" class="turn-overlay">🌟 ¡ES TU TURNO! 🌟</div>
 
         <div class="grid">
             <div v-for="gift in gifts" :key="gift.id" 
                  class="gift-card" 
-                 :class="{ 'is-opened': gift.opened, 'is-mine': gift.owner === userName, 'active-turn': isMyTurn }">
+                 :class="{ 'is-mine': gift.owner === userName, 'is-active-turn': isMyTurn }">
                 
                 <span v-if="gift.owner" class="owner-tag">👤 {{ gift.owner }}</span>
                 <span style="font-size: 40px; display: block; margin: 10px 0;">{{ gift.opened ? '🤡' : '🎁' }}</span>
-                <div class="package-name">{{ gift.opened ? gift.content : gift.packageDesc }}</div>
+                
+                <div style="font-weight: bold; font-size: 14px; min-height: 30px;">
+                    {{ gift.opened ? gift.content : 'Caja Cerrada' }}
+                </div>
 
-                <button v-if="!gift.opened && isMyTurn && gift.creator !== userName" @click="openGift(gift)">Abrir</button>
-                <button v-if="gift.opened && isMyTurn && gift.owner !== userName" style="background:var(--secondary)" @click="stealGift(gift)">Robar</button>
+                <div v-if="isMyTurn">
+                    <button v-if="!gift.opened" @click="openAndKeep(gift)">Abrir y Quedar</button>
+                    <button v-if="gift.opened && gift.owner !== userName" @click="stealGift(gift)">Robar</button>
+                </div>
             </div>
         </div>
+        <button v-if="isMyTurn" class="btn-pass" @click="nextTurn">Pasar Turno</button>
     </div>
 </div>
 
@@ -118,140 +102,125 @@ const db = firebase.database();
 createApp({
     setup() {
         const screen = ref('setup');
-        const joining = ref(false);
         const userName = ref('');
-        const giftDesc = ref('');
+        const giftContent = ref('');
+        const numPlayers = ref(2);
         const maxTime = ref(30);
-        const numPlayers = ref(10);
         const roomId = ref('');
         const roomCodeInput = ref('');
         const isHost = ref(false);
-        const targetPlayers = ref(0);
-        
+        const joining = ref(false);
+
         const gifts = ref([]);
         const participants = ref([]);
         const currentTurnIndex = ref(0);
         const timeLeft = ref(0);
+        const targetPlayers = ref(0);
 
         const currentTurnPlayer = computed(() => participants.value[currentTurnIndex.value]?.name || '');
         const isMyTurn = computed(() => currentTurnPlayer.value === userName.value);
+        const phaseText = computed(() => {
+            const unopened = gifts.value.filter(g => !g.opened).length;
+            return unopened > 0 ? `Quedan ${unopened} cajas por abrir` : '¡FASE FINAL DE ROBOS!';
+        });
 
         const initListeners = (id) => {
-            db.ref(`rooms/${id}/config/numPlayers`).on('value', snap => { targetPlayers.value = snap.val() || 0; });
-            db.ref(`rooms/${id}/participants`).on('value', snap => {
-                const val = snap.val();
-                participants.value = val ? Object.values(val) : [];
-            });
-            db.ref(`rooms/${id}/gifts`).on('value', snap => {
-                const val = snap.val();
-                gifts.value = val ? Object.values(val) : [];
-            });
+            db.ref(`rooms/${id}/config/numPlayers`).on('value', snap => targetPlayers.value = snap.val());
+            db.ref(`rooms/${id}/config/maxTime`).on('value', snap => maxTime.value = snap.val());
+            db.ref(`rooms/${id}/participants`).on('value', snap => participants.value = Object.values(snap.val() || {}));
+            db.ref(`rooms/${id}/gifts`).on('value', snap => gifts.value = Object.values(snap.val() || {}));
             db.ref(`rooms/${id}/gameStatus`).on('value', snap => {
                 const status = snap.val();
                 if (status) {
                     currentTurnIndex.value = status.turnIndex;
                     if (status.started) screen.value = 'game';
-                    if (status.deadline && status.deadline > Date.now()) startLocalTimer(status.deadline);
+                    if (status.deadline) startLocalTimer(status.deadline);
                 }
             });
         };
 
         const createRoom = () => {
             const id = Math.random().toString(36).substring(2, 6).toUpperCase();
-            isHost.value = true;
-            roomId.value = id;
+            roomId.value = id; isHost.value = true;
             db.ref(`rooms/${id}`).set({ 
-                config: { maxTime: maxTime.value, numPlayers: numPlayers.value },
+                config: { numPlayers: numPlayers.value, maxTime: maxTime.value },
                 gameStatus: { started: false, turnIndex: 0 }
-            }).then(() => {
-                registerUserInRoom(id);
-                screen.value = 'lobby';
-                initListeners(id);
-            });
+            }).then(() => { registerInRoom(id); screen.value = 'lobby'; initListeners(id); });
         };
 
         const joinRoom = () => {
             const id = roomCodeInput.value.toUpperCase();
             db.ref(`rooms/${id}`).once('value', snap => {
-                if (snap.exists()) {
-                    roomId.value = id;
-                    registerUserInRoom(id);
-                    screen.value = 'lobby';
-                    initListeners(id);
-                } else alert("Sala no encontrada");
+                if (snap.exists()) { roomId.value = id; registerInRoom(id); screen.value = 'lobby'; initListeners(id); }
+                else alert("No existe");
             });
         };
 
-        const registerUserInRoom = (id) => {
+        const registerInRoom = (id) => {
             db.ref(`rooms/${id}/participants`).push({ name: userName.value });
             db.ref(`rooms/${id}/gifts`).push({
                 id: Math.random().toString(36).substr(2, 9),
-                packageDesc: giftDesc.value,
-                creator: userName.value,
-                opened: false,
-                owner: ''
+                content: giftContent.value,
+                opened: false, owner: ''
             });
         };
 
         const startGame = () => {
             const shuffled = [...participants.value].sort(() => Math.random() - 0.5);
-            db.ref(`rooms/${roomId.value}/participants`).set(shuffled).then(() => {
-                updateTurn(0);
-            });
+            db.ref(`rooms/${roomId.value}/participants`).set(shuffled).then(() => updateTurn(0));
         };
 
-        const updateTurn = (newIndex) => {
-            const updates = { 'started': true, 'turnIndex': newIndex };
-            if (maxTime.value > 0) updates['deadline'] = Date.now() + (maxTime.value * 1000);
-            db.ref(`rooms/${roomId.value}/gameStatus`).update(updates);
+        const updateTurn = (idx) => {
+            const deadline = maxTime.value > 0 ? Date.now() + (maxTime.value * 1000) : null;
+            db.ref(`rooms/${roomId.value}/gameStatus`).update({ started: true, turnIndex: idx, deadline: deadline });
         };
 
-        const openGift = (gift) => {
-            const content = prompt("¿Qué hay dentro?");
-            if (!content) return;
+        const openAndKeep = (gift) => {
             db.ref(`rooms/${roomId.value}/gifts`).once('value', snap => {
-                const allGifts = snap.val();
-                const key = Object.keys(allGifts).find(k => allGifts[k].id === gift.id);
-                db.ref(`rooms/${roomId.value}/gifts/${key}`).update({ opened: true, content: content, owner: userName.value });
+                const all = snap.val();
+                const key = Object.keys(all).find(k => all[k].id === gift.id);
+                db.ref(`rooms/${roomId.value}/gifts/${key}`).update({ opened: true, owner: userName.value });
                 nextTurn();
             });
         };
 
         const stealGift = (gift) => {
+            const victim = gift.owner;
             db.ref(`rooms/${roomId.value}/gifts`).once('value', snap => {
-                const allGifts = snap.val();
-                Object.keys(allGifts).forEach(k => {
-                    if (allGifts[k].owner === userName.value) db.ref(`rooms/${roomId.value}/gifts/${k}`).update({ owner: '' });
-                });
-                const key = Object.keys(allGifts).find(k => allGifts[k].id === gift.id);
-                db.ref(`rooms/${roomId.value}/gifts/${key}`).update({ owner: userName.value });
+                const all = snap.val();
+                const myOldGiftKey = Object.keys(all).find(k => all[k].owner === userName.value);
+                const stolenGiftKey = Object.keys(all).find(k => all[k].id === gift.id);
+                
+                // Lógica de INTERCAMBIO: Si yo tenía uno, se lo doy al robado.
+                if (myOldGiftKey) {
+                    db.ref(`rooms/${roomId.value}/gifts/${myOldGiftKey}`).update({ owner: victim });
+                }
+                db.ref(`rooms/${roomId.value}/gifts/${stolenGiftKey}`).update({ owner: userName.value });
                 nextTurn();
             });
         };
 
         const nextTurn = () => {
-            const nextIdx = currentTurnIndex.value + 1;
-            if (nextIdx < participants.value.length) updateTurn(nextIdx);
-            else {
-                alert("¡Juego terminado!");
-                db.ref(`rooms/${roomId.value}/gameStatus`).update({ started: false });
-            }
+            // Sortear siguiente turno excluyendo al actual
+            let nextIdx;
+            do {
+                nextIdx = Math.floor(Math.random() * participants.value.length);
+            } while (nextIdx === currentTurnIndex.value && participants.value.length > 1);
+            
+            updateTurn(nextIdx);
         };
 
-        let timerInterval;
+        let timer;
         const startLocalTimer = (deadline) => {
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                const diff = Math.round((deadline - Date.now()) / 1000);
-                timeLeft.value = diff > 0 ? diff : 0;
-                if (diff <= 0) {
-                    clearInterval(timerInterval);
-                    if (isMyTurn.value) { alert("¡Tiempo agotado!"); nextTurn(); }
-                }
+            clearInterval(timer);
+            timer = setInterval(() => {
+                const d = Math.round((deadline - Date.now()) / 1000);
+                timeLeft.value = d > 0 ? d : 0;
+                if (d <= 0) { clearInterval(timer); if (isMyTurn.value) nextTurn(); }
             }, 1000);
         };
 
-        return { screen, joining, userName, giftDesc, maxTime, numPlayers, roomId, roomCodeInput, isHost, participants, gifts, currentTurnPlayer, isMyTurn, timeLeft, targetPlayers, createRoom, joinRoom, startGame, openGift, stealGift };
+        return { screen, userName, giftContent, numPlayers, maxTime, roomId, roomCodeInput, isHost, joining, participants, gifts, currentTurnPlayer, isMyTurn, timeLeft, targetPlayers, phaseText, createRoom, joinRoom, startGame, openAndKeep, stealGift, nextTurn };
     }
 }).mount('#app');
 </script>
