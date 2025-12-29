@@ -28,6 +28,7 @@
         .user-list { background: #f8f9fa; border-radius: 15px; padding: 10px; margin-top: 10px; font-size: 13px; text-align: left; }
         .user-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; }
         .user-row.active { color: var(--primary); font-weight: bold; }
+        .btn-host-action { background: #747d8c; margin-top: 15px; border: 1px solid rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
@@ -35,18 +36,15 @@
 <div id="app">
     <div v-if="screen === 'setup'">
         <h1 style="text-align: center;">🎁 Regalo Envidioso</h1>
-        
         <div class="card-panel" v-if="availableRooms.length > 0 && !isCreating">
             <h3>Salas abiertas:</h3>
             <button v-for="room in availableRooms" @click="selectRoom(room)" style="background:#70a1ff; margin-bottom: 8px;">Unirse a: {{ room }}</button>
             <button @click="isCreating = true" style="background:var(--secondary)">+ Crear nueva sala</button>
         </div>
-
         <div class="card-panel">
             <input v-model="userName" placeholder="* Tu nombre">
             <input v-model="giftContent" placeholder="* Nombre real del regalo">
             <input v-model="giftFakeDesc" placeholder="* Descripción trampa">
-            
             <div v-if="!joining">
                 <label>Nº Participantes:</label><input type="number" v-model="numPlayers">
                 <label>Nº Rondas de Robo:</label><input type="number" v-model="maxRounds">
@@ -87,13 +85,14 @@
             <div v-if="timeLeft > 0 && !gameEnded" class="timer-badge">⏳ {{ timeLeft }}s</div>
         </div>
 
-        <div v-if="!gameEnded" class="card-panel" style="padding: 15px; margin-bottom: 20px;">
+        <div v-if="!gameEnded" class="card-panel" style="padding: 15px; margin-bottom: 10px;">
             <div class="user-list">
                 <div v-for="(p, idx) in participants" :key="idx" class="user-row" :class="{ active: currentTurnIndex === idx }">
                     <span>{{ idx + 1 }}. {{ p.name }}</span>
                     <span>{{ currentTurnIndex === idx ? '⚡' : '' }}</span>
                 </div>
             </div>
+            <button v-if="isHost" @click="restartGame" class="btn-host-action">🔄 RE-SORTEAR Y REINICIAR</button>
         </div>
 
         <div v-if="gameEnded" class="card-panel">
@@ -108,7 +107,6 @@
                 <span v-if="gift.owner" class="owner-tag">👤 {{ gift.owner }}</span>
                 <span style="font-size: 40px; display: block; margin: 10px 0;">{{ gift.opened ? '📦' : '🎁' }}</span>
                 <div style="font-weight: bold; font-size: 13px;">{{ gift.opened ? gift.content : gift.fakeDesc }}</div>
-
                 <div v-if="isMyTurn">
                     <button v-if="!gift.opened && (round > 1 || gift.creator !== userName)" @click="openAndKeep(gift)">Abrir</button>
                     <button v-if="gift.opened && gift.owner !== userName && canISteal && round > 1" @click="stealGift(gift)">¡ROBAR!</button>
@@ -233,7 +231,6 @@ createApp({
             let nextIdx = currentTurnIndex.value + 1;
             let nextRound = round.value;
             if (nextIdx >= participants.value.length) { nextIdx = 0; nextRound++; }
-            
             if (nextRound > (1 + parseInt(maxRounds.value))) {
                 db.ref(`rooms/${roomId.value}/gameStatus`).update({ ended: true });
             } else {
@@ -243,7 +240,8 @@ createApp({
 
         const restartGame = () => {
             db.ref(`rooms/${roomId.value}/gifts`).once('value', snap => {
-                Object.keys(snap.val()).forEach(k => db.ref(`rooms/${roomId.value}/gifts/${k}`).update({ opened: false, owner: '' }));
+                const gData = snap.val();
+                if(gData) Object.keys(gData).forEach(k => db.ref(`rooms/${roomId.value}/gifts/${k}`).update({ opened: false, owner: '' }));
             });
             startGame();
         };
@@ -254,10 +252,7 @@ createApp({
             timer = setInterval(() => {
                 const d = Math.round((deadline - Date.now()) / 1000);
                 timeLeft.value = d > 0 ? d : 0;
-                if (d <= 0) { 
-                    clearInterval(timer); 
-                    if (isMyTurn.value) nextTurn(); 
-                }
+                if (d <= 0) { clearInterval(timer); if (isMyTurn.value) nextTurn(); }
             }, 1000);
         };
 
