@@ -15,17 +15,16 @@
         .card-panel { background: var(--white); padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-top: 20px; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #eee; border-radius: 12px; box-sizing: border-box; }
         .game-header { background: var(--secondary); color: white; padding: 15px; border-radius: 20px; margin-bottom: 20px; position: relative; }
-        .stats-badge { position: absolute; top: 15px; right: 15px; text-align: right; font-size: 12px; line-height: 1.4; opacity: 0.9; }
-        .timer-badge { background: #ffa502; padding: 5px 15px; border-radius: 10px; font-weight: bold; display: inline-block; margin-top: 10px; }
+        .stats-badge { position: absolute; top: 15px; right: 15px; text-align: right; font-size: 11px; line-height: 1.3; }
+        .timer-badge { background: #ffa502; padding: 5px 12px; border-radius: 8px; font-weight: bold; display: inline-block; margin-top: 5px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .gift-card { background: var(--white); border-radius: 20px; padding: 15px; text-align: center; border: 3px solid transparent; position: relative; transition: all 0.3s; }
         .is-mine { border-color: var(--primary) !important; background: #fff5f5; }
-        .is-active-turn { border: 3px dashed #70a1ff; animation: pulse 1.5s infinite; }
+        .is-active-turn { border: 3px dashed #70a1ff; }
         .owner-tag { font-size: 10px; background: var(--secondary); color: white; padding: 3px 8px; border-radius: 10px; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 10; }
         button { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; font-size: 12px; }
         button:disabled { background: #ccc; cursor: not-allowed; }
-        .btn-room { background: #70a1ff; margin: 5px 0; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        .summary-list { text-align: left; background: #f8f9fa; padding: 15px; border-radius: 15px; margin: 15px 0; }
     </style>
 </head>
 <body>
@@ -33,29 +32,23 @@
 <div id="app">
     <div v-if="screen === 'setup'">
         <h1 style="text-align: center;">🎁 Regalo Envidioso</h1>
-        
-        <div class="card-panel" v-if="availableRooms.length > 0 && !isCreating">
-            <h3>Salas disponibles:</h3>
-            <button v-for="room in availableRooms" @click="selectRoom(room)" class="btn-room">Unirse a: {{ room }}</button>
-            <button @click="isCreating = true" style="background:var(--secondary)">+ Crear nueva</button>
-        </div>
-
         <div class="card-panel">
             <input v-model="userName" placeholder="* Tu nombre">
             <input v-model="giftContent" placeholder="* Nombre real del regalo">
             <input v-model="giftFakeDesc" placeholder="* Descripción trampa">
             
             <div v-if="!joining">
-                <label>Participantes:</label><input type="number" v-model="numPlayers">
+                <label>Nº Participantes:</label><input type="number" v-model="numPlayers">
+                <label>Máximo Rondas:</label><input type="number" v-model="maxRounds">
                 <label>Límite robos p/p:</label><input type="number" v-model="maxStealsPerUser">
                 <label>Tiempo turno (seg):</label><input type="number" v-model="maxTime">
                 <button @click="createRoom" :disabled="!isFormValid">Crear Sala</button>
-                <button @click="joining = true" style="background:#747d8c">Código manual</button>
+                <button @click="joining = true" style="background:#747d8c">Tengo código</button>
             </div>
             <div v-else>
                 <input v-model="roomCodeInput" placeholder="CÓDIGO">
                 <button @click="joinRoom" :disabled="!isFormValid || !roomCodeInput">Entrar</button>
-                <button @click="joining = false" style="background:#747d8c">Atrás</button>
+                <button @click="joining = false" style="background:#747d8c">Volver</button>
             </div>
         </div>
     </div>
@@ -64,27 +57,28 @@
         <h2>Sala: {{ roomId }}</h2>
         <p>Participantes: {{ participants.length }} / {{ targetPlayers }}</p>
         <div v-for="p in participants">👤 {{ p.name }}</div>
-        <button v-if="isHost && participants.length >= targetPlayers" @click="startGame">¡EMPEZAR!</button>
-        <p v-else-if="participants.length >= targetPlayers" style="color:var(--success)">¡Sala llena! Esperando inicio...</p>
+        <button v-if="isHost && participants.length >= targetPlayers" @click="startGame">¡EMPEZAR JUEGO!</button>
     </div>
 
     <div v-if="screen === 'game'">
         <div class="game-header">
-            <div class="stats-badge">
-                RONDA: {{ round }} <br>
+            <div class="stats-badge" v-if="!gameEnded">
+                RONDA: {{ round }} / {{ maxRounds }}<br>
                 TURNO: {{ currentTurnIndex + 1 }} / {{ participants.length }}
             </div>
-            <div v-if="!gameEnded">Turno de: <br><strong>{{ currentTurnPlayer }}</strong></div>
-            <div v-else>🏁 FIN DEL JUEGO</div>
+            <div v-if="!gameEnded">Turno de:<br><strong>{{ currentTurnPlayer }}</strong></div>
+            <div v-else>🎉 RESULTADOS FINALES 🎉</div>
             <div v-if="timeLeft > 0 && !gameEnded" class="timer-badge">⏳ {{ timeLeft }}s</div>
         </div>
 
         <div v-if="gameEnded" class="card-panel">
-            <h3>Resultados:</h3>
-            <div v-for="gift in gifts" :key="gift.id" style="margin-bottom:8px">
-                👤 <strong>{{ gift.owner }}</strong>: 🎁 {{ gift.content }}
+            <div class="summary-list">
+                <div v-for="gift in gifts" :key="gift.id" style="margin-bottom:8px">
+                    👤 <strong>{{ gift.owner }}</strong> se lleva: 🎁 {{ gift.content }}
+                </div>
             </div>
-            <button @click="location.reload()">Reiniciar</button>
+            <button v-if="isHost" @click="restartGame" style="background:var(--success)">🔄 REINICIAR PARTIDA</button>
+            <p v-else>Esperando a que el anfitrión reinicie...</p>
         </div>
 
         <div v-else class="grid">
@@ -94,13 +88,12 @@
                 <div style="font-weight: bold; font-size: 13px;">{{ gift.opened ? gift.content : gift.fakeDesc }}</div>
 
                 <div v-if="isMyTurn">
-                    <button v-if="!gift.opened" @click="openAndKeep(gift)">Abrir</button>
+                    <button v-if="!gift.opened && (round > 1 || gift.creator !== userName)" @click="openAndKeep(gift)">Abrir</button>
                     <button v-if="gift.opened && gift.owner !== userName && canISteal && round > 1" @click="stealGift(gift)">¡ROBAR!</button>
                 </div>
             </div>
         </div>
         <button v-if="isMyTurn && !gameEnded" @click="nextTurn" style="background:#747d8c">Pasar Turno</button>
-        <button v-if="isHost && !gameEnded" @click="endGameManually" style="background:var(--secondary); margin-top:20px">Cerrar Partida</button>
     </div>
 </div>
 
@@ -122,7 +115,7 @@ const db = firebase.database();
 
 createApp({
     setup() {
-        const screen = ref('setup'), userName = ref(''), giftContent = ref(''), giftFakeDesc = ref(''), numPlayers = ref(2), maxStealsPerUser = ref(2), maxTime = ref(30), roomId = ref(''), roomCodeInput = ref(''), isHost = ref(false), joining = ref(false), isCreating = ref(false), availableRooms = ref([]), gameEnded = ref(false), gifts = ref([]), participants = ref([]), currentTurnIndex = ref(0), timeLeft = ref(0), targetPlayers = ref(0), round = ref(1);
+        const screen = ref('setup'), userName = ref(''), giftContent = ref(''), giftFakeDesc = ref(''), numPlayers = ref(2), maxStealsPerUser = ref(2), maxTime = ref(30), maxRounds = ref(2), roomId = ref(''), roomCodeInput = ref(''), isHost = ref(false), joining = ref(false), isCreating = ref(false), availableRooms = ref([]), gameEnded = ref(false), gifts = ref([]), participants = ref([]), currentTurnIndex = ref(0), timeLeft = ref(0), targetPlayers = ref(0), round = ref(1);
 
         const isFormValid = computed(() => userName.value && giftContent.value && giftFakeDesc.value);
 
@@ -143,16 +136,14 @@ createApp({
 
         const initListeners = (id) => {
             db.ref(`rooms/${id}/config`).on('value', snap => {
-                const c = snap.val(); targetPlayers.value = c.numPlayers; maxStealsPerUser.value = c.maxStealsPerUser; maxTime.value = c.maxTime;
+                const c = snap.val(); 
+                targetPlayers.value = c.numPlayers; 
+                maxStealsPerUser.value = c.maxStealsPerUser; 
+                maxTime.value = c.maxTime;
+                maxRounds.value = c.maxRounds;
             });
-            db.ref(`rooms/${id}/participants`).on('value', snap => {
-                const val = snap.val();
-                participants.value = val ? Object.values(val) : [];
-            });
-            db.ref(`rooms/${id}/gifts`).on('value', snap => {
-                const val = snap.val();
-                gifts.value = val ? Object.values(val) : [];
-            });
+            db.ref(`rooms/${id}/participants`).on('value', snap => participants.value = Object.values(snap.val() || {}));
+            db.ref(`rooms/${id}/gifts`).on('value', snap => gifts.value = Object.values(snap.val() || {}));
             db.ref(`rooms/${id}/gameStatus`).on('value', snap => {
                 const s = snap.val();
                 if (s) {
@@ -169,7 +160,7 @@ createApp({
             const id = Math.random().toString(36).substring(2, 6).toUpperCase();
             roomId.value = id; isHost.value = true;
             db.ref(`rooms/${id}`).set({ 
-                config: { numPlayers: numPlayers.value, maxTime: maxTime.value, maxStealsPerUser: maxStealsPerUser.value },
+                config: { numPlayers: numPlayers.value, maxTime: maxTime.value, maxStealsPerUser: maxStealsPerUser.value, maxRounds: maxRounds.value },
                 gameStatus: { started: false, turnIndex: 0, ended: false, round: 1 }
             }).then(() => { registerInRoom(id); screen.value = 'lobby'; initListeners(id); });
         };
@@ -177,11 +168,7 @@ createApp({
         const selectRoom = (id) => {
             db.ref(`rooms/${id}`).once('value', snap => {
                 const room = snap.val();
-                const currentParts = room.participants ? Object.keys(room.participants).length : 0;
-                if (currentParts >= room.config.numPlayers) {
-                    alert("¡Sala llena!");
-                    return;
-                }
+                if (Object.keys(room.participants || {}).length >= room.config.numPlayers) return alert("Sala llena");
                 roomId.value = id; registerInRoom(id); screen.value = 'lobby'; initListeners(id);
             });
         };
@@ -190,7 +177,7 @@ createApp({
             db.ref(`rooms/${id}/participants`).push({ name: userName.value, steals: 0 });
             db.ref(`rooms/${id}/gifts`).push({
                 id: Math.random().toString(36).substr(2, 9),
-                content: giftContent.value, fakeDesc: giftFakeDesc.value, opened: false, owner: ''
+                content: giftContent.value, fakeDesc: giftFakeDesc.value, creator: userName.value, opened: false, owner: ''
             });
         };
 
@@ -203,8 +190,12 @@ createApp({
         };
 
         const updateTurn = (idx, r) => {
+            if (r > maxRounds.value) {
+                db.ref(`rooms/${roomId.value}/gameStatus`).update({ ended: true });
+                return;
+            }
             const dl = maxTime.value > 0 ? Date.now() + (maxTime.value * 1000) : null;
-            db.ref(`rooms/${roomId.value}/gameStatus`).update({ started: true, turnIndex: idx, round: r, deadline: dl });
+            db.ref(`rooms/${roomId.value}/gameStatus`).update({ started: true, turnIndex: idx, round: r, deadline: dl, ended: false });
         };
 
         const openAndKeep = (gift) => {
@@ -235,15 +226,28 @@ createApp({
         const nextTurn = () => {
             let nextIdx = currentTurnIndex.value + 1;
             let nextRound = round.value;
-            
-            if (nextIdx >= participants.value.length) {
-                nextIdx = 0;
-                nextRound++;
-            }
+            if (nextIdx >= participants.value.length) { nextIdx = 0; nextRound++; }
             updateTurn(nextIdx, nextRound);
         };
 
-        const endGameManually = () => db.ref(`rooms/${roomId.value}/gameStatus`).update({ ended: true });
+        const restartGame = () => {
+            // Resetear Regalos
+            db.ref(`rooms/${roomId.value}/gifts`).once('value', snap => {
+                const giftsData = snap.val();
+                Object.keys(giftsData).forEach(key => {
+                    db.ref(`rooms/${roomId.value}/gifts/${key}`).update({ opened: false, owner: '' });
+                });
+            });
+            // Resetear Robos de Participantes
+            db.ref(`rooms/${roomId.value}/participants`).once('value', snap => {
+                const partsData = snap.val();
+                Object.keys(partsData).forEach(key => {
+                    db.ref(`rooms/${roomId.value}/participants/${key}`).update({ steals: 0 });
+                });
+            });
+            // Reiniciar Rondas y Turnos
+            updateTurn(0, 1);
+        };
 
         let timer;
         const startLocalTimer = (deadline) => {
@@ -255,7 +259,7 @@ createApp({
             }, 1000);
         };
 
-        return { screen, userName, giftContent, giftFakeDesc, numPlayers, maxStealsPerUser, maxTime, roomId, roomCodeInput, isHost, joining, isCreating, availableRooms, gameEnded, participants, gifts, currentTurnPlayer, isMyTurn, timeLeft, targetPlayers, round, currentTurnIndex, isFormValid, canISteal, createRoom, joinRoom: () => selectRoom(roomCodeInput.value.toUpperCase()), selectRoom, startGame, openAndKeep, stealGift, nextTurn, endGameManually };
+        return { screen, userName, giftContent, giftFakeDesc, numPlayers, maxStealsPerUser, maxTime, maxRounds, roomId, roomCodeInput, isHost, joining, isCreating, availableRooms, gameEnded, participants, gifts, currentTurnPlayer, isMyTurn, timeLeft, targetPlayers, round, currentTurnIndex, isFormValid, canISteal, createRoom, joinRoom: () => selectRoom(roomCodeInput.value.toUpperCase()), selectRoom, startGame, openAndKeep, stealGift, nextTurn, restartGame };
     }
 }).mount('#app');
 </script>
