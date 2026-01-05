@@ -3,134 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reyes Magos: Reparto Simple 👑</title>
+    <title>Reyes Magos: Apertura Libre 👑</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --royal: #1a237e; --gold: #c5a059; --bg: #f5f5f5; --white: #ffffff; --text: #2c3e50; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        :root { --royal: #1a237e; --gold: #c5a059; --bg: #f8f9fa; --white: #ffffff; --text: #2c3e50; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         .container { max-width: 800px; margin: 0 auto; }
+        .card { background: var(--white); border-radius: 15px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 4px solid var(--gold); }
+        h1, h2, h3 { color: var(--royal); text-align: center; }
         
-        /* TARJETAS CLARAS */
-        .card { background: var(--white); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 5px solid var(--gold); }
-        h1, h2 { color: var(--royal); text-align: center; margin-bottom: 25px; }
-        
-        /* INPUTS SIMPLES */
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
-        button { background: var(--royal); color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
-        button:disabled { background: #bdc3c7; }
-        .btn-outline { background: none; border: 2px solid var(--gold); color: var(--gold); margin-top: 10px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        button { background: var(--royal); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        button:disabled { background: #bdc3c7; opacity: 0.7; }
+        .btn-outline { background: white; border: 2px solid var(--gold); color: var(--gold); }
 
-        /* SISTEMA DE ASIGNACIÓN POR CLIC */
-        .flex-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        /* ASIGNACIÓN */
+        .flex-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         @media (max-width: 600px) { .flex-grid { grid-template-columns: 1fr; } }
+        .list-item { background: #fff; border: 1px solid #eee; padding: 12px; margin-bottom: 8px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        .list-item.selected { background: var(--gold); color: white; border-color: var(--gold); }
+        .count-badge { background: var(--royal); color: white; padding: 2px 8px; border-radius: 20px; font-size: 12px; float: right; }
 
-        .list-item { background: #fff; border: 1px solid #ddd; padding: 12px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .list-item:hover { border-color: var(--royal); background: #f0f3ff; }
-        .list-item.selected { background: var(--gold); color: white; border-color: var(--gold); transform: scale(1.02); }
-        
-        .person-box { border: 1px solid #eee; padding: 10px; border-radius: 10px; background: #fafafa; margin-bottom: 10px; }
-        .badge-gift { background: var(--royal); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; display: inline-block; margin: 2px; }
-
-        /* JUEGO */
-        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-        .gift-card { background: white; border-radius: 10px; padding: 15px; text-align: center; border: 1px solid #ddd; position: relative; }
-        .gift-card.is-turn { border: 3px solid var(--gold); box-shadow: 0 0 15px rgba(197, 160, 89, 0.4); }
-        .gift-img { width: 100%; height: 100px; object-fit: cover; border-radius: 6px; margin-top: 10px; }
-        .status-bar { background: var(--royal); color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+        /* JUEGO LIBRE */
+        .my-section { background: #eef2ff; padding: 15px; border-radius: 15px; border: 2px solid var(--royal); margin-bottom: 30px; }
+        .others-section { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+        .gift-box { background: white; border-radius: 10px; padding: 10px; text-align: center; border: 1px solid #ddd; cursor: pointer; position: relative; }
+        .gift-box.opened { border-color: var(--gold); }
+        .gift-img { width: 100%; height: 80px; object-fit: cover; border-radius: 4px; margin-top: 5px; }
+        .label-user { font-size: 11px; font-weight: bold; color: var(--royal); display: block; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
 <div id="app" class="container">
     <div v-if="step === 'identity'" class="card">
-        <h1>👑 Registro de Reyes</h1>
+        <h1>👑 Mi Saco de Regalos</h1>
         <input v-model="user.name" placeholder="Escribe tu nombre">
         <div style="margin-top: 20px;">
-            <h3>Tus Regalos</h3>
-            <div v-for="(rg, idx) in user.myGifts" :key="idx" class="person-box">
-                <input v-model="rg.realName" placeholder="Nombre real del regalo">
-                <input v-model="rg.fakeDesc" placeholder="Descripción para el juego">
-                <input v-model="rg.imgUrl" placeholder="URL Imagen (opcional)">
+            <div v-for="(rg, idx) in user.myGifts" :key="idx" style="background:#fafafa; padding:10px; margin-bottom:10px; border-radius:8px;">
+                <input v-model="rg.realName" placeholder="Regalo real">
+                <input v-model="rg.fakeDesc" placeholder="Pista o descripción">
+                <input v-model="rg.imgUrl" placeholder="URL Foto (opcional)">
             </div>
-            <button class="btn-outline" @click="addGiftSlot">+ Añadir otro regalo</button>
-            <button @click="step = 'rooms'" :disabled="!user.name || user.myGifts.some(g => !g.realName)" style="margin-top:20px">Siguiente: Elegir Sala</button>
+            <button class="btn-outline" @click="addGiftSlot">+ Añadir otro</button>
+            <button @click="step = 'rooms'" :disabled="!user.name || user.myGifts.some(g => !g.realName)">Siguiente: Salas</button>
         </div>
     </div>
 
     <div v-if="step === 'rooms'" class="card">
-        <h2>📍 Elige una Sala</h2>
+        <h2>📍 Elige Castillo</h2>
         <div v-if="availableRooms.length === 0">
             <button @click="createNewRoom">Crear nueva Sala</button>
         </div>
         <div v-else>
             <div v-for="room in availableRooms" :key="room.id" class="list-item" @click="joinRoom(room.id)">
-                <strong>Sala: {{ room.id }}</strong> — {{ room.playerCount }} participantes
+                <strong>Sala: {{ room.id }}</strong> ({{ room.playerCount }} p.)
             </div>
-            <button class="btn-outline" @click="createNewRoom">O crea una sala nueva</button>
+            <button class="btn-outline" @click="createNewRoom">Nueva Sala</button>
         </div>
     </div>
 
     <div v-if="step === 'assign'" class="card">
-        <h2>🎁 Asigna tus Regalos</h2>
-        <p style="font-size: 0.9em; color: #666; text-align: center;">1. Toca un regalo de la izquierda.<br>2. Toca a quién se lo das a la derecha.</p>
-        
+        <h2>🎁 Repartiendo Ilusión</h2>
+        <p style="text-align:center; font-size:13px">Selecciona un regalo y luego a quién dárselo.</p>
         <div class="flex-grid">
             <div>
                 <h4>Mis Regalos</h4>
-                <div v-for="g in user.myGifts" :key="g.id" 
-                     class="list-item" :class="{selected: selectedGiftId === g.id}"
-                     @click="selectedGiftId = g.id">
+                <div v-for="g in user.myGifts" :key="g.id" class="list-item" :class="{selected: selectedGiftId === g.id}" @click="selectedGiftId = g.id">
                     {{ g.realName }}
                 </div>
             </div>
             <div>
-                <h4>¿Para quién es?</h4>
-                <div v-for="p in participants" :key="p.name" 
-                     class="list-item" @click="assignTo(p.name)">
+                <h4>Destinatarios</h4>
+                <div v-for="p in participants" :key="p.name" class="list-item" @click="assignTo(p.name)">
                     <strong>{{ p.name }}</strong>
-                    <div style="margin-top:5px">
-                        <span v-for="ag in p.assignedGifts" class="badge-gift">{{ ag.realName }}</span>
+                    <span class="count-badge">🎁 {{ p.assignedGifts ? p.assignedGifts.length : 0 }}</span>
+                </div>
+            </div>
+        </div>
+        <button @click="markAsReady" :disabled="user.myGifts.length > 0">LISTO: EMPEZAR JUEGO</button>
+    </div>
+
+    <div v-if="step === 'waiting'" class="card" style="text-align:center">
+        <h2>⌛ Preparando el Gran Día</h2>
+        <div v-for="p in participants" :key="p.name" style="padding:8px">{{ p.name }}: {{ p.ready ? '✅ LISTO' : '🕯️ ASIGNANDO...' }}</div>
+    </div>
+
+    <div v-if="step === 'game'">
+        <div class="my-section">
+            <h3>🎁 TUS REGALOS RECIBIDOS</h3>
+            <div class="others-section">
+                <div v-for="(gift, idx) in myReceivedGifts" :key="idx" class="gift-box" @click="openMyGift(idx)">
+                    <div v-if="!gift.opened">
+                        <div style="font-size:30px">📦</div>
+                        <div style="font-size:11px">{{ gift.fakeDesc }}</div>
+                    </div>
+                    <div v-else>
+                        <img :src="gift.imgUrl || 'https://via.placeholder.com/80?text=Regalo'" class="gift-img">
+                        <div style="font-size:12px; font-weight:bold">{{ gift.realName }}</div>
                     </div>
                 </div>
             </div>
         </div>
-        <button @click="markAsReady" :disabled="user.myGifts.length > 0" style="margin-top:25px">LISTO: EMPEZAR JUEGO</button>
-    </div>
 
-    <div v-if="step === 'waiting'" class="card" style="text-align:center">
-        <h2>⏳ Esperando...</h2>
-        <div v-for="p in participants" :key="p.name" style="padding:10px; border-bottom:1px solid #eee">
-            {{ p.name }}: <strong>{{ p.ready ? '✅ LISTO' : '🕯️ ASIGNANDO...' }}</strong>
-        </div>
-    </div>
-
-    <div v-if="step === 'game'">
-        <div class="status-bar">
-            Turno de: <strong style="font-size: 1.4em;">{{ participants[gameStatus.turnIndex]?.name }}</strong>
-        </div>
-
-        <div class="game-grid">
-            <div v-for="gift in allGifts" :key="gift.id" 
-                 class="gift-card" :class="{'is-turn': isMyTurn}"
-                 @click="openGift(gift)">
-                <div style="font-size: 0.7em; color: var(--gold); font-weight: bold;">PARA: {{ gift.target }}</div>
-                
-                <div v-if="!gift.opened">
-                    <div style="font-size: 40px; margin: 10px 0;">🎁</div>
-                    <div style="font-size: 0.9em; font-style: italic;">{{ gift.fakeDesc }}</div>
+        <h3>🌍 REGALOS DE LA CORTE</h3>
+        <div class="others-section">
+            <template v-for="p in participants">
+                <div v-for="g in p.assignedGifts" v-if="p.name !== user.name" class="gift-box" style="cursor:default">
+                    <span class="label-user">{{ p.name }}</span>
+                    <div v-if="!g.opened">📦 <small>?</small></div>
+                    <div v-else>
+                        <img :src="g.imgUrl || 'https://via.placeholder.com/80?text=Regalo'" class="gift-img">
+                        <div style="font-size:10px">{{ g.realName }}</div>
+                    </div>
                 </div>
-                
-                <div v-else>
-                    <img :src="gift.imgUrl || 'https://via.placeholder.com/100?text=Regalo'" class="gift-img">
-                    <div style="font-weight: bold; margin-top: 5px;">{{ gift.realName }}</div>
-                    <div style="font-size: 0.8em; color: #888;">De: {{ gift.from }}</div>
-                </div>
-            </div>
+            </template>
         </div>
-        <button v-if="isMyTurn" @click="passTurn" class="btn-outline" style="margin-top:20px; background:white">Terminar Turno</button>
     </div>
 </div>
 
@@ -142,106 +133,67 @@ const firebaseConfig = {
     authDomain: "juegoenvidioso.firebaseapp.com",
     databaseURL: "https://juegoenvidioso-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "juegoenvidioso",
-    storageBucket: "juegoenvidioso.firebasestorage.app",
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 createApp({
     setup() {
-        const step = ref('identity');
-        const user = ref({ name: '', myGifts: [{ id: Date.now(), realName: '', fakeDesc: '', imgUrl: '' }] });
-        const roomId = ref('');
-        const availableRooms = ref([]);
-        const participants = ref([]);
-        const gameStatus = ref({ started: false, turnIndex: 0 });
-        const selectedGiftId = ref(null);
+        const step = ref('identity'), roomId = ref(''), user = ref({ name: '', myGifts: [{ id: Date.now(), realName: '', fakeDesc: '', imgUrl: '' }] });
+        const availableRooms = ref([]), participants = ref([]), selectedGiftId = ref(null);
 
-        const isMyTurn = computed(() => participants.value[gameStatus.value.turnIndex]?.name === user.value.name);
-        const allGifts = computed(() => {
-            let list = [];
-            participants.value.forEach(p => {
-                (p.assignedGifts || []).forEach(g => list.push({ ...g, target: p.name }));
-            });
-            return list;
+        const myReceivedGifts = computed(() => {
+            const me = participants.value.find(p => p.name === user.value.name);
+            return me ? me.assignedGifts || [] : [];
         });
 
         onMounted(() => {
             db.ref('rooms').on('value', snap => {
                 const data = snap.val();
-                availableRooms.value = data ? Object.keys(data).map(k => ({
-                    id: k, playerCount: Object.keys(data[k].participants || {}).length
-                })) : [];
+                availableRooms.value = data ? Object.keys(data).map(k => ({ id: k, playerCount: Object.keys(data[k].participants || {}).length })) : [];
             });
         });
 
         const addGiftSlot = () => user.value.myGifts.push({ id: Date.now()+Math.random(), realName: '', fakeDesc: '', imgUrl: '' });
-        
         const createNewRoom = () => joinRoom(Math.random().toString(36).substring(2, 6).toUpperCase());
 
         const joinRoom = (id) => {
             roomId.value = id;
             const key = user.value.name.replace(/[\.\#\$\/\[\]]/g, "_");
             db.ref(`rooms/${id}/participants/${key}`).set({ name: user.value.name, ready: false, assignedGifts: [] });
-            initRoomListener(id);
-            step.value = 'assign';
-        };
-
-        const initRoomListener = (id) => {
             db.ref(`rooms/${id}/participants`).on('value', snap => {
-                const data = snap.val();
-                if (data) {
-                    participants.value = Object.values(data);
-                    if (participants.value.every(p => p.ready) && participants.value.length > 1) {
-                        db.ref(`rooms/${id}/gameStatus`).update({ started: true });
-                    }
+                if (snap.val()) {
+                    participants.value = Object.values(snap.val());
+                    if (participants.value.every(p => p.ready) && participants.value.length > 1) step.value = 'game';
                 }
             });
-            db.ref(`rooms/${id}/gameStatus`).on('value', snap => {
-                if(snap.val()?.started) step.value = 'game', gameStatus.value = snap.val();
-            });
+            step.value = 'assign';
         };
 
         const assignTo = (targetName) => {
             if (!selectedGiftId.value) return;
-            const giftIdx = user.value.myGifts.findIndex(g => g.id === selectedGiftId.value);
-            const gift = user.value.myGifts.splice(giftIdx, 1)[0];
-            gift.from = user.value.name;
-            gift.opened = false;
-
-            const targetKey = targetName.replace(/[\.\#\$\/\[\]]/g, "_");
-            db.ref(`rooms/${roomId.value}/participants/${targetKey}/assignedGifts`).once('value', s => {
-                const current = s.val() || [];
-                current.push(gift);
-                db.ref(`rooms/${roomId.value}/participants/${targetKey}/assignedGifts`).set(current);
+            const idx = user.value.myGifts.findIndex(g => g.id === selectedGiftId.value);
+            const gift = { ...user.value.myGifts.splice(idx, 1)[0], from: user.value.name, opened: false };
+            const key = targetName.replace(/[\.\#\$\/\[\]]/g, "_");
+            db.ref(`rooms/${roomId.value}/participants/${key}/assignedGifts`).once('value', s => {
+                const cur = s.val() || [];
+                cur.push(gift);
+                db.ref(`rooms/${roomId.value}/participants/${key}/assignedGifts`).set(cur);
             });
             selectedGiftId.value = null;
         };
 
         const markAsReady = () => {
-            const key = user.value.name.replace(/[\.\#\$\/\[\]]/g, "_");
-            db.ref(`rooms/${roomId.value}/participants/${key}`).update({ ready: true });
+            db.ref(`rooms/${roomId.value}/participants/${user.value.name.replace(/[\.\#\$\/\[\]]/g, "_")}`).update({ ready: true });
             step.value = 'waiting';
         };
 
-        const openGift = (gift) => {
-            if (!isMyTurn.value || gift.opened) return;
-            const targetKey = gift.target.replace(/[\.\#\$\/\[\]]/g, "_");
-            db.ref(`rooms/${roomId.value}/participants/${targetKey}/assignedGifts`).once('value', s => {
-                const gifts = s.val();
-                const idx = gifts.findIndex(g => g.id === gift.id);
-                gifts[idx].opened = true;
-                db.ref(`rooms/${roomId.value}/participants/${targetKey}/assignedGifts`).set(gifts);
-            });
+        const openMyGift = (giftIdx) => {
+            const key = user.value.name.replace(/[\.\#\$\/\[\]]/g, "_");
+            db.ref(`rooms/${roomId.value}/participants/${key}/assignedGifts/${giftIdx}`).update({ opened: true });
         };
 
-        const passTurn = () => {
-            let next = gameStatus.value.turnIndex + 1;
-            if (next >= participants.value.length) next = 0;
-            db.ref(`rooms/${roomId.value}/gameStatus`).update({ turnIndex: next });
-        };
-
-        return { step, user, availableRooms, roomId, participants, gameStatus, allGifts, isMyTurn, selectedGiftId, addGiftSlot, createNewRoom, joinRoom, assignTo, markAsReady, openGift, passTurn };
+        return { step, user, availableRooms, participants, selectedGiftId, myReceivedGifts, addGiftSlot, createNewRoom, joinRoom, assignTo, markAsReady, openMyGift };
     }
 }).mount('#app');
 </script>
