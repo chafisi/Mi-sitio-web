@@ -3,101 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Regalo de Reyes Mágico 👑</title>
+    <title>Reyes Magos: El Gran Reparto 👑</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/4.1.0/vuedraggable.umd.min.js"></script>
 
     <style>
-        :root { --gold: #d4af37; --royal-blue: #002366; --velvet: #800020; --white: #fdfcf0; }
-        body { font-family: 'Georgia', serif; background: var(--royal-blue); color: var(--white); margin: 0; padding: 10px; }
-        #app { max-width: 900px; margin: 0 auto; }
+        :root { --gold: #d4af37; --royal: #002366; --velvet: #800020; --cream: #fdfcf0; --night: #0a0e1a; }
+        body { font-family: 'Georgia', serif; background: var(--night); color: white; margin: 0; padding: 15px; background-image: radial-gradient(circle at center, #1a2a4a 0%, #0a0e1a 100%); min-height: 100vh; }
+        .container { max-width: 900px; margin: 0 auto; }
         
-        .setup-card { background: var(--white); color: #333; padding: 20px; border-radius: 15px; border: 4px solid var(--gold); }
-        .grid-profiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin: 20px 0; }
-        .profile-input { background: #eee; padding: 10px; border-radius: 10px; border: 1px solid #ccc; }
-        
-        .game-container { display: flex; flex-direction: column; gap: 20px; }
-        .zone-title { border-bottom: 2px solid var(--gold); padding-bottom: 5px; color: var(--gold); font-variant: small-caps; }
-        
-        /* ZONA PERSONAS */
-        .zone-people { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; }
-        .person-card { width: 100px; text-align: center; padding: 10px; border-radius: 10px; background: var(--velvet); border: 2px solid var(--gold); }
-        .person-card.active { transform: scale(1.1); box-shadow: 0 0 15px var(--gold); }
+        /* ESTILOS COMUNES */
+        .card { background: rgba(255, 255, 255, 0.05); border: 2px solid var(--gold); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
+        h1, h2, h3 { color: var(--gold); text-align: center; font-variant: small-caps; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid var(--gold); background: rgba(255,255,255,0.9); color: #333; box-sizing: border-box; }
+        button { background: linear-gradient(135deg, var(--gold), #b8860b); color: var(--royal); border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1em; transition: 0.3s; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5); }
+        button:disabled { background: #555; cursor: not-allowed; transform: none; }
 
-        /* ZONA REGALOS */
-        .zone-gifts { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
-        .gift-box { background: var(--white); color: #333; padding: 10px; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; height: 160px; display: flex; flex-direction: column; justify-content: center; }
-        .gift-box img { width: 100%; height: 100px; object-fit: cover; border-radius: 5px; margin-top: 5px; }
-        
-        button { background: var(--gold); color: var(--royal-blue); border: none; padding: 10px; font-weight: bold; border-radius: 5px; cursor: pointer; }
-        input { width: 100%; margin-top: 5px; padding: 5px; box-sizing: border-box; }
-        .owner-tag { position: absolute; top: 0; left: 0; right: 0; background: var(--gold); font-size: 10px; font-weight: bold; }
+        /* DRAG & DROP */
+        .drop-zone { min-height: 60px; background: rgba(212, 175, 55, 0.1); border: 2px dashed var(--gold); border-radius: 15px; padding: 10px; margin-top: 10px; }
+        .draggable-item { background: var(--cream); color: #333; padding: 12px; margin: 8px 0; border-radius: 8px; font-weight: bold; cursor: grab; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--velvet); }
+        .person-box { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.3); margin-bottom: 15px; }
+
+        /* FASE APERTURA: REYES MAGOS STYLE */
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; margin-top: 30px; }
+        .gift-box-reyes { background: var(--cream); border-radius: 15px; overflow: hidden; position: relative; min-height: 220px; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center; border: 4px solid var(--gold); }
+        .gift-box-reyes.opened { background: white; transform: rotate(0); }
+        .gift-box-reyes img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; }
+        .owner-tag { position: absolute; top: 0; left: 0; right: 0; background: var(--velvet); color: white; padding: 5px; font-size: 0.7em; font-weight: bold; }
+        .fake-desc { font-style: italic; font-size: 0.9em; color: #666; }
+        .turn-indicator { background: var(--velvet); padding: 15px; border-radius: 15px; text-align: center; border: 2px solid var(--gold); margin-bottom: 25px; }
+
+        .flex-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        @media (max-width: 600px) { .flex-cols { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<div id="app">
-    <div v-if="screen === 'setup'" class="setup-card">
-        <h2 style="text-align:center">👑 Preparativos de Reyes</h2>
-        <div class="grid-profiles">
-            <div v-for="i in 8" :key="i" class="profile-input">
-                <strong>Persona {{ i }}</strong>
-                <input v-model="tempPlayers[i-1].name" placeholder="Nombre">
-                <input v-model="tempPlayers[i-1].giftName" placeholder="Regalo">
-                <input v-model="tempPlayers[i-1].giftImg" placeholder="URL Imagen">
+<div id="app" class="container">
+    <div v-if="step === 'identity'" class="card">
+        <h1>👑 Perfil del Rey Mago</h1>
+        <input v-model="user.name" placeholder="Tu Nombre">
+        <div style="margin-top: 20px;">
+            <h3>Tus Regalos para el saco</h3>
+            <div v-for="(rg, idx) in user.myGifts" :key="idx" style="margin-bottom: 15px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; border: 1px solid var(--gold);">
+                <input v-model="rg.realName" placeholder="Contenido Real (Ej: Reloj)">
+                <input v-model="rg.fakeDesc" placeholder="Pista de Reyes (Ej: Algo que da vueltas...)">
+                <input v-model="rg.imgUrl" placeholder="URL Foto del regalo (Opcional)">
             </div>
+            <button @click="addGiftSlot" style="background: transparent; color: var(--gold); border: 1px solid var(--gold); margin-bottom: 10px;">+ Añadir Regalo</button>
+            <button @click="step = 'rooms'" :disabled="!user.name || user.myGifts.some(g => !g.realName)">Ver Salas</button>
         </div>
-        <button @click="createRoom" style="width:100%; font-size:1.2em">GENERAR MÁGIA</button>
     </div>
 
-    <div v-if="screen === 'game'" class="game-container">
-        <div style="text-align: center">
-            <h1>Sala: {{ roomId }}</h1>
-            <p v-if="!gameEnded">Turno de: <strong style="color:var(--gold)">{{ participants[currentTurnIndex]?.name }}</strong></p>
+    <div v-if="step === 'rooms'" class="card">
+        <h2>🏰 Selecciona un Castillo</h2>
+        <div v-if="availableRooms.length === 0">
+            <p style="text-align: center">No hay castillos disponibles ahora mismo.</p>
+            <button @click="createNewRoom">Fundar Nuevo Castillo (Sala)</button>
         </div>
+        <div v-else>
+            <div v-for="room in availableRooms" :key="room.id" class="card" style="margin-bottom:10px; cursor:pointer; background: var(--velvet);" @click="joinRoom(room.id)">
+                <h3 style="margin:0; color:white">Castillo: {{ room.id }}</h3>
+                <p style="margin:5px 0 0 0; font-size:0.8em">Corte: {{ room.playerCount }} participantes</p>
+            </div>
+            <button @click="createNewRoom" style="margin-top:15px; background: var(--royal); color: white;">Crear nueva sala</button>
+        </div>
+    </div>
 
-        <h3 class="zone-title">👥 Destinatarios</h3>
-        <div class="zone-people">
-            <div v-for="(p, idx) in participants" :key="idx" class="person-card" :class="{active: currentTurnIndex === idx}">
-                <div style="font-size: 20px">👤</div>
-                <div style="font-size: 12px">{{ p.name }}</div>
+    <div v-if="step === 'assign'" class="card">
+        <h2>📜 El Reparto de los Reyes</h2>
+        <p style="text-align:center">Asigna cada regalo a su destinatario arrastrándolo.</p>
+        
+        <div class="flex-cols">
+            <div>
+                <h4>🎁 Saco de Regalos</h4>
+                <draggable class="drop-zone" :list="user.myGifts" group="reyes" item-key="id">
+                    <template #item="{element}">
+                        <div class="draggable-item">{{ element.realName }}</div>
+                    </template>
+                </draggable>
+            </div>
+            <div>
+                <h4>👥 La Corte</h4>
+                <div v-for="p in participants" :key="p.name" class="person-box">
+                    <strong>{{ p.name }}</strong>
+                    <draggable class="drop-zone" :list="p.assignedGifts" group="reyes" item-key="id" @change="syncAssignment">
+                        <template #item="{element}">
+                            <div class="draggable-item" style="background: #fff4d1; border-left-color: var(--gold);">{{ element.realName }}</div>
+                        </template>
+                    </draggable>
+                </div>
             </div>
         </div>
+        <button @click="markAsReady" :disabled="user.myGifts.length > 0" style="margin-top: 25px;">CONFIRMAR REPARTO</button>
+    </div>
 
-        <h3 class="zone-title">🎁 Regalos Reales</h3>
-        <div class="zone-gifts">
-            <div v-for="gift in gifts" :key="gift.id" class="gift-box" @click="handleAction(gift)">
-                <div v-if="gift.owner" class="owner-tag">PARA: {{ gift.owner }}</div>
+    <div v-if="step === 'waiting'" class="card" style="text-align:center">
+        <h2>⏳ Esperando al resto de Sabios...</h2>
+        <div v-for="p in participants" :key="p.name" style="margin: 10px 0; font-size: 1.2em;">
+            {{ p.name }} {{ p.ready ? '✅ LISTO' : '🕯️ Preparando...' }}
+        </div>
+    </div>
+
+    <div v-if="step === 'game'">
+        <div class="turn-indicator">
+            <h2 style="margin:0; color: white;">Es el turno de:</h2>
+            <h1 style="margin:5px 0; color: var(--gold); font-size: 2.5em;">{{ participants[gameStatus.turnIndex]?.name }}</h1>
+            <p style="margin:0; opacity: 0.8;">Ronda: {{ gameStatus.round }}</p>
+        </div>
+
+        <div class="game-grid">
+            <div v-for="gift in allGifts" :key="gift.id" class="gift-box-reyes" @click="openGift(gift)">
+                <div class="owner-tag">PARA: {{ gift.target }}</div>
                 
                 <div v-if="!gift.opened">
-                    <div style="font-size: 40px">📦</div>
-                    <div style="font-size: 11px">Tocar para abrir</div>
+                    <div style="font-size: 50px;">🎁</div>
+                    <p class="fake-desc">{{ gift.fakeDesc || 'Un misterioso regalo...' }}</p>
+                    <small style="opacity:0.6">Tocar para descubrir</small>
                 </div>
                 
                 <div v-else>
-                    <img :src="gift.giftImg" alt="regalo">
-                    <div style="font-size: 11px; font-weight: bold">{{ gift.content }}</div>
+                    <img :src="gift.imgUrl || 'https://via.placeholder.com/150?text=Regalo'" alt="regalo">
+                    <strong style="display:block; color:var(--velvet)">{{ gift.realName }}</strong>
+                    <p style="font-size: 0.8em; margin: 5px 0;">De: {{ gift.from }}</p>
                 </div>
-                
-                <button v-if="gift.opened && round > 1 && gift.owner !== participants[currentTurnIndex].name" 
-                        style="font-size: 9px; padding: 2px; margin-top: 5px;">
-                    ROBAR
-                </button>
             </div>
         </div>
 
-        <div v-if="isHost && !gameEnded" style="margin-top: 20px">
-            <button @click="nextTurn" style="background:#747d8c; width: 100%">SIGUIENTE TURNO / PASAR</button>
+        <div style="margin-top: 30px;" v-if="isMyTurn">
+            <button @click="passTurn" style="background: var(--royal); color: white;">Pasar Turno</button>
         </div>
-        
-        <button v-if="gameEnded" @click="restartGame" style="width:100%; margin-top:20px">REINICIAR REYES</button>
     </div>
 </div>
 
 <script>
-const { createApp, ref, onMounted } = Vue;
+const { createApp, ref, onMounted, computed } = Vue;
 
+// CONFIGURACIÓN FIREBASE (Manteniendo tu DB)
 const firebaseConfig = {
     apiKey: "AIzaSyDiyIfptSOxDeTmUK48SJ6HIDTjs3sI7zs",
     authDomain: "juegoenvidioso.firebaseapp.com",
@@ -105,115 +151,116 @@ const firebaseConfig = {
     projectId: "juegoenvidioso",
     storageBucket: "juegoenvidioso.firebasestorage.app",
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 createApp({
+    components: { draggable: window.vuedraggable },
     setup() {
-        const screen = ref('setup');
+        const step = ref('identity');
+        const user = ref({ name: '', myGifts: [{ id: Date.now(), realName: '', fakeDesc: '', imgUrl: '' }] });
         const roomId = ref('');
-        const isHost = ref(true); // En esta versión simplificada el que configura es host
-        const tempPlayers = ref(Array.from({length: 8}, () => ({ name: '', giftName: '', giftImg: '' })));
-        
+        const availableRooms = ref([]);
         const participants = ref([]);
-        const gifts = ref([]);
-        const currentTurnIndex = ref(0);
-        const round = ref(1);
-        const gameEnded = ref(false);
+        const gameStatus = ref({ started: false, turnIndex: 0, round: 1 });
 
-        const createRoom = () => {
-            const validOnes = tempPlayers.value.filter(p => p.name && p.giftName);
-            if(validOnes.length < 2) return alert("Mínimo 2 personas");
-            
-            const id = Math.random().toString(36).substring(2, 6).toUpperCase();
-            roomId.value = id;
+        // COMPUTED
+        const isMyTurn = computed(() => {
+            const current = participants.value[gameStatus.value.turnIndex];
+            return current && current.name === user.name;
+        });
 
-            const roomData = {
-                participants: validOnes.map(p => ({ name: p.name, steals: 0 })),
-                gifts: validOnes.map(p => ({
-                    id: Math.random().toString(36).substr(2, 9),
-                    content: p.giftName,
-                    giftImg: p.giftImg || 'https://via.placeholder.com/150?text=Regalo',
-                    creator: p.name,
-                    opened: false,
-                    owner: ''
-                })),
-                gameStatus: { started: true, turnIndex: 0, round: 1, ended: false }
-            };
-
-            db.ref(`rooms/${id}`).set(roomData).then(() => {
-                initListeners(id);
-                screen.value = 'game';
+        const allGifts = computed(() => {
+            let list = [];
+            participants.value.forEach(p => {
+                if(p.assignedGifts) {
+                    p.assignedGifts.forEach(g => {
+                        list.push({ ...g, target: p.name });
+                    });
+                }
             });
+            return list;
+        });
+
+        onMounted(() => {
+            db.ref('rooms').on('value', snap => {
+                const data = snap.val();
+                if (!data) return availableRooms.value = [];
+                availableRooms.value = Object.keys(data).map(k => ({
+                    id: k, playerCount: Object.keys(data[k].participants || {}).length
+                }));
+            });
+        });
+
+        const addGiftSlot = () => user.value.myGifts.push({ id: Date.now()+Math.random(), realName: '', fakeDesc: '', imgUrl: '' });
+
+        const createNewRoom = () => joinRoom(Math.random().toString(36).substring(2, 6).toUpperCase());
+
+        const joinRoom = (id) => {
+            roomId.value = id;
+            const userKey = user.value.name.replace(/[\.\#\$\/\[\]]/g, "_");
+            db.ref(`rooms/${id}/participants/${userKey}`).set({
+                name: user.value.name, ready: false, assignedGifts: []
+            });
+            initRoomListener(id);
+            step.value = 'assign';
         };
 
-        const initListeners = (id) => {
-            db.ref(`rooms/${id}/participants`).on('value', s => participants.value = Object.values(s.val() || {}));
-            db.ref(`rooms/${id}/gifts`).on('value', s => gifts.value = Object.values(s.val() || {}));
-            db.ref(`rooms/${id}/gameStatus`).on('value', s => {
-                const data = s.val();
-                if(data) {
-                    currentTurnIndex.value = data.turnIndex;
-                    round.value = data.round;
-                    gameEnded.value = data.ended;
+        const initRoomListener = (id) => {
+            db.ref(`rooms/${id}/participants`).on('value', snap => {
+                const data = snap.val();
+                if (data) {
+                    participants.value = Object.values(data).map(p => ({ ...p, assignedGifts: p.assignedGifts || [] }));
+                    if (participants.value.every(p => p.ready) && participants.value.length > 1) {
+                        db.ref(`rooms/${id}/gameStatus`).update({ started: true });
+                    }
+                }
+            });
+            db.ref(`rooms/${id}/gameStatus`).on('value', snap => {
+                const data = snap.val();
+                if(data && data.started) {
+                    gameStatus.value = data;
+                    step.value = 'game';
                 }
             });
         };
 
-        const handleAction = (gift) => {
-            if(gameEnded.value) return;
-            const currentPlayer = participants.value[currentTurnIndex.value].name;
-
-            // REGLA: Ronda 1, abrir (no el propio)
-            if(!gift.opened && round.value === 1) {
-                if(gift.creator === currentPlayer) return alert("¡No puedes abrir tu propio regalo en la primera ronda!");
-                updateGift(gift.id, { opened: true, owner: currentPlayer });
-                nextTurn();
-            } 
-            // REGLA: Robar (ronda > 1)
-            else if(gift.opened && round.value > 1 && gift.owner !== currentPlayer) {
-                const stolenFrom = gift.owner;
-                // Buscamos si el actual ya tenía algo para dárselo a la víctima
-                const myOldGift = gifts.value.find(g => g.owner === currentPlayer);
-                if(myOldGift) updateGift(myOldGift.id, { owner: stolenFrom });
-                updateGift(gift.id, { owner: currentPlayer });
-                nextTurn();
-            }
-        };
-
-        const updateGift = (giftId, data) => {
-            db.ref(`rooms/${roomId.value}/gifts`).once('value', s => {
-                const all = s.val();
-                const key = Object.keys(all).find(k => all[k].id === giftId);
-                db.ref(`rooms/${roomId.value}/gifts/${key}`).update(data);
+        const syncAssignment = () => {
+            participants.value.forEach(p => {
+                const userKey = p.name.replace(/[\.\#\$\/\[\]]/g, "_");
+                // Inyectamos quién envía el regalo
+                const giftsWithFrom = p.assignedGifts.map(g => ({ ...g, from: user.value.name }));
+                db.ref(`rooms/${roomId.value}/participants/${userKey}/assignedGifts`).set(giftsWithFrom);
             });
         };
 
-        const nextTurn = () => {
-            let nextIdx = currentTurnIndex.value + 1;
-            let nextRound = round.value;
-            if (nextIdx >= participants.value.length) {
-                nextIdx = 0;
-                nextRound++;
-            }
-            // Definimos fin de juego tras 2 rondas de robo (total 3)
-            if (nextRound > 3) {
-                db.ref(`rooms/${roomId.value}/gameStatus`).update({ ended: true });
-            } else {
-                db.ref(`rooms/${roomId.value}/gameStatus`).update({ turnIndex: nextIdx, round: nextRound });
-            }
+        const markAsReady = () => {
+            const userKey = user.value.name.replace(/[\.\#\$\/\[\]]/g, "_");
+            db.ref(`rooms/${roomId.value}/participants/${userKey}`).update({ ready: true });
+            step.value = 'waiting';
         };
 
-        const restartGame = () => {
-            db.ref(`rooms/${roomId.value}/gifts`).once('value', s => {
-                const all = s.val();
-                Object.keys(all).forEach(k => db.ref(`rooms/${roomId.value}/gifts/${k}`).update({opened: false, owner: ''}));
+        const openGift = (gift) => {
+            if(!isMyTurn.value || gift.opened) return;
+            // Buscamos el regalo en la estructura de la DB para abrirlo
+            participants.value.forEach(p => {
+                const userKey = p.name.replace(/[\.\#\$\/\[\]]/g, "_");
+                const giftIdx = p.assignedGifts.findIndex(g => g.id === gift.id);
+                if(giftIdx !== -1) {
+                    db.ref(`rooms/${roomId.value}/participants/${userKey}/assignedGifts/${giftIdx}`).update({ opened: true });
+                }
             });
-            db.ref(`rooms/${roomId.value}/gameStatus`).update({ turnIndex: 0, round: 1, ended: false });
+            passTurn();
         };
 
-        return { screen, tempPlayers, roomId, participants, gifts, currentTurnIndex, round, gameEnded, isHost, createRoom, handleAction, nextTurn, restartGame };
+        const passTurn = () => {
+            let nextIdx = gameStatus.value.turnIndex + 1;
+            let nextRound = gameStatus.value.round;
+            if (nextIdx >= participants.value.length) { nextIdx = 0; nextRound++; }
+            db.ref(`rooms/${roomId.value}/gameStatus`).update({ turnIndex: nextIdx, round: nextRound });
+        };
+
+        return { step, user, availableRooms, roomId, participants, gameStatus, allGifts, isMyTurn, addGiftSlot, createNewRoom, joinRoom, syncAssignment, markAsReady, openGift, passTurn };
     }
 }).mount('#app');
 </script>
